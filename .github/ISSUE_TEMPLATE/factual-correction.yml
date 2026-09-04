@@ -1,0 +1,66 @@
+name: Factual or documentation correction
+description: Report an inaccurate claim, stale source, translation drift, broken link, or unclear wording.
+title: "[Correction] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for non-sensitive corrections. Do not include credentials, customer data, private evidence, exploitable production details, or uncoordinated vulnerabilities; follow `SECURITY.md` for those reports.
+  - type: dropdown
+    id: correction_type
+    attributes:
+      label: Correction type
+      options:
+        - Factual claim or source status
+        - Technical accuracy
+        - English/Chinese semantic parity
+        - Broken or stale reference
+        - Repository metadata or project positioning
+        - Other documentation issue
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Affected path and section
+      description: Include the file path, heading, control ID, or line link.
+      placeholder: docs/en/SECURITY_BASELINE.md — Section 7
+    validations:
+      required: true
+  - type: textarea
+    id: current_claim
+    attributes:
+      label: Current claim
+      description: Quote only the minimum text needed to identify the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Why it is inaccurate or unclear
+      description: Explain scope, assumptions, version/date, and security consequence.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_correction
+    attributes:
+      label: Proposed correction
+      description: Provide precise replacement wording where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Primary or authoritative evidence
+      description: Include source title, publisher, version/date, URL, and whether it is final, draft, public review, superseded, or vendor-specific.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I checked the current `main` branch and did not find an existing issue covering the same correction.
+          required: true
+        - label: This report contains no sensitive information and does not request unauthorized testing.
+          required: true
