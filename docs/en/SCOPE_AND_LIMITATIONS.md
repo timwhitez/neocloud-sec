@@ -1,6 +1,6 @@
 # NeoCloud Cyber Security Scope and Limitations
 
-**Version:** 1.0.0-draft.2  
+**Version:** 1.0.0-draft.1  
 **Baseline date:** 2026-09-04  
 **Status:** project-authored implementation draft
 

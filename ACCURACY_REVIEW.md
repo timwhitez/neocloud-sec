@@ -1,7 +1,7 @@
 # Accuracy Review / 准确性审计
 
 **Review date / 审计日期:** 2026-09-04  
-**Reviewed release / 审计版本:** 1.0.0-draft.2  
+**Reviewed release / 审计版本:** 1.0.0-draft.1  
 **Scope / 范围:** project positioning, normative consistency, source currency, GPU/fabric/orchestrator claims, AI-agent controls, assurance semantics, metrics, contribution workflow, and GitHub metadata
 
 ## Result / 结论
@@ -30,6 +30,10 @@ After the corrections recorded below, the repository is structurally coherent an
 | Metrics | Unknown critical scope could fall out of denominators; 95% targets could mask gates | Critical unknowns remain failures; applicable T0, critical ownership, and required T0 telemetry remain 100% gates; 95% is only a disclosed reference target for non-gate coverage |
 | AI agents | Uniform full-autonomy controls could overburden low-impact assistants | Controls now scale with authority and impact; high-impact/adaptive workflows receive stronger approval, stop, trace, rollback, and verifier requirements |
 | GitHub presentation | Description/topics/license/security-reporting status was absent or ambiguous | Added concise metadata, public-topic warning, publication checklist, no-license warning, and correct private/public reporting guidance |
+| Evidence template state | The example used `NOT_REVIEWED`, which is outside the catalog verification-result enum | Replaced it with `NOT_TESTED` and explicitly separated control lifecycle state from verification result |
+| Shared-responsibility template | Combined rows could make provider-exclusive Kubernetes/Slurm control planes and fabric roots appear jointly owned | Split provider-owned roots from customer-controlled workload, job, network, and agent configuration |
+| Threat-model template | `time-slicing without isolation`, `PKey`, and MCS wording could be read as categorical or complete isolation claims | Bound the risk to an absent justified memory/fault boundary, standardized `P_Key`, and stated that scheduler/visibility controls are not complete isolation |
+| Version consistency | New review and scope documents referred to an unissued next-draft version | Aligned them with the repository contract and `VERSION` value `1.0.0-draft.1` |
 
 ## Primary-source checks / 一手资料核对
 
