@@ -1,0 +1,2 @@
+assessment_id,service,service_profile,control_id,tier,priority,applicability,state,implementation_summary,asset_scope,provider_owner,customer_owner,evidence_ids,verification_method,validator,last_verified_at,evidence_freshness_days,exceptions,residual_risk,target_date,notes
+ASSESS-EXAMPLE-001,example-gpu-service,GPU-IaaS,NCS-GOV-01,T0,P0,applicable,PROPOSED,,,,,,,,90,,,2026-12-31,Delete example row before use

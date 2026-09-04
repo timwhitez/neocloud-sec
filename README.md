@@ -21,9 +21,9 @@ The project covers the full NeoCloud trust surface: people, tenants, AI agents, 
 | Reference architecture | [Reference Architecture](docs/en/REFERENCE_ARCHITECTURE.md) | [参考架构](docs/zh-CN/REFERENCE_ARCHITECTURE.md) |
 | Development roadmap | [Roadmap](docs/en/ROADMAP.md) | [发展路线图](docs/zh-CN/ROADMAP.md) |
 | Metrics and assurance | [Metrics & Assurance](docs/en/METRICS_AND_ASSURANCE.md) | [度量与持续证明](docs/zh-CN/METRICS_AND_ASSURANCE.md) |
-| Machine-readable controls | [Control catalog](controls/neocloud-security-baseline.v1.json) | [控制目录说明](controls/README.md) |
+| Machine-readable controls | [Control catalog](controls/neocloud-security-baseline.v1.json) and [schema](controls/schema.json) | [控制目录说明](controls/README.md) |
 | Assessment templates | [Templates](templates/) | [模板](templates/) |
-| Normative references | [References](REFERENCES.md) | [参考资料](REFERENCES.md) |
+| Standards and research | [References](REFERENCES.md) | [参考资料](REFERENCES.md) |
 
 ## Security model
 
@@ -82,6 +82,27 @@ It supports GPU IaaS, bare-metal GPU services, managed Kubernetes, managed Slurm
 4. Implement T2 controls as reusable platform capabilities and policy-as-code.
 5. Add T3 assurance for high-risk services and customer commitments.
 6. Introduce T4 automation only after actions are bounded, reversible, observable, and independently verified.
+
+## Repository validation
+
+Run the standard-library validator from the repository root:
+
+```bash
+python3 scripts/validate_repository.py
+```
+
+It verifies the repository contract, including:
+
+- exactly 18 domains and 90 controls;
+- the expected `T0=32`, `T1=31`, `T2=19`, `T3=7`, `T4=1` distribution;
+- valid, unique, and complete control IDs;
+- bilingual titles and normative requirements;
+- evidence, verification, tier, and metric cross-references;
+- parity between the JSON catalog and both security-baseline documents;
+- consistent release versions and required deliverables;
+- valid relative Markdown links.
+
+The same check runs in GitHub Actions for pull requests and `main`. See the [control-catalog documentation](controls/README.md) for queries and change rules.
 
 ## Status and scope
 

@@ -1,0 +1,2 @@
+evidence_id,control_id,service,asset_scope,tenant_scope,evidence_type,description,source_system,collection_method,collector,observed_at,valid_until,integrity_hash,storage_uri,access_classification,contains_personal_data,contains_customer_data,verifier,verification_result,verified_at,limitations,retention_until
+EVID-EXAMPLE-001,NCS-IAM-01,example-service,production-admins,all,configuration_export,MFA policy export,identity-provider,API,security-automation,2026-09-04T00:00:00Z,2026-12-03T00:00:00Z,,,restricted,false,false,,NOT_REVIEWED,,Delete example row,2027-09-04

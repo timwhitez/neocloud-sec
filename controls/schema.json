@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/timwhitez/neocloud-sec/blob/main/controls/schema.json",
+  "title": "NeoCloud Cyber Security Baseline Catalog",
+  "description": "Structural schema for the normative bilingual NeoCloud security control catalog. Cross-reference, count, and documentation parity checks are implemented by scripts/validate_repository.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "catalog_id",
+    "version",
+    "baseline_date",
+    "status",
+    "languages",
+    "normative_rules",
+    "control_lifecycle",
+    "verification_results",
+    "tiers",
+    "service_profiles",
+    "evidence_profiles",
+    "verification_profiles",
+    "metric_ids",
+    "metrics_document",
+    "domains",
+    "controls"
+  ],
+  "properties": {
+    "$schema": {"const": "./schema.json"},
+    "catalog_id": {"const": "NCS-BASELINE"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"},
+    "baseline_date": {"type": "string", "format": "date"},
+    "status": {"type": "string", "minLength": 1},
+    "languages": {
+      "type": "array",
+      "const": ["en", "zh-CN"]
+    },
+    "normative_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["t0_gate", "t0_gate_zh_CN", "framework_mappings", "framework_mappings_zh_CN"],
+      "properties": {
+        "t0_gate": {"type": "string", "minLength": 1},
+        "t0_gate_zh_CN": {"type": "string", "minLength": 1},
+        "framework_mappings": {"type": "string", "minLength": 1},
+        "framework_mappings_zh_CN": {"type": "string", "minLength": 1}
+      }
+    },
+    "control_lifecycle": {
+      "const": ["PROPOSED", "READY", "IMPLEMENTED", "CANDIDATE_DONE", "VERIFIED"]
+    },
+    "verification_results": {
+      "const": ["PASS", "FAIL", "INCONCLUSIVE", "NOT_TESTED"]
+    },
+    "tiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["T0", "T1", "T2", "T3", "T4"],
+      "properties": {
+        "T0": {"$ref": "#/$defs/tier"},
+        "T1": {"$ref": "#/$defs/tier"},
+        "T2": {"$ref": "#/$defs/tier"},
+        "T3": {"$ref": "#/$defs/tier"},
+        "T4": {"$ref": "#/$defs/tier"}
+      }
+    },
+    "service_profiles": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "GPU-IaaS",
+          "Bare-Metal-GPU",
+          "Managed-Kubernetes",
+          "Managed-Slurm-HPC",
+          "Model-Training",
+          "Model-Serving",
+          "Agent-Platform",
+          "Sovereign-Regulated"
+        ]
+      }
+    },
+    "evidence_profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/evidenceProfile"}
+    },
+    "verification_profiles": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"$ref": "#/$defs/verificationProfile"}
+    },
+    "metric_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^NCSM-[A-Z]+-[0-9]{2}$"}
+    },
+    "metrics_document": {
+      "$ref": "#/$defs/bilingualPath"
+    },
+    "domains": {
+      "type": "array",
+      "minItems": 18,
+      "maxItems": 18,
+      "items": {"$ref": "#/$defs/domain"}
+    },
+    "controls": {
+      "type": "array",
+      "minItems": 90,
+      "maxItems": 90,
+      "items": {"$ref": "#/$defs/control"}
+    }
+  },
+  "$defs": {
+    "bilingualText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "zh-CN"],
+      "properties": {
+        "en": {"type": "string", "minLength": 1},
+        "zh-CN": {"type": "string", "minLength": 1}
+      }
+    },
+    "bilingualPath": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "zh-CN"],
+      "properties": {
+        "en": {"type": "string", "minLength": 1},
+        "zh-CN": {"type": "string", "minLength": 1}
+      }
+    },
+    "tier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name_en", "name_zh_CN", "frequency", "frequency_zh_CN"],
+      "properties": {
+        "name_en": {"type": "string", "minLength": 1},
+        "name_zh_CN": {"type": "string", "minLength": 1},
+        "frequency": {"type": "string", "minLength": 1},
+        "frequency_zh_CN": {"type": "string", "minLength": 1}
+      }
+    },
+    "evidenceProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimum_evidence_en", "minimum_evidence_zh_CN"],
+      "properties": {
+        "minimum_evidence_en": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "minimum_evidence_zh_CN": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "verificationProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["steps_en", "steps_zh_CN"],
+      "properties": {
+        "steps_en": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "steps_zh_CN": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "domain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "outcome"],
+      "properties": {
+        "id": {
+          "enum": ["GOV", "ASM", "IAM", "API", "NET", "CMP", "ORC", "DAT", "KMS", "SSC", "ENG", "VEM", "TEL", "AIR", "ABU", "IRR", "RES", "PHY"]
+        },
+        "title": {"$ref": "#/$defs/bilingualText"},
+        "outcome": {"$ref": "#/$defs/bilingualText"}
+      }
+    },
+    "control": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "domain", "tier", "title", "requirement", "evidence_profile", "verification_profile", "metric_ids"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^NCS-(GOV|ASM|IAM|API|NET|CMP|ORC|DAT|KMS|SSC|ENG|VEM|TEL|AIR|ABU|IRR|RES|PHY)-0[1-5]$"},
+        "domain": {"enum": ["GOV", "ASM", "IAM", "API", "NET", "CMP", "ORC", "DAT", "KMS", "SSC", "ENG", "VEM", "TEL", "AIR", "ABU", "IRR", "RES", "PHY"]},
+        "tier": {"enum": ["T0", "T1", "T2", "T3", "T4"]},
+        "title": {"$ref": "#/$defs/bilingualText"},
+        "requirement": {"$ref": "#/$defs/bilingualText"},
+        "evidence_profile": {"type": "string", "pattern": "^EP-[A-Z-]+$"},
+        "verification_profile": {"type": "string", "pattern": "^VP-[A-Z-]+$"},
+        "metric_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^NCSM-[A-Z]+-[0-9]{2}$"}
+        }
+      }
+    }
+  }
+}
