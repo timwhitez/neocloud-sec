@@ -2,14 +2,37 @@
 
 [简体中文](README.zh-CN.md) | English
 
+A vendor-neutral security baseline, reference architecture, roadmap, and implementation guide for specialized AI and GPU clouds.
+
 **Version:** `1.0.0-draft.1`  
-**Baseline date:** 2026-09-04
+**Baseline date:** 2026-09-04  
+**Status:** implementation-oriented draft
 
-NeoCloud Cyber Security is an open, evidence-driven security architecture and operating model for AI-first cloud infrastructure.
+> NeoCloud Cyber Security is a **reference framework for designing and operating** a coherent security control plane across AI infrastructure. It treats identity and delegated authority as trust roots, policy as the decision mechanism, and people, tenants, workloads, devices, models, and agents as explicit security subjects. It connects preventive controls, telemetry, response, recovery, evidence, and independent verification across the full service boundary.
 
-> **NeoCloud Cyber Security is a unified cybersecurity control plane for AI-native organizations and specialized AI clouds. It treats identity as the root of trust, policy as the decision core, and agents plus workloads as first-class security subjects. It coordinates endpoint, cloud-native runtime, network and fabric, data, software/model supply chain, and security operations controls to close the loop from visibility to real-time enforcement and continuous assurance.**
+This repository contains documentation, a machine-readable control catalog, validation logic, and implementation templates. **It is not a deployable security product, a certification scheme, or evidence that any provider is secure.**
 
-The project covers the full NeoCloud trust surface: people, tenants, AI agents, workload identities, APIs, control planes, Kubernetes and Slurm, bare-metal hosts, hypervisors, GPUs and accelerators, Ethernet and InfiniBand/RDMA fabrics, datasets, models, checkpoints, secrets, firmware, BMCs, facilities, and third-party dependencies.
+“NeoCloud” is used here as a working industry term for specialized cloud providers serving accelerator-intensive AI and HPC workloads. The project does not assume that the term has a single formal, regulatory, or universally accepted definition.
+
+## Start here
+
+| Goal | Recommended entry point |
+|---|---|
+| Understand the security problem and operating model | [White Paper](docs/en/WHITEPAPER.md) |
+| Assess a service against minimum outcomes | [Security Baseline](docs/en/SECURITY_BASELINE.md) and [assessment template](templates/baseline-assessment.csv) |
+| Turn requirements into engineering and operations work | [Practice Guide](docs/en/PRACTICE_GUIDE.md) |
+| Design trust zones, policy points, evidence flows, and recovery boundaries | [Reference Architecture](docs/en/REFERENCE_ARCHITECTURE.md) |
+| Plan a 0–24-month program | [Roadmap](docs/en/ROADMAP.md) |
+| Define gates, evidence, metrics, and independent assurance | [Metrics & Assurance](docs/en/METRICS_AND_ASSURANCE.md) |
+| Integrate controls with tooling | [Machine-readable catalog](controls/neocloud-security-baseline.v1.json) and [schema](controls/schema.json) |
+
+A practical first pass is:
+
+1. Select one or more service profiles and define the exact production boundary.
+2. Assign provider, customer, and shared responsibility.
+3. Evaluate every applicable T0 and T1 control using current, scoped evidence.
+4. Block or remove exposure for every failed, unknown, stale, inconclusive, or untested applicable T0.
+5. Productize T2 controls, add T3 assurance where commitments require it, and introduce T4 adaptive automation only after authority and failure modes are proven.
 
 ## What this repository delivers
 
@@ -21,77 +44,77 @@ The project covers the full NeoCloud trust surface: people, tenants, AI agents, 
 | Reference architecture | [Reference Architecture](docs/en/REFERENCE_ARCHITECTURE.md) | [参考架构](docs/zh-CN/REFERENCE_ARCHITECTURE.md) |
 | Development roadmap | [Roadmap](docs/en/ROADMAP.md) | [发展路线图](docs/zh-CN/ROADMAP.md) |
 | Metrics and assurance | [Metrics & Assurance](docs/en/METRICS_AND_ASSURANCE.md) | [度量与持续证明](docs/zh-CN/METRICS_AND_ASSURANCE.md) |
-| Machine-readable controls | [Control catalog](controls/neocloud-security-baseline.v1.json) and [schema](controls/schema.json) | [控制目录说明](controls/README.md) |
+| Machine-readable controls | [Control catalog](controls/neocloud-security-baseline.v1.json), [schema](controls/schema.json), and [catalog guide](controls/README.md) | [控制目录说明](controls/README.md) |
 | Assessment templates | [Templates](templates/) | [模板](templates/) |
-| Standards and research | [References](REFERENCES.md) | [参考资料](REFERENCES.md) |
+| Standards and research basis | [References](REFERENCES.md) | [参考资料](REFERENCES.md) |
+
+## Scope
+
+The project covers provider-operated and customer-facing trust boundaries involving:
+
+- GPU IaaS and bare-metal GPU services;
+- managed Kubernetes and managed Slurm/HPC;
+- model training, model serving, and agent platforms;
+- sovereign or regulated service profiles;
+- human, tenant, workload, device, service, and agent identity;
+- APIs, control planes, schedulers, hosts, accelerators, storage, Ethernet, InfiniBand/RDMA, NVLink-aware placement, DPUs, BMC/OOB, facilities, and suppliers;
+- datasets, prompts, outputs, models, checkpoints, embeddings, caches, keys, software, firmware, and security evidence.
+
+The baseline does not replace service-specific threat modeling, deployed-path testing, contractual responsibility, applicable law, privacy or safety assessment, or qualified independent audit.
 
 ## Security model
 
-The baseline is organized into 18 NeoCloud Security domains:
+The baseline contains **90 controls across 18 domains**:
 
-1. Governance, risk, compliance, and shared responsibility
-2. Asset, service, dependency, and data-flow inventory
-3. Human, tenant, workload, and agent identity
-4. Control-plane, API, and administrative-interface security
-5. Network, fabric, RDMA/InfiniBand, and DPU isolation
-6. Compute, hypervisor, bare-metal, GPU, and accelerator isolation
-7. Kubernetes, containers, Slurm, and scheduler security
-8. Data, dataset, model, artifact, and privacy protection
-9. Secrets, keys, PKI, attestation, and confidential computing
-10. Software, model, and infrastructure supply-chain security
-11. Secure engineering, infrastructure as code, change, and configuration
-12. Vulnerability, exposure, patch, and firmware management
-13. Telemetry, detection engineering, threat intelligence, and audit
-14. AI application, agent, tool, skill, and prompt security
-15. Abuse prevention, tenant trust, egress, and acceptable use
-16. Incident response, forensics, crisis management, and recovery
-17. Resilience, availability, capacity, backup, and disaster recovery
-18. Physical, facility, BMC, hardware lifecycle, and media sanitization
+| Governance and visibility | Platform and workload protection | Operations and assurance |
+|---|---|---|
+| Governance, risk, compliance, and shared responsibility | Network, fabric, RDMA/InfiniBand, and DPU isolation | Secure engineering, IaC, change, and configuration |
+| Asset, service, dependency, and data-flow inventory | Compute, hypervisor, bare-metal, GPU, and accelerator isolation | Vulnerability, exposure, patch, and firmware management |
+| Human, tenant, workload, and agent identity | Kubernetes, containers, Slurm, and scheduler security | Telemetry, detection engineering, threat intelligence, and audit |
+| Control-plane, API, and administrative-interface security | Data, dataset, model, artifact, and privacy protection | Abuse prevention, tenant trust, egress, and acceptable use |
+| Secrets, keys, PKI, attestation, and confidential computing | Software, model, and infrastructure supply-chain security | Incident response, resilience, recovery, physical and hardware lifecycle |
+| AI application, agent, tool, skill, and prompt security |  |  |
 
 Controls are prioritized through five adoption tiers:
 
-- **T0 — Guardrails:** non-negotiable conditions before a service processes tenant data or exposes production capacity.
-- **T1 — Foundation:** essential cyber hygiene and complete visibility, normally targeted in the first 90 days.
-- **T2 — Production:** scalable, policy-enforced controls for a generally available multi-tenant service.
-- **T3 — Assured:** higher-assurance controls for sensitive, regulated, sovereign, or dedicated environments.
-- **T4 — Adaptive:** continuous verification, high-confidence automation, confidential computing, and guarded AI-assisted defense.
+- **T0 — Guardrails:** hard production gates. Every applicable T0 must be independently `VERIFIED`; no exception or aggregate score can make an unmet T0 conformant.
+- **T1 — Foundation:** ownership, inventory, hygiene, visibility, response, and recovery foundations.
+- **T2 — Production:** reusable, policy-enforced, measured controls for sustainable multi-tenant operation.
+- **T3 — Assured:** independently supported, higher-assurance controls for sensitive, regulated, sovereign, dedicated, attested, or confidential-computing profiles where justified.
+- **T4 — Adaptive:** guarded adaptive automation and continuous verification after authority, approval, stop, rollback, trace, and verifier controls have been proven.
 
-A numeric score never compensates for a failed T0 control. Production readiness is gate-based and evidence-based.
+An executive may authorize a time-bounded emergency business decision, but that decision does **not** convert a failed T0 into `VERIFIED` or permit the service to be represented as conformant.
 
 ## Core design principles
 
-- **Identity before network location.** Human, service, workload, device, tenant, and agent identities are authenticated, scoped, short-lived, and continuously evaluated.
-- **Isolation by construction.** Tenant boundaries extend across API, compute, storage, Ethernet, InfiniBand/RDMA, NVLink, schedulers, observability, and support operations.
-- **Shared responsibility must be explicit.** Every control has a provider, customer, or shared owner and an escalation path.
-- **Evidence is part of the control.** A control is not complete until its implementation, coverage, freshness, owner, exceptions, and independent verification are recorded.
-- **Agents are privileged software subjects.** Agent actions are mediated by policy, least privilege, approval boundaries, immutable audit, and deterministic stop conditions.
-- **Recovery is a security capability.** Backups, rebuilds, tenant offboarding, secure erasure, and crisis communications are tested rather than assumed.
-- **Secure by design, not by tenant expertise.** Safe defaults, MFA, logging, isolation, and update mechanisms are provider responsibilities, not paid add-ons.
+- **Identity before network location.** Subjects have strong, scoped, reviewable identities; credentials, sessions, and delegated authority are short-lived where technically feasible.
+- **Isolation by construction.** Tenant boundaries extend across API, compute, accelerator memory and faults, storage, Ethernet, InfiniBand/RDMA, NVLink topology, schedulers, telemetry, and support operations.
+- **Sharing modes are not equivalent.** Full-device dedication, hardware partitioning, virtualization, and time-slicing must be described and tested separately. Time-slicing is not a memory- or fault-isolation boundary.
+- **Shared responsibility is explicit.** Every control has a provider, customer, or shared owner and an escalation path.
+- **Evidence is part of the control.** Deployment alone is not effectiveness; current scope, negative tests, failure behavior, recovery, and independent verification matter.
+- **Agent authority is risk based.** Every production agent is inventoried and bounded; high-impact or adaptive workflows additionally require deterministic approval/stop conditions, protected traces, and independent verification.
+- **Recovery restores trust, not only availability.** Reopening requires identity, artifact, tenant-isolation, data-integrity, and monitoring checks.
+- **Secure defaults are provider responsibilities.** Capabilities exclusively controlled by the provider cannot be transferred to the customer through documentation.
 
-## Intended users
+## Control state and evidence
 
-This repository is designed for NeoCloud and GPU-cloud providers, AI infrastructure teams, sovereign AI operators, platform engineering teams, security architects, CISOs, auditors, enterprise buyers, and customers performing provider due diligence.
+The only normal completion path is:
 
-It supports GPU IaaS, bare-metal GPU services, managed Kubernetes, managed Slurm/HPC, model-training platforms, inference and model-serving platforms, agent platforms, and regulated or sovereign deployments.
+```text
+PROPOSED → READY → IMPLEMENTED → CANDIDATE_DONE → VERIFIED
+```
 
-## Adoption path
-
-1. Select the applicable service profile and establish the shared-responsibility matrix.
-2. Inventory assets, identities, data flows, trust boundaries, and critical dependencies.
-3. Assess T0 and T1 controls with evidence; remediate all failed production gates.
-4. Implement T2 controls as reusable platform capabilities and policy-as-code.
-5. Add T3 assurance for high-risk services and customer commitments.
-6. Introduce T4 automation only after actions are bounded, reversible, observable, and independently verified.
+Only an independent validator returning `PASS` for the stated service, version, region, tenant/asset scope, test, and evidence validity period may assign `VERIFIED`.
 
 ## Repository validation
 
-Run the standard-library validator from the repository root:
+Run the dependency-free validator from the repository root:
 
 ```bash
 python3 scripts/validate_repository.py
 ```
 
-It verifies the repository contract, including:
+It verifies:
 
 - exactly 18 domains and 90 controls;
 - the expected `T0=32`, `T1=31`, `T2=19`, `T3=7`, `T4=1` distribution;
@@ -102,10 +125,14 @@ It verifies the repository contract, including:
 - consistent release versions and required deliverables;
 - valid relative Markdown links.
 
-The same check runs in GitHub Actions for pull requests and `main`. See the [control-catalog documentation](controls/README.md) for queries and change rules.
+The same check runs for pull requests and `main` through [GitHub Actions](.github/workflows/validate.yml).
 
-## Status and scope
+## Project governance and status
 
-This is an implementation-oriented community baseline, not a certification, legal opinion, or substitute for jurisdiction-specific obligations. Mappings to external frameworks are informative. Organizations remain responsible for determining applicability and obtaining qualified legal, privacy, safety, and audit advice.
+- Contribution rules: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Control and evidence governance: [GOVERNANCE.md](GOVERNANCE.md)
+- Security reporting: [SECURITY.md](SECURITY.md)
+- Recommended GitHub About text, topics, and repository settings: [.github/REPOSITORY_SETTINGS.md](.github/REPOSITORY_SETTINGS.md)
+- Change history: [CHANGELOG.md](CHANGELOG.md)
 
-See [GOVERNANCE.md](GOVERNANCE.md) for change control and [CONTRIBUTING.md](CONTRIBUTING.md) for contribution rules.
+No open-source license is currently granted by this repository. Before public release or external reuse, the owner should select and add an explicit license; the recommended decision options are recorded in the repository-settings guide.

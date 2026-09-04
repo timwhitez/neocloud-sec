@@ -2,405 +2,319 @@
 
 **版本：** 1.0.0-draft.1  
 **基线日期：** 2026-09-04  
-**适用读者：** NeoCloud 管理层、安全、平台工程、SRE、网络与 Fabric、Kubernetes、Slurm/HPC、数据与 AI、机房、支持、Trust & Safety、隐私、风险与审计团队
+**状态：** 面向实施的项目草案  
+**适用读者：** 管理层、安全、平台工程、SRE、网络/Fabric、Kubernetes、Slurm/HPC、数据与 AI、机房、支持、Trust & Safety、隐私、风险与保证团队
 
-本指南将[白皮书](WHITEPAPER.md)、[安全基线](SECURITY_BASELINE.md)、[参考架构](REFERENCE_ARCHITECTURE.md)和[发展路线图](ROADMAP.md)转化为可执行的建设与运营方法。本文保持厂商中立；出现的产品类别仅作能力示例，不构成采购建议。
+本指南把[白皮书](WHITEPAPER.md)、[安全基线](SECURITY_BASELINE.md)、[参考架构](REFERENCE_ARCHITECTURE.md)和[发展路线图](ROADMAP.md)转化为可执行的运营模型。本文保持厂商中立；技术和产品名称只是示例，不能自动证明控制有效。
 
-## 1. 从服务与信任决策出发，而不是从工具出发
+## 1. 从具体服务与信任决策开始
 
-每个生产服务应建立一个独立、可审计的安全评估包，至少包含：
+每个生产服务建立一套独立、版本化、可审计的评估包，至少包含：
 
-1. 服务画像、合同边界和客户承诺；
-2. 业务、技术、安全、数据和事件响应的唯一可追责 Owner；
-3. 租户、身份、数据/模型、控制面、计算、GPU、存储、Fabric、BMC/OOB、供应商和支持运维边界；
-4. 全量适用控制，以及每个“不适用”结论的理由和复核人；
-5. 威胁模型、灾难性失败路径和共享责任；
-6. 期望状态、策略决策点、执行点、失败模式、降级方式和回滚方式；
-7. 证据来源、有效期、独立验证者及生产准入结论；
-8. 未关闭风险、例外、客户影响、补偿控制和目标日期。
+1. Service Profile、准确合同边界、Environment、Region、Version 与客户承诺；
+2. 业务、技术、安全、数据和事件的唯一可追责 Owner；
+3. Tenant、Identity、Data/Model、API/Control Plane、Orchestration、Host/GPU、Storage、Ethernet/RDMA、DPU、BMC/OOB、Supplier、Support、Evidence 与 Recovery Boundary；
+4. 全部适用控制，以及每个经过 Review 的 Not-applicable Decision；
+5. Threat Model、攻击者假设、灾难性失败路径和 Shared Responsibility；
+6. Desired State、Policy Decision、Enforcement Point、Failure Behavior、Containment、Rollback 与 Recovery；
+7. Evidence Source、Integrity、Freshness、Negative/Failure Test 与 Independent Validator；
+8. Production Decision、未解决风险、Business Decision/Exception、Customer Impact、Owner 与 Target Date。
 
-不要从购买 SIEM、CNAPP、PAM 或 AI 安全产品开始。先定义服务必须做出的信任决策，以及证明这些决策始终正确所需要的证据。
+不要从采购 SIEM、CNAPP、PAM 或 AI 安全产品开始。先定义服务必须做出的信任决策、在哪里执行、失效时如何收口，以及哪些证据能证明真实部署路径上的结果。
 
 ## 2. 不可妥协的运营规则
 
-- **T0 是硬门槛，不是分数。** 任一适用 T0 未通过，即为 `NO-GO`。
-- **未知不等于安全。** Owner、租户归属、互联网暴露、GPU 共享、P_Key/DPU 分配、Root Key 使用或恢复状态未知时，应视为断言失败。
-- **实施者不能是唯一验证者。** 必须由不同人员、不同团队或合格的外部评估方复现实证并测试控制。
-- **外部内容不能授予权限。** Ticket、Prompt、模型、Package、网页、文档和 Tool 输出只能作为观察，不得成为授权来源。
-- **服务商独占能力不能转嫁给客户。** 客户无法控制的 BMC、Fabric Controller、Host Reset、服务商控制面与签名根，仍由服务商负责。
-- **控制失效必须被设计。** 高影响控制应定义 Fail-closed、安全降级、隔离、回滚和人工恢复行为。
-- **证据必须有有效期。** 缺少范围、身份、采集时间、完整性保护和可复现测试上下文的截图，只能作为弱证据。
-- **恢复会改变信任状态。** 恢复上线前必须重新验证身份、制品完整性、租户隔离与数据正确性，而不能只验证“服务已启动”。
+- **T0 是硬门。** 适用 T0 失败、未知、过期、无法判定或未测试时，保持 `NO_GO_NONCONFORMANT`。
+- **业务决定不是通过。** 紧急决定可以解释临时运营，但不能产生 `VERIFIED` 或符合性声明。
+- **未知关键范围属于失败。** 未知 Owner、Tenant、Public Exposure、GPU Sharing、P_Key/DPU Assignment、Root-key Use、Required Telemetry、Backup 或 Restore State 必须留在分母并阻断相应硬门。
+- **部署不等于有效。** `IMPLEMENTED` 与 `VERIFIED` 是不同状态。
+- **实施者不能是唯一验证者。** 使用能够挑战 Owner 的不同人员/团队、Observation Path、Test Harness 或合格评估方。
+- **外部内容不能授予权限。** Prompt、Ticket、Document、Model、Package、RAG Data、Memory、Web Page 与 Tool Output 只能提供观察。
+- **服务商独占责任仍由服务商承担。** 客户无法控制的 Provider Control Plane、Host、Reset Path、Fabric Manager、BMC/OOB 或 Signing Root 不能转嫁给客户。
+- **控制失效必须被设计。** 高影响控制定义 Fail-closed/Safe Degraded、Quarantine、Rollback、Manual Recovery 和依赖故障证据。
+- **证据必须有时效。** 证据需要 Scope、Identity、Collection Time、Integrity、Method、Limitation、Validity 与独立测试上下文。
+- **恢复会改变信任状态。** 重新开服前验证 Identity、Artifact、Tenant Isolation、Data Integrity、Monitoring 与目标，而不只是进程已经启动。
 
-## 3. 最小团队与决策模型
+## 3. 最小责任模型
 
-小型组织可以一人兼任多个角色，但不能省略责任和独立复核。
+小型组织可以兼任角色，但不能省略最终责任或独立挑战。
 
 | 角色 | 可追责决策 | 最低固定职责 |
 |---|---|---|
-| 高管风险 Owner | 风险偏好、生产例外、危机优先级 | 每月审阅关键风险 |
-| CISO/安全负责人 | 控制模型、安全路线图、独立挑战 | 每周审阅 T0/T1 |
-| 服务 Owner | 服务边界、客户承诺、残余风险 | 发布前和季度复核 |
-| 平台能力 Owner | 身份、策略、计算、Fabric、存储、编排等共享控制 | SLO、变更和事件责任 |
-| 数据/模型 Owner | 分类、允许用途、血缘、保留、导出、删除 | 每季度生命周期复核 |
-| Incident Commander | 指挥、隔离、取证、沟通、恢复开服 | On-call 和演练就绪 |
-| 独立验证者 | 测试设计、证据复现、PASS/FAIL 判定 | 按规定频率验证 |
-| 客户/支持 Owner | 共享责任、支持访问、通知、保证材料 | 面向客户的准确性复核 |
+| 高管风险 Owner | 风险偏好、特殊业务决定、危机优先级 | 每月复核关键风险与硬门 |
+| CISO/安全负责人 | 基线、路线图、挑战与保证 | 每周复核 T0/T1 和失败控制 |
+| 服务 Owner | 服务边界、声明、客户承诺、残余风险 | 发布前与季度复核 |
+| 平台能力 Owner | 身份、策略、计算、Fabric、Storage、编排和证据等复用能力 | SLO、变更与事件责任 |
+| 数据/模型 Owner | Purpose、Classification、Rights、Lineage、Retention、Export、Deletion | 每季度生命周期复核 |
+| Incident Commander | 指挥、定界、证据、隔离、沟通与开服 | 演练与 On-call 就绪 |
+| 独立验证者 | 测试设计、证据复现、`PASS/FAIL` 判定 | 按规定周期验证 |
+| 客户/支持 Owner | 共享责任、Support Access、Notification 与 Assurance | 面向客户的准确性复核 |
 
-每项控制只能有一个最终可追责 Owner；可以有多个实施者，但不允许“大家共同负责、无人最终负责”。
+每项控制只能有一个最终可追责 Owner；可以有多个实施者，但不能责任模糊。
 
 ## 4. 前 90 天落地计划
+
+日期用于规划，不得把今天存在的 T0 失败推迟到未来阶段。
 
 ### 第 0–7 天：建立指挥体系
 
 交付：
 
-- 为每个生产服务、Root/Signing Key、控制面、Fabric、BMC/OOB 环境和事件路径指定 Owner；
-- 建立一个安全事件通信频道、严重性矩阵、On-call 升级链和紧急决策日志；
-- 建立第一版服务与 Crown Jewel 清单；
-- 对新增公网管理接口、新共享模式、Root 变更、Fabric 拓扑变更和未经审查的生产制品设置冻结或显式审批；
-- 立即轮换或禁用来源未知、多人共用、无人认领或离职人员遗留的特权凭据。
+- 为每个生产 Service、Critical Dependency、Root/Signing Key、Provider Control Plane、Fabric Manager、BMC/OOB Environment 与 Incident Path 指定 Owner；
+- 建立安全 Incident Channel、Severity Matrix、On-call Escalation、Emergency-decision Record 和撤销/隔离权限；
+- 建立第一版 Service、Critical Asset、Critical Identity、Public Exposure 与 Crown Jewel Inventory；
+- 对新 Public Admin Interface、Sharing Mode、Root/Fabric Change 与未审查 Production Artifact 设置冻结或显式审批；
+- 轮换或禁用未知、共享、无人认领或离职人员遗留的特权 Credential。
 
-退出条件：服务商能够随时建立事件指挥、撤销特权访问、定位某租户的活动资源并隔离一个服务。
+退出条件：服务商可以建立指挥、撤销特权、识别活动租户资源，并在可靠边界隔离一个服务。
 
-### 第 8–30 天：停止关键暴露
+### 第 8–30 天：移除关键暴露
 
 优先完成：
 
-- 服务商特权身份及租户 Owner 使用抗钓鱼 MFA；
-- 服务商管理面私有化，BMC/OOB 走独立受控路径；
-- 对最高风险 API 执行对象、动作和租户授权测试；
-- 为每种对外销售的计算 SKU 声明精确隔离属性；
-- 隔离或停止边界不清晰的 GPU 共享、RDMA/P_Key、DPU、存储或支持运维模式；
-- 保护 KMS/HSM、签名根、Secret 与 Break-glass；
-- 集中并保护身份、API、控制面、Kubernetes/Slurm、Fabric/BMC、密钥与支持访问日志；
-- 建立跨租户访问、Root 泄露、控制面接管、破坏性自动化和不可恢复数据风险 Playbook。
+- 为适用 Provider Privilege 与高影响 Tenant-owner Access 启用批准的抗钓鱼 MFA；
+- Provider Administration 私有化，BMC/OOB 走隔离路径；
+- 对关键 API 执行 Object/Action/Tenant/Purpose/Context Authorization Test；
+- 为每种 Commercial Compute SKU 明确隔离声明；
+- 隔离边界不清晰的 GPU Sharing、RDMA/P_Key、DPU、Storage、Support 或 Reassignment；
+- 保护并验证 KMS/HSM、Signing Root、Secret、PKI 与 Break-glass 的恢复；
+- 为 Identity、API/Control Plane、Kubernetes/Slurm、Host/GPU/Fabric/BMC、Key、Artifact、Support 与高影响 Agent 建立受保护的必需 Telemetry；
+- 建立 Cross-tenant Access、Root Compromise、Control-plane Takeover、Destructive Automation 与 Irrecoverable Data Risk Playbook。
 
-退出条件：每个 T0 都有明确范围、Owner、状态、证据要求、验证者和有日期的整改计划。
+退出条件：每个适用 T0 都有 Scope、Owner、当前状态、Evidence Requirement、Validator 和有日期的 Containment/Remediation，并且没有失败硬门被显示为健康。
 
 ### 第 31–60 天：形成权威状态
 
 建设：
 
-- 服务、资产、身份、依赖、数据流、模型、制品与供应商清单；
-- 共享责任矩阵和客户安全联系人；
-- 人员 Joiner/Mover/Leaver 与服务账户生命周期；
-- 与真实资产关联的漏洞和暴露面发现；
-- 数据/模型分类、驻留、保留、导出与删除要求；
-- 备份清单、依赖关系和恢复前置条件；
-- 对租户、调度器、Host、GPU、网络/Fabric、存储和配额进行期望状态与实际状态对账。
+- Service、Asset、Identity、Dependency、Data Flow、Model、Artifact、Key、Supplier 与 Support Inventory；
+- Shared-responsibility Matrix 与客户安全联系人；
+- Joiner/Mover/Leaver、Service Account、Workload Identity、Agent、Certificate 与 Secret Lifecycle；
+- 与真实 Asset 和 Tenant/Service Context 关联的 Vulnerability/Exposure Discovery；
+- Data/Model Purpose、Rights、Classification、Residency、Retention、Export、Deletion 与 Backup Requirement；
+- Backup/Rebuild-source Inventory 和依赖映射；
+- 对 Tenant、Scheduler、Host、Accelerator、Network/Fabric、DPU、Storage、Quota、Artifact 与 Policy 执行 Desired/Actual Reconciliation。
 
-退出条件：未知资产和无 Owner 资产会被系统明确显示为缺陷，而不是在报表中被隐藏。
+退出条件：Independent Discovery Coverage 可度量；Unknown/Unowned Resource 明确显示为缺陷；关键未知对象不能从报表中消失。
 
 ### 第 61–90 天：验证基础能力
 
 执行：
 
-- 独立 T0 验证；
-- 特权撤销和 Break-glass 演练；
-- 跨 API、调度、Host/GPU、存储、以太网、InfiniBand/RDMA 和遥测的负向隔离测试；
-- 代表性的加速器与本地盘跨租户清理测试；
-- Kubernetes/Slurm 控制面的恢复或已知可信重建；
-- 一次包含客户、法务和隐私通知判断的完整事件演练；
-- 一次关键数据/模型恢复，以及一次租户退租/删除演练；
-- 发布共享责任矩阵和客户保证包。
+- 对所有适用 T0 进行独立验证；
+- Privileged-access Denial、Expiry、Emergency Revocation 与 Break-glass Test；
+- 覆盖 API、Scheduler、Host/GPU、Storage、Ethernet、InfiniBand/RDMA、DPU、Telemetry 与 Support 的跨租户禁止路径测试；
+- 在相关 Hardware/Firmware/Driver/Sharing Variant 上执行代表性 Accelerator 与 Local-media Reset/Sanitization Test；
+- Kubernetes/Slurm Controller Restore 或 Known-good Rebuild；
+- 一次包含 Reliable Scope、Customer/Legal/Privacy Notification、Containment、Recovery 与 Reopening 的完整 Incident Exercise；
+- 一次 Critical Data/Model Restore，以及一次 Tenant Offboarding/Export/Deletion Exercise；
+- 一份服务范围明确的 Shared-responsibility 与 Assurance Package。
 
-退出条件：所有适用 T0 均为 `VERIFIED`；关键资产与日志覆盖率达到至少 95%；特权身份 Owner 覆盖率为 100%；所有失败演练均有可追责整改项。
+退出条件：所有适用 T0 均被独立 `VERIFIED`；范围内 Critical Asset 与 Privileged Identity Owner 覆盖为 100%；T0 Required Telemetry Source 100% 健康且可查询；Priority Discovery 与非硬门 Telemetry Coverage 具有明确分母，参考目标至少 95%；失败演练均有可追责 Containment 与 Remediation。
 
-## 5. 单项控制的实施生命周期
+## 5. 每项控制采用相同实施生命周期
 
 ### 5.1 确定范围
 
-记录服务、画像、租户、Region、版本、资产、身份、数据分类、供应商和排除项。“全局生效”但没有真实资产清单，不构成有效范围。
+记录 Service/Profile、Environment、Region、Version、Tenant、Asset、Identity、Data Class、Supplier、Dependency 与 Excluded Component。“全局”但没有真实 Population 不构成有效范围。
 
-### 5.2 分析威胁与失败模式
+### 5.2 分析威胁与失败
 
-至少描述：
-
-- 攻击者和被攻陷主体假设；
-- 正常路径和必须被拒绝的负向路径；
-- 跨租户、信任根、破坏性、隐私、主权和可用性失败；
-- 依赖不可用、Controller 状态过期、部分供应、回滚和恢复；
-- 证据被篡改以及验证者失效。
+说明 Attacker/Compromised-subject Assumption、允许和禁止路径、Cross-tenant、Root、Destructive、Privacy、Sovereignty、Availability Failure、Dependency Outage、Stale/Partial Controller State、Rollback/Recovery、Evidence Tampering 与 Verifier Failure。
 
 ### 5.3 定义控制契约
 
-使用统一决策模型：
+```text
+subject + delegation + action + resource + tenant + purpose
++ context + policy version
+→ allow | deny | approve | quarantine + obligations
+```
 
-`主体 + 委托链 + 动作 + 资源 + 租户 + 目的 + 上下文 + 策略版本 → 允许/拒绝/审批 + 附加义务`
+Obligation 可以要求 Dedicated Placement、Restricted Egress、Masking、Dual Approval、Session Evidence、Quota、Attestation、Post-action Verification 或 Cleanup。
 
-附加义务可以包括专属放置、限制出网、脱敏、双人审批、会话记录、配额、强制留证或动作后复验。
+### 5.4 落实执行与失败行为
 
-### 5.4 落实执行点
+将 Prevention Enforcement 放在靠近资源的位置。中央 Policy Service 可以分发决策，但 API Gateway、Scheduler、Node、KMS、Registry、Fabric、Storage 与 Tool Boundary 在中央服务故障时不得静默 Fail-open。定义 Stale-decision Limit、Local Cache、Safe Degradation、Quarantine、Rollback 与 Manual Recovery。
 
-将预防性执行尽量放在受保护资源附近。中央策略服务可以下发决策，但网络、调度器、Node、KMS、Registry 或 Tool 边界不能在中央服务故障时静默 Fail-open。
+### 5.5 生成证据并独立验证
 
-### 5.5 生成证据
+从真实部署路径生成 API/Configuration Export、Authorization Decision、Protected Runtime Event、Verified Attestation、Desired/Actual Reconciliation、Prohibited-path/Failure Test、Revocation/Restore/Rebuild/Sanitization Trace、Hash 与 Independent Observation。
 
-证据应来自真实部署路径，例如 API 导出、策略判定、签名证明、Controller 对账、负向测试、恢复轨迹、Hash、事件样本和独立观察。
+验证者确认 Scope 与 Freshness、复现断言、测试相关禁止路径或失败，并返回 `PASS`、`FAIL`、`INCONCLUSIVE` 或 `NOT_TESTED`。只有 `PASS` 可以产生 `VERIFIED`。
 
-### 5.6 独立验证
+### 5.6 运营与重验证
 
-验证者必须复现断言、至少测试一条禁止路径、确认范围与时效，并返回 `PASS`、`FAIL`、`INCONCLUSIVE` 或 `NOT_TESTED`。只有 `PASS` 才能进入 `VERIFIED`。
-
-### 5.7 持续运营与重新验证
-
-发生重大变更、事件、控制失败、新服务/SKU/Region、Controller 或固件升级、身份/密钥层级变化、供应商变化、Agent 权限扩大、恢复/重建或证据过期后，必须重新确定范围并验证。
+在 Evidence Expiry、Material Release、新 Service/SKU/Region、Sharing/Isolation Change、Controller/Orchestrator/Firmware/Driver Update、Identity/Key/Policy Change、Supplier/Data-flow/Support Change、Agent-authority Expansion、Incident、Failed Control、Restore/Rebuild 或无法复现时重验证。
 
 ## 6. 十八个安全域的实施模式
 
-| 安全域 | 最低实施要求 | 必做测试 | 强证据 |
+| 安全域 | 最低实施 | 必做有效性测试 | 强证据 |
 |---|---|---|---|
-| GOV | Charter、服务/控制 Owner、义务/风险/例外台账、独立保证 | 过期例外和无 Owner 服务不得显示为健康 | 已批准决策与当前服务范围保证材料 |
-| ASM | API 驱动的资产/身份/数据/模型/依赖清单及对账 | 注入受控未知资产或过期分配并验证检测 | 带 Owner、租户上下文的期望/实际差异 |
-| IAM | Federation、抗钓鱼 MFA、JIT/JEA、短期工作负载/Agent 身份、Break-glass | 拒绝、过期、紧急撤销与孤儿身份清理 | IdP/PAM/IAM 导出及撤销轨迹 |
-| API | 租户正确授权、私有管理、Schema、Replay、配额/限速、变更审计 | 对象/动作/租户混淆与部分供应回滚 | 关联 Request、Policy、Desired/Actual State 与回滚事件 |
-| NET | 平面分离、默认拒绝、租户感知的以太网/存储/Fabric/DPU/OOB 策略 | 跨租户与管理面可达性，含过期 VRF/P_Key/DPU 状态 | 拓扑、Controller 状态、Path Test 和对账结果 |
-| CMP | SKU 隔离声明、Host 加固、安全 GPU 分配/重置、必要时证明 | 显存/重置/错误/隔离及跨分配清理 | 与硬件、版本、租户关联的分配与重置记录 |
-| ORC | 私有且加固的 K8s/Slurm 控制面、RBAC、准入/作业策略、配额、Node/插件安全 | 特权工作负载/作业、调度逃逸、Controller 丢失、备份恢复 | Policy 导出、Audit、负向测试和重建轨迹 |
-| DAT | 分类、租户授权、加密、血缘、安全格式、保留/删除 | 未授权模型/Checkpoint 访问、恶意格式、删除/退租 | 对象血缘、密钥/访问、清理与恢复证明 |
-| KMS | 集中 KMS/HSM、Root 层级、短期 Secret、PKI 轮换、恢复 | Root/凭据撤销、证明失败、密钥恢复 | 密钥清单、Ceremony、审计、轮换与恢复轨迹 |
-| SSC | 批准来源、BOM、Provenance、签名、隔离构建、准入、召回 | 拒绝未签名/未知制品，以及受污染制品召回 | Source-to-Deploy Provenance 与回滚证据 |
-| ENG | 威胁模型、安全默认、IaC/Policy Review、测试门、Canary、回滚 | 不安全配置和失败发布回滚 | Review、测试、部署、漂移与部署后验证 |
-| VEM | 资产关联发现、按可利用性/暴露优先、补丁 SLA、固件覆盖 | 紧急补丁/Canary 与部署版本复核 | Finding→Asset→Remediation→Rescan 链路 |
-| TEL | 受保护关联遥测、覆盖清单、Detection-as-Code、租户安全保留 | 日志源失效、篡改尝试、ATT&CK/ATLAS 行为重放 | 事件样本、覆盖/新鲜度、测试结果、告警质量 |
-| AIR | 清单、影响评估、不可变范围、Typed Tool、审批、预算、Stop、Verifier | Prompt Injection、Confused Deputy、Tool Abuse、Memory/Skill Poisoning | 签名配置、完整 Trace、策略判定和验证结果 |
-| ABU | 租户信任分级、AUP、配额/速率/成本/容量、出网、Case 与申诉 | 配额绕过、挖矿、Denial-of-wallet、禁止出网 | 准入判定、执行原因、Case 和恢复记录 |
-| IRR | 指挥、Playbook、取证就绪、通知、开服门 | 跨租户/Root/Agent/可用性演练 | Timeline、证据链、决策、恢复与独立关闭 |
-| RES | 依赖/SLO/RTO/RPO、不可变备份、安全降级、重建/切换 | 主身份/密钥服务不可用时恢复，以及 Region/Fabric 故障 | 目标结果、完整性/隔离检查与开服审批 |
-| PHY | 机房控制、BMC/OOB 隔离、固件/硬件清单、清除与保管链 | 未授权 OOB 路径和租户重分配清除 | 门禁、配置、固件状态、清除与销毁记录 |
+| GOV | Charter、Service/Control Owner、Obligation、Risk、Decision/Exception、Independent Assurance | 过期决定和无 Owner 服务不能显示为健康 | 范围明确的批准决定与当前独立复核 |
+| ASM | API 驱动的 Service/Asset/Identity/Data/Model/Dependency Inventory 与 Reconciliation | 发现受控 Unknown 或 Stale Assignment | 带 Owner、Tenant、Service Context 的 Desired/Actual Diff |
+| IAM | Federation、抗钓鱼 Privileged MFA、JIT/JEA、Workload Identity、Lifecycle、Break-glass | 在每个必需执行点拒绝、过期和撤销 | IdP/PAM/IAM Export 与关联 Revocation Trace |
+| API | Tenant-correct Authorization、Private Admin、Schema/Replay/Idempotency/Rate/Quota、Change Trace | Object/Action/Tenant Confusion 与 Partial-provisioning Failure | Request、Policy、Approval、Desired/Actual State 与 Rollback 关联 |
+| NET | Plane Separation、Default Deny、Tenant-aware Ethernet/Storage/RDMA/DPU/OOB Policy | Cross-tenant/Management Path，含 Stale VRF/P_Key/DPU State | Topology、Controller State、Path Test 与 Reconciliation |
+| CMP | Explicit SKU Model、Hardened Host、安全 Allocation/Reset/Error | Memory、Fault、Reset、Quarantine 与 Cross-allocation Cleanup | 关联 Tenant、Hardware、Firmware 与 Driver 的 Allocation/Cleanup |
+| ORC | 私有加固 K8s/Slurm Controller、RBAC、Admission/Job Policy、Quota、Node/Plugin Security | 禁止 Privileged Workload/Job 与 Controller-loss Recovery | Policy Export、Audit、Negative Test 与 Restore/Rebuild Trace |
+| DAT | Purpose/Classification、Tenant Access、Encryption/Key、Lineage、Safe Format、Deletion | Unauthorized Access、Malicious Format、Export/Deletion/Offboarding | Object Lineage、Access/Key、Cleanup 与 Restore Proof |
+| KMS | KMS/HSM、Root Hierarchy、Short-lived Secret、PKI、Recovery | Root/Credential Revocation、Failed Attestation、Key Recovery | Key Inventory、Ceremony、Audit、Rotation 与 Recovery Trace |
+| SSC | Approved Source、Inventory、BOM、Required Provenance/Signature、Isolated Build、Admission、Recall | 拒绝 Unknown、Revoked、Incompatible 或 Unsigned-when-required Artifact | Source-to-deploy Provenance、Policy Decision 与 Rollback |
+| ENG | Threat Model、Safe Default、IaC/Policy Review、Test、Canary、Rollback | Unsafe Configuration 与 Failed Rollout | Review、Test、Deployment、Drift 与 Post-deploy Verification |
+| VEM | Asset-linked Discovery、Exposure/Exploitability Priority、Patch/Firmware Lifecycle | Emergency Patch/Canary 与 Deployed-state Retest | Finding→Asset→Remediation→Retest 链路 |
+| TEL | Protected Required Telemetry、Coverage/Freshness Inventory、Detection-as-code | Source Loss、Evidence Tamper、ATT&CK/ATLAS Behavior Replay | Event Sample、Health、Test、Limitation 与 Alert Quality |
+| AIR | Inventory、Identity、Delegation、Impact、Component Integrity、Typed Tool、Policy | Prompt Injection、Confused Deputy、Tool Abuse、Memory/Skill Poisoning | 按风险提供 Versioned Config、Policy/Approval、Trace 与 Verifier Result |
+| ABU | Trust Tier、AUP、Quota/Rate/Cost/Capacity、Egress、Case 与 Appeal | Quota Bypass、Mining、Denial of Wallet、Prohibited Egress | Onboarding Decision、Enforcement Reason、Case 与 Restoration |
+| IRR | Command、Playbook、Forensic Readiness、Notification 与 Reopening Gate | Cross-tenant/Root/Agent/Availability Exercise | Timeline、Evidence Chain、Decision、Recovery 与 Independent Closure |
+| RES | Dependency/SLO/RTO/RPO、Protected Backup、Safe Degradation、Rebuild/Failover | Primary Identity/Key 依赖不可用与 Region/Fabric Failure 下恢复 | Objective、Integrity/Isolation Check 与 Reopening Decision |
+| PHY | Facility、BMC/OOB Isolation、Hardware/Firmware Lifecycle 与 Sanitization | Unauthorized OOB Path 与代表性 Reassignment/Decommission | Access、Firmware、Maintenance、Sanitization 与 Custody Evidence |
 
-## 7. 各服务画像上线检查
+## 7. 服务画像上线检查
 
-### 7.1 GPU IaaS
+### GPU IaaS
 
-上线前验证：
+验证 Tenant-correct API/Image Authorization；明确整卡、硬件分区、虚拟化或 Time-slicing 语义；Host、GPU/HBM/Cache、NVLink、Storage、Ethernet/RDMA、Telemetry 与 Support Boundary；Allocation Lineage；Reset/Error/Quarantine；Local-state Cleanup；Driver/Firmware Lifecycle；Node Isolation/Rebuild；Quota、Billing、Abuse 与 Egress。除非逐项说明专属与共享资源，否则不得使用“Dedicated”笼统声明。
 
-- API 和镜像授权具备正确租户语义；
-- VM/容器、Host、GPU/HBM/Cache、NVLink、存储、以太网、InfiniBand/RDMA、遥测和支持运维的隔离声明；
-- 不同数据敏感级别和客户承诺允许使用的共享模式；
-- 分配血缘、Reset/Error/Quarantine、本地存储清理和重分配证据；
-- Host、Driver、Firmware 生命周期、Node 隔离与快速重建；
-- 配额、计费、Denial-of-wallet、滥用和出网控制。
+### 裸金属 GPU
 
-除非明确指出每个相关资源边界，否则不得使用“Dedicated”作为笼统营销声明。
+增加 Provider Credential Removal；隔离 BMC/OOB 与 JIT Support；Approved/Measured Firmware 与 Provisioning Image；专属或精确声明的 Network/Fabric/Storage；覆盖 GPU、Local Media、TPM、NIC/DPU、BMC User/Certificate 与 Fabric Assignment 的 Deprovisioning；Chain of Custody；以及重分配前与设备方法匹配的 Sanitization。
 
-### 7.2 裸金属 GPU
+### 托管 Kubernetes
 
-额外要求：
+验证 Private API Server/etcd；强 Administrator/Workload Identity；Restricted Pod Security Standards；Least-privilege RBAC；适用的 Default-deny Admission/Network Policy；Tenant Namespace/Account 与 Quota；CNI/CSI/Device Plugin/Operator/Webhook/Node Privilege；Artifact Admission；Audit/Runtime Detection；Node Quarantine；etcd Backup 与 Known-good Restore/Rebuild。
 
-- 交付前删除服务商凭据；
-- BMC/OOB 隔离与 JIT 支持访问；
-- 已度量固件与批准的供应镜像；
-- 专属或明确声明共享的网络/Fabric/存储边界；
-- 完整退供流程，覆盖 GPU、本地盘、TPM、NIC/DPU、BMC 用户、证书和 Fabric 分配；
-- 重分配前生成保管链和清除证明。
+### 托管 Slurm/HPC
 
-### 7.3 托管 Kubernetes
+验证私有、已修补的 Controller/Database/REST；强 Authentication；Account/Association/Partition/QOS/Reservation/Job Ownership；Prolog/Epilog、SPANK、Module、Container Runtime、Shared Storage 与 Node Credential；Queue/Priority Abuse；与 Job/Tenant Identity 关联的 Node/GPU/Fabric Placement/Cleanup；Accounting Integrity、Backup、Failover 与 Recovery。
 
-验证：
+### 模型训练
 
-- 私有 API Server 和 etcd，强管理员及工作负载身份；
-- Restricted Pod Security Standards 与默认拒绝准入；
-- RBAC 隔离、租户 Namespace/Account、Quota、Network Policy 与 Secret 边界；
-- CNI、CSI、GPU Device Plugin、Operator、Webhook 与 Node 权限；
-- 已签名并通过策略准入的镜像；
-- Audit、Runtime Detection、Node Quarantine、etcd Backup、Restore 和 Known-good Rebuild。
+验证 Dataset Purpose/Rights/Provenance、Integrity 与 Poisoning；Experiment Identity；Code/Image/Config/Data/Model Lineage；Safe Checkpoint/Model Format 与 Restricted Deserialization；Intermediate/Cache/Secret/Temp Cleanup；Evaluation Integrity；Output/Export、Retention/Deletion、Privacy 与 Customer Ownership。
 
-### 7.4 托管 Slurm/HPC
+### 模型服务
 
-验证：
+验证 Endpoint/Model Authorization；Tenant-safe Routing 与 KV/Cache/Session Isolation；Prompt/Output Handling 与 Telemetry Minimization；Model Provenance/Runtime Integrity；Extraction/Enumeration/Adversarial Input；Quota/Rate/Cost/Capacity；Safe Fallback/Degradation；Rollback 与 Privacy-safe Incident Evidence。
 
-- 私有、已修补的 Controller、Database、REST Endpoint 和强认证；
-- Account、Association、Partition、QOS、Reservation 和 Job 所属关系；
-- Prolog/Epilog、SPANK Plugin、Module、Container Runtime、共享存储和 Node 凭据；
-- Queue/Priority 滥用防护；
-- Node/GPU/Fabric 放置与清理能关联到 Job 和 Tenant Identity；
-- Controller/Database Backup、Accounting Integrity、Failover 与 Recovery。
+### Agent 平台
 
-### 7.5 模型训练平台
+每个生产系统都需要 Inventory、Owner、Identity、Delegator、Use Case、Component Version、Data/Tenant/Authority Scope、Impact Assessment、Monitoring 与 Incident Path。Tool-using System 增加 Typed Interface、Policy Mediation、Least Privilege、技术可行时的 Short-lived Credential、Egress/Data/Cost Control 与 Revocation。高影响或自适应系统再增加 Immutable Scope、Deterministic Approval/Stop、Protected Replayable Trace、Rollback/Manual Recovery 与 Agent 无法修改的 Independent Verifier。
 
-额外要求：
+### 主权或受监管服务
 
-- 数据集目的、权利、来源、完整性、投毒检查和访问；
-- 实验身份，以及 Code/Image/Config/Data/Model 全链路血缘；
-- 安全 Checkpoint/Model 格式与受限反序列化；
-- 中间制品、Cache、Secret 和临时数据清理；
-- 评测完整性及其与训练影响的分离；
-- 输出、导出、保留、删除、隐私和客户所有权。
+验证完整司法辖区边界，覆盖 People、Identity、Data、Key Release、Support、Telemetry、Backup、Supplier、Incident Response、Recovery、Deletion 与 Evidence。Storage Residency 单独不足以满足要求。
 
-### 7.6 模型服务平台
+## 8. 关键工程模式
 
-额外要求：
+### 端到端保留 Tenant 与 Request Context
 
-- Endpoint 和 Model 级授权；
-- 租户安全路由、KV/Cache/Session 隔离、Prompt/Output 处理和日志最小化；
-- 模型 Provenance 与 Runtime Integrity；
-- 模型抽取、枚举、对抗输入、配额、速率、成本和容量控制；
-- 安全 Fallback/Degraded Mode 与回滚；
-- 隐私安全的事件证据。
+在 API Object、Message、Controller Record、Kubernetes/Slurm Object、Allocation、GPU/Fabric/Storage Rule、Log 与 Evidence 中使用稳定 Tenant/Request ID。缺失或冲突时拒绝请求，并持续比较 Intended 与 Actual State。
 
-### 7.7 Agent 平台
+### 分别治理共享方式
 
-启用任何高影响 Tool 前必须具备：
+分别记录整卡、硬件分区、虚拟化与 Time-slicing 的 Memory、Cache、DMA、Fault、Reset、Telemetry、Topology 与运营属性。Time-slicing 不提供显存或故障隔离；硬件分区不等于整卡或整机专属。必须测试准确的 Hardware/Firmware/Driver/Hypervisor/Scheduler 组合。
 
-- 唯一 Agent Identity、明确的人或服务委托方，以及不可变 Goal 和 Scope；
-- 已批准且版本化的 Model、Prompt、Skill、MCP/Tool Server、Connector、Memory 与 RAG Source；
-- Typed Tool Schema、最小权限、短期凭据，以及 Tenant/Data/Egress/Cost Policy；
-- 对破坏性、外部、客户影响、高成本或不可逆动作采用确定性审批；
-- 针对成功、预算、时间、重复失败、策略违规和不确定性的确定性停止；
-- 抗篡改 Trace 与独立 Verifier；
-- Agent 无权修改自身 Policy、Credential、Approval Authority、Evidence 或 Verifier。
+### 在真实路径验证 InfiniBand/RDMA 与 DPU
 
-### 7.8 主权或受监管服务
+测试 P_Key Membership/Enforcement、RDMA Reachability、Fabric-manager Authority、DPU/NIC Assignment、Storage Access、Stale/Partial Controller State 与 Reallocation Cleanup。按 Provider Root 保护 Fabric/DPU Controller。VPC 或 Kubernetes NetworkPolicy 不能作为充分证据。
 
-必须验证完整司法辖区边界，覆盖人员、身份、数据、密钥、支持、遥测、备份、供应商、事件响应和恢复。仅证明数据存储位置不等于满足主权要求。
+### 消除静态 Workload Credential
 
-## 8. 关键技术实践
+使用 Workload Identity、范围受限的 Short-lived Certificate/Token、Audience Restriction、Tenant/Resource Scope、Revocation，并在合理场景绑定 Attested State。Metadata 与默认 Service Identity 不得向 Tenant Workload 提供宽泛 Provider/Project Authority。
 
-### 8.1 端到端保留租户上下文
+### 将 Artifact Trust 变成 Admission Decision
 
-在每个 API Object、Message、Controller Record、Kubernetes/Slurm Object、Node Allocation、GPU Assignment、Fabric/Storage Rule、Log 和 Evidence 中使用不可变 Tenant ID 与 Request ID。缺失或冲突时拒绝请求；对账系统持续比较意图和实际状态。
+对 Image、Package、Model、Checkpoint、Driver、Firmware、Operator、IaC、Prompt、Policy 与 Skill 保留 Source、Build/Train Lineage、Inventory/BOM、适用的 Provenance/Signature、Scan、Policy、Revocation 与 Deployed Version。有效签名只证明发生了签名，不证明安全。
 
-### 8.2 有意识地选择加速器共享方式
+### 将 Evidence 与被评估系统隔离
 
-将专属、硬件分区、虚拟化与 Time-slicing 视为不同产品。分别声明显存、Cache、DMA、Fault、Reset、Telemetry 和 Topology 属性。Time-slicing 不能替代硬件安全边界；敏感工作负载只能使用经威胁模型证明且在真实 Hardware/Driver/Firmware Stack 上通过测试的隔离模式。
+关键证据导出到普通源系统管理员无法静默修改的边界，保留 Stable ID、Time Integrity、Tenant Partitioning、Access Audit、Minimization/Redaction、Retention 与 Legal Hold。缺失证据属于控制失败。
 
-### 8.3 独立验证 InfiniBand/RDMA 与 DPU 边界
+### 从 Known-good State 恢复
 
-VPC 或 Kubernetes NetworkPolicy 不能证明高性能数据路径已经隔离。必须测试 P_Key Membership/Enforcement、RDMA Reachability、Fabric Manager Authority、DPU Assignment、Storage Access、Controller Stale State 和重新分配清理。Fabric 和 DPU Controller 应按服务商 Root 保护。
-
-### 8.4 消除静态工作负载凭据
-
-采用 Workload Identity、短期 Certificate/Token、Audience Restriction、Tenant/Resource Scope，并在合理场景下绑定 Node/Workload Attestation。Metadata Service 与默认服务身份不得向租户工作负载提供宽泛 Project/Fleet 权限。
-
-### 8.5 将制品信任变成准入决策
-
-对 Image、Package、Model、Checkpoint、Driver、Firmware、Operator、IaC 和 Agent Skill 保留 Source、Build/Train Lineage、BOM、Provenance、Signature、Scan Result、Policy Decision 与 Deployed Version。签名只证明某密钥执行了签名，不代表制品天然安全。
-
-### 8.6 将证据与被评估系统隔离
-
-关键日志与证据必须导出到普通源系统管理员无法静默修改的边界。保留稳定 ID、时间同步、完整性、租户分区、访问审计、脱敏、保留和 Legal Hold。证据缺失本身应触发控制失败。
-
-### 8.7 使用可信重建，而不是乐观清理
-
-当 Root、Host、Controller 或 Build System 的可信状态不确定时，优先撤销并从已知可信源重建，而不是尝试“清理”。重新开服前需独立验证身份、制品完整性、租户隔离、数据完整性和监控。
+Root、Host、Controller、Fabric Manager 或 Build System 可信状态不确定时，优先 Revocation 与 Known-good Rebuild，而不是乐观清理。重新开服前独立检查 Identity、Artifact、Data、Isolation 与 Monitoring。
 
 ## 9. 固定运营节奏
 
 | 周期 | 必须执行的活动 |
 |---|---|
-| 持续 | 身份/策略判定、资产对账、公网暴露、关键日志、Root 使用、漏洞信号、GPU/Fabric 分配、配额/容量、备份健康、Agent 动作 |
-| 每日 | 关键暴露和失败控制分诊；未知/无 Owner 资产；超期隔离；证据管道健康 |
-| 每周 | 漏洞 SLA、特权变更、高风险租户/出网活动、发布、例外和未关闭事件行动项 |
-| 每月 | 高管关键风险、T0/T1 状态、客户承诺漂移、供应商/容量风险、指标质量 |
-| 每季度 | 权限复核、T0/T1 重验证、跨租户测试、恢复/撤销演练、检测重放、证据抽样、Agent 对抗复核 |
-| 每半年 | 重大事件模拟、编排恢复、破坏性 Agent 场景、Root 泄露和客户通知演练 |
-| 每年 | 独立架构/渗透/隔离评估、Region DR 或 Known-good Rebuild、供应商保证、密码恢复、路线图重置 |
-| 重大变更 | 在受控发布前，或紧接发布后重新确定并验证受影响控制 |
+| 持续 | 技术可行时的 T0、Identity/Policy、Public Exposure、Critical Source Health、Root Use、Assignment Drift、Capacity/Abuse、Backup 与高影响 Agent Action |
+| 每日 | Failed Control/Collector/Test、Unknown/Unowned Critical State、Urgent Exposure 与 Containment Backlog |
+| 每周 | Vulnerability SLA、Privilege、Release、Risk Decision、Detection Failure 与 Incident Action |
+| 每月 | 高管 Gate/Risk、Customer Commitment Drift、Supplier/Capacity Risk 与 Metric Quality |
+| 每季度 | T0/T1 Verification、Access Review、Isolation、Revocation/Restore、Detection Replay 与适用 Agent Test |
+| 每半年 | T2 Verification 与重大 Incident/Control-plane/Recovery Exercise |
+| 每年 | 独立 T3 Architecture/Isolation、Regional Recovery/Rebuild、Supplier 与 Cryptographic Recovery |
+| 重大变更 | 立即重新确定并验证受影响断言 |
 
-## 10. 事件 Playbook 最低集合
+## 10. 最低事件 Playbook 集合
 
-每个 Playbook 必须包含：检测、指挥、范围查询、证据保全、隔离边界、身份/密钥动作、租户/客户影响、法务/隐私判断、恢复、重新开服条件和独立关闭。
+每个 Playbook 必须定义 Detection、Command、Reliable Scope Query、Evidence Preservation、Containment Boundary、Identity/Key Action、Tenant/Customer Impact、Legal/Privacy Assessment、Communication、Recovery、Reopening 与 Independent Verified Closure。
 
-NeoCloud 至少需要覆盖：
+至少覆盖：
 
-1. 跨租户 API、存储、GPU、Cache、Telemetry 或 Fabric 访问；
-2. 服务商 Root、Signing Key、KMS/HSM、IdP、PAM 或 Break-glass 泄露；
-3. Kubernetes/Slurm/Controller/Operator 或 Provisioning 接管；
-4. BMC/OOB、DPU、Fabric Manager、Firmware 或供应链泄露；
-5. 加速器显存残留、不安全共享、Reset 或 Error Domain 失败；
-6. 恶意 Model/Checkpoint/Image/Package/Driver/Operator/Skill；
-7. 破坏性或外传型 Agent/Tool 工作流；
-8. Ransomware、Region/Fabric/Storage 故障、容量耗尽或备份失败；
-9. 租户欺诈、挖矿、禁止工作负载、配额绕过或 Denial-of-wallet；
-10. 数据/模型删除失败、Residency 违约或客户通知失效。
+1. Cross-tenant API、Storage、GPU/Cache、Telemetry、Fabric 或 Support Access；
+2. Provider Root、Signing Key、KMS/HSM、IdP、PAM 或 Break-glass Compromise；
+3. Kubernetes/Slurm/Controller/Operator/Provisioning Takeover；
+4. BMC/OOB、DPU、Fabric Manager、Firmware 或 Supply-chain Compromise；
+5. Accelerator Remanence、Unsafe Sharing、Reset 或 Error-domain Failure；
+6. Malicious Model/Checkpoint/Image/Package/Driver/Operator/Prompt/Policy/Skill；
+7. Destructive/Exfiltrating Agent/Tool Workflow 与 False Completion；
+8. Ransomware、Region/Fabric/Storage Outage、Capacity Exhaustion 或 Backup Failure；
+9. Tenant Fraud、Mining、Prohibited Workload、Quota Bypass 或 Denial of Wallet；
+10. Data/Model Deletion Failure、Residency Breach 或 Customer-notification Failure。
 
-只有技术演练证明隔离、撤销与留证路径真正可用后，Playbook 才能标记为 Ready。
+只有技术演练证明 Isolation、Revocation、Evidence 与 Recovery Path 有效后，Playbook 才能标记 Ready。
 
-## 11. 证据质量与独立验证
+## 11. Build、Buy 与深度集成
 
-一个证据项至少包含：
+应自建或深度集成编码服务特定租户和拓扑语义的能力：Tenant-correct Authorization、Desired/Actual Reconciliation、GPU/NVLink/Fabric/DPU/Storage/Scheduler Evidence、Reset/Sanitization、Model/Checkpoint Safe Loading 与 Lifecycle、Agent Delegation/Tool Mediation、Containment 与 Reopening。
 
-- Evidence ID 与 Control ID；
-- Service、Profile、Environment、Tenant、Region、Asset、Identity 和 Version Scope；
-- Assertion 与 Collection Method；
-- Collector Identity 与 Observation Time；
-- Source、Hash/Signature 或其他完整性保护及存储位置；
-- Limitation、Sampling Method 与 Expiry；
-- Validator、Test Procedure、Result、Finding 和 Retest Date。
+成熟且接口/证据清晰的能力可以采购或采用：IdP/MFA、PAM、KMS/HSM、Secret/PKI、Vulnerability/Attack-surface Management、SIEM/Data Lake、EDR/Runtime Security、Case Management、Backup、DDoS/WAF/API Gateway、Signing/Transparency。
 
-证据强度由弱到强：
+要求可导出 API/Event、Stable Identity、Tenant-safe Behavior、Secure Update、HA 与 Safe Degradation、Incident Notification、Data Handling、Independent Test Support、Migration/Exit 和 Correlated Evidence。产品 Dashboard 不能单独证明全服务覆盖。
 
-1. 声明或 Policy；
-2. Screenshot 或人工整理报告；
-3. 可重复 API/Query 输出；
-4. 受保护 Runtime Event 或 Signed Attestation；
-5. 授权的负向、恢复、故障注入或对抗测试；
-6. 使用独立观察路径进行复现。
+## 12. 尽调问题
 
-使用[证据登记表](../../templates/evidence-register.csv)和[度量与持续证明指南](METRICS_AND_ASSURANCE.md)。
+要求服务商或供应商精确回答：
 
-## 12. Build、Buy 与深度集成
+- 哪些 Host、GPU/HBM/Cache、NVLink、Network/RDMA、Storage、Telemetry、BMC 与 Support Resource 是专属或共享？
+- Tenant/Request Context 如何从 API 保留到物理分配、清理与删除？
+- 使用哪些 Accelerator Mode，Memory、Fault、Reset 与 Reassignment 保证如何测试？
+- P_Key、RDMA、DPU/NIC、BMC/OOB 与 Fabric Controller 如何治理和独立测试？
+- 谁能通过什么 JIT Workflow 访问 Customer Data/Model，留下何种 Evidence 与 Notification？
+- Plaintext/Key 在哪里存在，谁控制 Key Release，Root 如何 Revocation/Recovery？
+- 哪些 Artifact 要求 Inventory、Provenance、Signature、Admission、Revocation 与 Recall？
+- Notification、Evidence Exchange、Restore、Export、Deletion、Residency 与 Offboarding 承诺是什么？
+- 事件期间哪些控制仍分别属于 Provider、Customer 或 Shared？
+- 哪些声明在什么时间、针对哪个准确 Service/Version 被独立测试，存在什么限制？
 
-应自建或深度集成编码 NeoCloud 特有租户与拓扑语义的能力：
+## 13. 必须拒绝的反模式
 
-- 租户感知授权和 Desired/Actual Reconciliation；
-- GPU、NVLink、Fabric、DPU、Storage 和 Scheduler Placement Evidence；
-- Reset/Sanitization 和重新分配流程；
-- Model/Checkpoint Lifecycle 与 Safe Loading；
-- Agent Identity、Delegation、Tool Mediation、Approval、Stop 与 Verifier；
-- 服务特定的 Containment 与 Reopening。
+- 用一个综合分数隐藏 T0 失败；
+- 把风险决定写成 `PASS`；
+- 使用“Dedicated”“Isolated”“Zero Trust”“Encrypted”“Confidential”“Immutable”“Complete”却没有精确范围和证据；
+- 将 VPC/Namespace 隔离作为 GPU/RDMA/Storage 隔离证明；
+- 将 Time-sliced GPU 表述为显存/故障隔离租户；
+- 向 Tenant Workload 暴露共享 Provider Identity 或宽权限 Metadata Credential；
+- Standing Administration 与无记录 Support Access；
+- 缺少 Source/Build/Key-policy/Admission Context 就接受 Signed Artifact；
+- 只使用 Screenshot 或 Vendor Dashboard 作为证据；
+- Backup 从未恢复，Sanitization 从未测试；
+- Agent 自行批准或验证高影响动作；
+- Exception 缺少 Owner、Customer Impact、Containment、Expiry 与 Remediation；
+- 安全产品缺少 Service Owner、Integration Contract、Evidence Output 与 Failure Mode。
 
-成熟、接口明确且证据可导出的能力可采购或使用托管/开源组件：
+## 14. Definition of Done
 
-- IdP/MFA、PAM、KMS/HSM、Secret Manager、PKI；
-- Vulnerability/Attack Surface Management；
-- SIEM/Data Lake、EDR/Runtime Security、Case Management；
-- Backup、DDoS/WAF/API Gateway、Signing/Transparency Infrastructure。
+服务只有同时满足以下条件，才能被表述为符合本基线：
 
-供应商必须支持可导出日志和 API、租户安全行为、高可用与安全降级、安全更新、事件通知、数据处理、独立测试、迁移/退出和稳定身份集成。厂商控制台“全绿”不能证明服务边界完整覆盖。
+- Boundary、Profile、Version、Responsibility 与 Customer Commitment 明确；
+- 所有适用 T0 均被独立 `VERIFIED`；
+- Critical Service/Asset/Identity/Root/GPU/Fabric/OOB/Data/Model/Artifact Scope 已知；
+- Required Telemetry Source 健康，且已测试 Missing-source Behavior；
+- Prohibited-path Isolation、Revocation、Restore/Rebuild、Incident 与 Sanitization Test 通过；
+- Evidence 当前、范围明确、受保护、可复现并独立复核；
+- 未解决风险具有可追责决定，且不改变控制结果；
+- Monitoring 能发现 Drift，团队能够在不临时 improvisation 的情况下完成 Containment 与 Recovery。
 
-## 13. 客户与供应商尽调问题
-
-要求对方精确回答：
-
-- 哪些 Host、GPU、Memory/Cache、NVLink、Network、RDMA、Storage、Telemetry 与 Support Resource 是专属或共享？
-- Tenant Context 如何从 API Request 一直保留到物理分配和删除？
-- 使用哪些 GPU Sharing Mode，显存、故障和 Reset 保证如何测试？
-- P_Key、RDMA、DPU、BMC/OOB 与 Fabric Controller 如何隔离？
-- 谁能通过什么 JIT 流程访问客户数据/模型，留下何种证据？
-- Plaintext 和 Key 在哪里存在，谁控制，Root 如何恢复？
-- 哪些制品必须具备 BOM、Provenance、Signature、Admission 和 Recall？
-- 通知、证据交换、恢复、删除、Residency 与 Offboarding 承诺是什么？
-- 正常运营和事件期间，哪些控制分别由 Provider、Customer 或双方负责？
-- 哪些保证声明由独立方在什么时间、针对哪个具体服务/版本测试，仍存在哪些例外？
-
-## 14. 必须拒绝的反模式
-
-- 用一个综合合规分数隐藏失败的 T0；
-- 使用“Dedicated”“Zero Trust”“Encrypted”“Confidential”等词却不说明精确边界；
-- 将 Kubernetes Namespace 或 VPC 隔离作为 RDMA/GPU/Storage 隔离证明；
-- 将 Time-sliced GPU 宣传为硬件级租户隔离；
-- 向工作负载暴露共享服务商身份或宽权限 Metadata Credential；
-- 长期 Standing Admin Privilege 和无记录 Support Session；
-- 只因签名有效就接受制品，而不验证 Source/Build/Key Policy；
-- 只用 Screenshot 作为控制证据；
-- 从未真实恢复过的 Backup/Restore 计划；
-- 允许 AI Agent 自己批准高影响动作或把自己的工作标记为 Verified；
-- 缺少 Owner、补偿控制、到期时间、客户影响和整改计划的例外；
-- 购买安全产品却没有服务 Owner、集成契约、证据输出和失败模式。
-
-## 15. Definition of Done
-
-生产服务只有同时满足以下条件才可准入：
-
-- 边界、服务画像、共享责任和客户承诺明确；
-- 所有适用 T0 均被独立标记为 `VERIFIED`；
-- 关键资产、身份、公网暴露、Root、GPU/Fabric/OOB、数据/模型和制品状态已知；
-- 负向隔离、撤销、恢复/重建、事件和清除测试通过；
-- 证据处于有效期内，范围明确、受保护、可复现并经过独立复核；
-- 未关闭重大风险具有可追责、已授权、带期限的决策；
-- 监控能发现漂移，团队能在不临时 improvisation 的情况下完成隔离与恢复。
-
-机器可读[控制目录](../../controls/neocloud-security-baseline.v1.json)是控制 ID、等级、中英文要求、证据画像、验证画像和度量关联的规范来源。
+机器可读[控制目录](../../controls/neocloud-security-baseline.v1.json)是稳定 Control ID、等级、中英文要求、Evidence/Verification Profile 与 Metric Association 的规范来源。

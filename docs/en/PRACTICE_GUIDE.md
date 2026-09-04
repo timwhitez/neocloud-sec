@@ -2,409 +2,323 @@
 
 **Version:** 1.0.0-draft.1  
 **Baseline date:** 2026-09-04  
-**Audience:** NeoCloud executives, security, platform engineering, SRE, network/fabric, Kubernetes, Slurm/HPC, data/AI, facilities, support, trust and safety, privacy, and assurance teams
+**Status:** implementation-oriented project draft  
+**Audience:** executives, security, platform engineering, SRE, network/fabric, Kubernetes, Slurm/HPC, data/AI, facilities, support, trust and safety, privacy, risk, and assurance teams
 
-This guide turns the [White Paper](WHITEPAPER.md), [Security Baseline](SECURITY_BASELINE.md), [Reference Architecture](REFERENCE_ARCHITECTURE.md), and [Roadmap](ROADMAP.md) into an executable operating model. It is vendor-neutral. Product names are examples, not requirements.
+This guide turns the [White Paper](WHITEPAPER.md), [Security Baseline](SECURITY_BASELINE.md), [Reference Architecture](REFERENCE_ARCHITECTURE.md), and [Roadmap](ROADMAP.md) into an executable operating model. It is vendor-neutral; product names and technologies are examples, not proof of effectiveness.
 
-## 1. Start with a service, not a tool
+## 1. Begin with a service and a trust decision
 
-For each production service, create one assessment package containing:
+For each production service, create one versioned assessment package containing:
 
-1. service profile and contractual boundary;
+1. service profiles, exact contractual boundary, environments, regions, versions, and customer commitments;
 2. accountable business, technical, security, data, and incident owners;
-3. tenant, identity, data/model, control-plane, compute, GPU, storage, fabric, BMC/OOB, supplier, and support boundaries;
-4. applicable controls and explicit not-applicable decisions;
-5. threat model and catastrophic failure paths;
-6. desired state, enforcement points, failure behavior, and rollback;
-7. evidence sources, freshness, independent verifier, and production decision;
-8. open risks, exceptions, customer impact, and target dates.
+3. tenant, identity, data/model, API/control-plane, orchestration, host/GPU, storage, Ethernet/RDMA, DPU, BMC/OOB, supplier, support, evidence, and recovery boundaries;
+4. all applicable controls and every reviewed not-applicable decision;
+5. threat model, attacker assumptions, catastrophic failure paths, and shared responsibility;
+6. desired state, policy decision, enforcement points, failure behavior, containment, rollback, and recovery;
+7. evidence sources, integrity, freshness, negative/failure tests, and independent validator;
+8. production decision, unresolved risk, business decisions/exceptions, customer impact, owner, and target date.
 
-Do not begin by purchasing a SIEM, CNAPP, PAM, or AI security product. Begin by defining the trust decisions the service must make and the evidence needed to prove those decisions.
+Do not start by purchasing a SIEM, CNAPP, PAM, or AI-security product. First define the trust decisions the service must make, where they are enforced, how they fail, and what evidence can prove the outcome on the deployed path.
 
 ## 2. Non-negotiable operating rules
 
-- **T0 is a gate, not a score.** One failed applicable T0 is `NO-GO`.
-- **Unknown is not safe.** Unknown ownership, tenancy, public exposure, GPU sharing, P_Key assignment, root-key use, or restore state is treated as a failed assertion.
-- **The implementer is not the only verifier.** A separate person, team, or qualified assessor must reproduce the evidence and test the control.
-- **External content never grants authority.** Tickets, prompts, models, packages, web pages, documents, and tool output are observations, not authorization.
-- **Provider-exclusive responsibility stays with the provider.** A customer cannot secure a BMC, fabric controller, host reset, provider control plane, or provider signing root that the customer cannot access.
-- **Control failure must be designed.** Every high-impact control defines fail-closed, safe degraded, quarantine, rollback, and manual-recovery behavior.
-- **Evidence has a validity period.** A screenshot without scope, identity, collection time, integrity, and reproducible test context is weak evidence.
-- **Recovery changes trust state.** Reopening requires verification of identity, artifact integrity, tenant isolation, and data correctness—not merely service availability.
+- **T0 is a hard gate.** A failed, unknown, stale, inconclusive, or untested applicable T0 remains `NO_GO_NONCONFORMANT`.
+- **A business decision is not a pass.** An emergency decision may explain temporary operation but cannot create `VERIFIED` or a conformance claim.
+- **Unknown critical scope is failure.** Unknown owner, tenant, public exposure, GPU sharing, P_Key/DPU assignment, root-key use, required telemetry, backup, or restore state stays in the denominator and blocks the relevant gate.
+- **Deployment is not effectiveness.** `IMPLEMENTED` and `VERIFIED` are different states.
+- **The implementer is not the sole verifier.** Use a separate person/team, observation path, test harness, or qualified assessor able to challenge the owner.
+- **External content never grants authority.** Prompts, tickets, documents, models, packages, RAG data, memory, web pages, and tool output are observations, not authorization.
+- **Provider-exclusive responsibility stays with the provider.** Customers cannot secure provider control planes, hosts, reset paths, fabric managers, BMC/OOB, or signing roots they cannot access.
+- **Control failure is designed.** High-impact controls specify fail-closed or safe degraded behavior, quarantine, rollback, manual recovery, and evidence when a dependency is unavailable.
+- **Evidence is time-bound.** Scope, identity, collection time, integrity, method, limitations, validity, and independent test context are required.
+- **Recovery changes trust state.** Reopening verifies identity, artifacts, tenant isolation, data integrity, monitoring, and objectives—not merely process availability.
 
-## 3. Minimum team and decision model
+## 3. Minimum accountability model
 
-Small organizations may combine roles, but not accountability.
+Small organizations may combine roles, but not final accountability or independent challenge.
 
 | Role | Accountable decisions | Minimum recurring duty |
 |---|---|---|
-| Executive risk owner | risk appetite, production exception, crisis priorities | monthly critical-risk review |
-| CISO/security lead | control model, security roadmap, independent challenge | weekly T0/T1 review |
-| Service owner | service boundary, customer commitment, residual risk | release and quarterly review |
-| Platform owners | reusable identity, policy, compute, fabric, storage, orchestration controls | SLO and incident ownership |
-| Data/model owner | classification, allowed use, lineage, retention, export, deletion | quarterly lifecycle review |
-| Incident commander | command, containment, evidence, communication, reopening | exercise and on-call readiness |
-| Independent validator | test design, evidence reproduction, PASS/FAIL decision | verification by required frequency |
-| Customer/support owner | shared responsibility, support access, notification, assurance | customer-facing accuracy review |
+| Executive risk owner | risk appetite, exceptional business decisions, crisis priorities | monthly critical-risk and gate review |
+| CISO/security lead | baseline, security roadmap, challenge and assurance | weekly T0/T1 and failed-control review |
+| Service owner | service boundary, claims, customer commitments, residual risk | release and quarterly review |
+| Platform owners | reusable identity, policy, compute, fabric, storage, orchestration and evidence controls | SLO, change and incident ownership |
+| Data/model owner | purpose, classification, rights, lineage, retention, export, deletion | quarterly lifecycle review |
+| Incident commander | command, scope, evidence, containment, communication and reopening | exercise and on-call readiness |
+| Independent validator | test design, evidence reproduction, `PASS/FAIL` decision | verification at required cadence |
+| Customer/support owner | shared responsibility, support access, notification and assurance | customer-facing accuracy review |
 
-A control must have one accountable owner. Multiple implementers are allowed; ambiguous accountability is not.
+Each control has one accountable owner. Multiple implementers are acceptable; ambiguous ownership is not.
 
 ## 4. First 90 days
+
+The calendar is a planning aid. A currently failed T0 is addressed immediately rather than deferred to its nominal phase.
 
 ### Days 0–7 — Establish command
 
 Deliver:
 
-- named owners for every production service, root/signing key, control plane, fabric, BMC/OOB environment, and incident path;
-- one secure incident channel, severity matrix, on-call escalation, and emergency decision log;
-- an initial service and crown-jewel inventory;
-- a freeze or explicit approval gate for new public admin interfaces, new sharing modes, root changes, fabric topology changes, and unreviewed production artifacts;
-- immediate rotation or disablement of unknown, shared, orphaned, or departed-owner privileged credentials.
+- owners for every production service, critical dependency, root/signing key, provider control plane, fabric manager, BMC/OOB environment, and incident path;
+- a secure incident channel, severity matrix, on-call escalation, emergency-decision record, and authority to revoke or isolate;
+- an initial service, critical-asset, critical-identity, public-exposure, and crown-jewel inventory;
+- a freeze or explicit approval gate for new public admin interfaces, new sharing modes, root/fabric changes, and unreviewed production artifacts;
+- rotation or disablement of unknown, shared, orphaned, or departed-owner privileged credentials.
 
-Exit only when the provider can convene incident command, revoke privileged access, identify active tenant resources, and isolate a service.
+Exit only when the provider can establish command, revoke privilege, identify active tenant resources, and isolate a service at a reliable boundary.
 
-### Days 8–30 — Stop critical exposure
+### Days 8–30 — Remove critical exposure
 
 Prioritize:
 
-- phishing-resistant MFA for provider privilege and tenant owners;
+- approved phishing-resistant MFA for applicable provider privilege and high-impact tenant-owner access;
 - private provider administration and isolated BMC/OOB paths;
-- highest-risk object/action/tenant authorization tests;
-- declared isolation for every commercial compute SKU;
-- quarantine of ambiguous GPU sharing, RDMA/P_Key, DPU, storage, or support boundaries;
-- protection of KMS/HSM, signing roots, secrets, and break-glass;
-- centralized protected logs for identity, API, control plane, Kubernetes/Slurm, fabric/BMC, keys, and support;
-- playbooks for cross-tenant access, root compromise, control-plane takeover, destructive automation, and unrecoverable data risk.
+- critical object/action/tenant/purpose/context authorization tests;
+- explicit isolation statements for every commercial compute SKU;
+- quarantine of ambiguous GPU-sharing, RDMA/P_Key, DPU, storage, support, or reassignment boundaries;
+- protection and recovery of KMS/HSM, signing roots, secrets, PKI, and break-glass;
+- protected required telemetry for identity, API/control plane, Kubernetes/Slurm, host/GPU/fabric/BMC, keys, artifacts, support, and high-impact agents;
+- playbooks for cross-tenant access, root compromise, control-plane takeover, destructive automation, and irrecoverable data risk.
 
-Exit only when every T0 has scope, owner, implementation state, evidence, verifier, and dated remediation.
+Exit only when every applicable T0 has scope, owner, current state, evidence requirement, validator, and dated containment/remediation, and no failed gate is represented as healthy.
 
-### Days 31–60 — Build authoritative state
+### Days 31–60 — Create authoritative state
 
 Implement:
 
-- service, asset, identity, dependency, data-flow, model, artifact, and supplier inventories;
+- service, asset, identity, dependency, data-flow, model, artifact, key, supplier, and support inventories;
 - shared-responsibility matrices and customer security contacts;
-- joiner/mover/leaver and service-account lifecycle;
-- vulnerability/exposure discovery linked to real assets;
-- data/model classification, residency, retention, export, and deletion requirements;
-- backup inventories and restore dependencies;
-- desired-versus-actual reconciliation for tenant, scheduler, host, GPU, network/fabric, storage, and quota state.
+- joiner/mover/leaver, service-account, workload-identity, agent, certificate, and secret lifecycle;
+- vulnerability and exposure discovery linked to real assets and tenant/service context;
+- data/model purpose, rights, classification, residency, retention, export, deletion, and backup requirements;
+- backup/rebuild-source inventories and dependency mapping;
+- desired-versus-actual reconciliation for tenant, scheduler, host, accelerator, network/fabric, DPU, storage, quota, artifact, and policy state.
 
-Exit only when unknown and unowned critical assets are visible as defects rather than hidden by reporting.
+Exit only when independent discovery coverage is measured, unknown/unowned resources are visible as defects, and critical unknowns cannot disappear from reporting.
 
 ### Days 61–90 — Verify the foundation
 
 Perform:
 
-- independent T0 verification;
-- privileged-access revocation and break-glass tests;
-- cross-tenant negative tests through API, scheduler, host/GPU, storage, Ethernet, InfiniBand/RDMA, and telemetry;
-- representative accelerator/local-disk cleanup tests;
-- Kubernetes/Slurm control-plane restore or known-good rebuild;
-- one full incident exercise with customer and legal/privacy notification analysis;
-- one critical data/model restore and one tenant offboarding/deletion exercise;
-- publication of the shared-responsibility and assurance package.
+- independent verification of every applicable T0;
+- privileged-access denial, expiry, emergency revocation, and break-glass tests;
+- cross-tenant prohibited-path tests through API, scheduler, host/GPU, storage, Ethernet, InfiniBand/RDMA, DPU, telemetry, and support paths;
+- representative accelerator and local-media reset/sanitization tests across relevant hardware/firmware/driver/sharing variants;
+- Kubernetes/Slurm controller restore or known-good rebuild;
+- one full incident exercise including reliable scope, customer and legal/privacy notification analysis, containment, recovery, and reopening;
+- one critical data/model restore and one tenant offboarding/export/deletion exercise;
+- a service-scoped shared-responsibility and assurance package.
 
-Exit only when every applicable T0 is `VERIFIED`, critical inventory/log coverage is at least 95%, privileged identity ownership is 100%, and failed exercises have accountable remediation.
+Exit only when every applicable T0 is independently `VERIFIED`; in-scope critical asset and privileged-identity ownership is 100%; required T0 telemetry sources are 100% healthy and queryable; priority discovery and non-gate telemetry coverage has a stated denominator and reference target of at least 95%; and failed exercises have accountable containment and remediation.
 
-## 5. Control implementation lifecycle
-
-Use the same sequence for every control.
+## 5. Implement every control through the same lifecycle
 
 ### 5.1 Scope
 
-Record the service, profile, tenants, regions, versions, assets, identities, data classes, suppliers, and excluded components. “Global” without a real asset list is not a scope.
+Record service/profile, environment, region, version, tenants, assets, identities, data classes, suppliers, dependencies, and excluded components. “Global” without a real population is not a scope.
 
 ### 5.2 Threat and failure analysis
 
-Describe:
-
-- attacker and compromised-subject assumptions;
-- positive path and prohibited negative paths;
-- cross-tenant, root-of-trust, destructive, privacy, sovereignty, and availability failures;
-- dependency outage, stale controller state, partial provisioning, rollback, and recovery behavior;
-- evidence tampering and verifier failure.
+Describe attacker/compromised-subject assumptions; allowed and prohibited paths; cross-tenant, root, destructive, privacy, sovereignty and availability failures; dependency outage; stale/partial controller state; rollback and recovery; evidence tampering; and verifier failure.
 
 ### 5.3 Control contract
 
-Define:
+A reusable decision contract is:
 
-`subject + delegation + action + resource + tenant + purpose + context + policy version → decision + obligations`
+```text
+subject + delegation + action + resource + tenant + purpose
++ context + policy version
+→ allow | deny | approve | quarantine + obligations
+```
 
-Obligations may include dedicated placement, restricted egress, masking, dual approval, session recording, quota, evidence generation, or post-action verification.
+Obligations may require dedicated placement, restricted egress, masking, dual approval, session evidence, quota, attestation, post-action verification, or cleanup.
 
-### 5.4 Enforcement
+### 5.4 Enforcement and failure behavior
 
-Place preventive enforcement close to the protected resource. A central policy engine may distribute decisions, but a network, scheduler, node, KMS, registry, or tool boundary must not silently fail open when the central service is unavailable.
+Place preventive enforcement close to the resource. A central policy service may distribute decisions, but API gateways, schedulers, nodes, KMS, registries, fabrics, storage, and tool boundaries must not silently fail open when it is unavailable. Define stale-decision limits, local cache behavior, safe degradation, quarantine, rollback, and manual recovery.
 
-### 5.5 Evidence
+### 5.5 Evidence and verification
 
-Generate evidence from the deployed path: API exports, policy decisions, signed attestations, controller reconciliation, negative tests, restore traces, hashes, event samples, and independent observations.
+Generate evidence from the deployed path: API/configuration exports, authorization decisions, protected runtime events, verified attestations, desired/actual reconciliation, prohibited-path and failure tests, revocation/restore/rebuild/sanitization traces, hashes, and independent observations.
 
-### 5.6 Verification
+A validator confirms scope and freshness, reproduces the assertion, exercises a relevant prohibited path or failure, and returns `PASS`, `FAIL`, `INCONCLUSIVE`, or `NOT_TESTED`. Only `PASS` creates `VERIFIED`.
 
-A validator must reproduce the claim, test at least one prohibited path, confirm evidence freshness and scope, and return `PASS`, `FAIL`, `INCONCLUSIVE`, or `NOT_TESTED`. Only `PASS` can produce `VERIFIED`.
+### 5.6 Operate and revalidate
 
-### 5.7 Operate and revalidate
+Revalidate on evidence expiry, material release, new service/SKU/region, sharing or isolation change, controller/orchestrator/firmware/driver update, identity/key/policy change, supplier/data-flow/support change, agent-authority expansion, incident, failed control, restore/rebuild, or inability to reproduce the prior result.
 
-Revalidate after material changes, incidents, failed controls, new service/SKU/region, controller or firmware upgrade, identity/key hierarchy change, supplier change, agent authority change, restore/rebuild, or evidence expiry.
+## 6. Implementation patterns by domain
 
-## 6. Implementation patterns by security domain
-
-| Domain | Minimum implementation | Mandatory test | Strong evidence |
+| Domain | Minimum implementation | Mandatory effectiveness test | Strong evidence |
 |---|---|---|---|
-| GOV | charter, named service/control owners, obligation/risk/exception registers, independent assurance | expired exception and unowned service are blocked from healthy status | approved decisions and current service-scoped assurance |
-| ASM | API-driven asset/identity/data/model/dependency inventory and reconciliation | introduce a controlled unknown asset or stale assignment and verify detection | desired/actual diff with owner and tenant context |
-| IAM | federation, phishing-resistant MFA, JIT/JEA, short-lived workload/agent identity, break-glass | denial, expiry, emergency revocation, and orphan cleanup | IdP/PAM/IAM exports and revocation traces |
-| API | tenant-correct authorization, private admin, schema, replay, quota/rate, change audit | object/action/tenant confusion and partial-provisioning rollback | correlated request, policy, desired state, actual state, and rollback events |
-| NET | plane separation, default deny, tenant-aware Ethernet/storage/fabric/DPU/OOB policy | cross-tenant and management reachability including stale VRF/P_Key/DPU state | topology, controller state, packet/path test, and reconciliation |
-| CMP | declared SKU isolation, hardened host, safe GPU assignment/reset, attestation where justified | memory/reset/error/quarantine and cross-allocation cleanup | allocation and reset records tied to hardware/version/tenant |
-| ORC | private hardened K8s/Slurm controllers, RBAC, admission/job policy, quotas, node/plugin security | privileged workload/job, scheduler escape, controller loss, backup restore | policy exports, audit, negative tests, restore/rebuild traces |
-| DAT | classification, tenant authorization, encryption, lineage, safe formats, retention/deletion | unauthorized model/checkpoint access, malicious format, deletion/offboarding | object lineage, key/access records, cleanup and restore proof |
-| KMS | central KMS/HSM, root hierarchy, short-lived secrets, PKI rotation, recovery | root/credential revocation, failed attestation, key recovery | key inventory, ceremonies, audit, rotation/recovery traces |
-| SSC | approved sources, BOM, provenance, signatures, isolated build, admission, recall | unsigned/unknown artifact rejection and compromised-artifact recall | source-to-deploy provenance and rollback |
-| ENG | threat model, secure defaults, IaC/policy review, test gate, canary, rollback | unsafe configuration and failed rollout rollback | review, test, deployment, drift, and post-deploy verification |
-| VEM | asset-linked discovery, exploitability/exposure priority, patch SLA, firmware coverage | emergency patch/canary and deployed-version verification | finding-to-asset-to-remediation-to-rescan chain |
-| TEL | protected correlated telemetry, coverage inventory, detection-as-code, tenant-safe retention | log-source failure, tamper attempt, ATT&CK/ATLAS behavior replay | event samples, coverage/freshness, test results, alert quality |
-| AIR | inventory, impact assessment, immutable scope, typed tools, approval, budget, stop, verifier | prompt injection, confused deputy, tool abuse, memory/skill poisoning | signed configuration, full trace, policy decision, verifier result |
-| ABU | tenant trust tiers, AUP, quota/rate/cost/capacity, egress, cases and appeal | quota bypass, cryptomining, denial-of-wallet, prohibited egress | onboarding decision, enforcement reason, case and restoration |
-| IRR | command, playbooks, forensic readiness, notification, reopening gate | cross-tenant/root/agent/availability exercise | timeline, evidence chain, decisions, recovery and independent closure |
-| RES | dependency/SLO/RTO/RPO, immutable backup, safe degradation, rebuild/failover | restore with unavailable primary identity/key service and region/fabric failure | objective result, integrity/isolation checks, reopening approval |
-| PHY | facility controls, isolated BMC/OOB, firmware/hardware inventory, sanitization and custody | unauthorized OOB path and tenant reassignment sanitation | access logs, config, firmware state, sanitation and destruction records |
+| GOV | charter, service/control owners, obligations, risks, decisions/exceptions, independent assurance | expired decision and unowned service cannot appear healthy | approved scoped decisions and current independent review |
+| ASM | API-driven service/asset/identity/data/model/dependency inventory and reconciliation | detect a controlled unknown or stale assignment | desired/actual diff with owner, tenant and service context |
+| IAM | federation, phishing-resistant privileged MFA, JIT/JEA, workload identity, lifecycle, break-glass | deny, expire and revoke at every required enforcement point | IdP/PAM/IAM exports and correlated revocation trace |
+| API | tenant-correct authorization, private admin, schema/replay/idempotency/rate/quota, change trace | object/action/tenant confusion and partial-provisioning failure | request, policy, approval, desired/actual state and rollback correlation |
+| NET | plane separation, default deny, tenant-aware Ethernet/storage/RDMA/DPU/OOB policy | cross-tenant/management path including stale VRF/P_Key/DPU state | topology, controller state, path test and reconciliation |
+| CMP | explicit SKU model, hardened host, safe allocation/reset/error handling | memory, fault, reset, quarantine and cross-allocation cleanup | allocation/cleanup tied to tenant, hardware, firmware and driver |
+| ORC | private hardened K8s/Slurm controllers, RBAC, admission/job policy, quotas, node/plugin security | prohibited privileged workload/job and controller-loss recovery | policy exports, audit, negative tests and restore/rebuild trace |
+| DAT | purpose/classification, tenant access, encryption/key ownership, lineage, safe formats, deletion | unauthorized access, malicious format, export/deletion/offboarding | object lineage, access/key records, cleanup and restore proof |
+| KMS | KMS/HSM, root hierarchy, short-lived secrets, PKI, recovery | root/credential revocation, failed attestation, key recovery | key inventory, ceremony, audit, rotation and recovery trace |
+| SSC | approved sources, inventory, BOM, provenance/signature where required, isolated build, admission, recall | reject unknown, revoked, incompatible, or unsigned-when-required artifact | source-to-deploy provenance, policy decision and rollback |
+| ENG | threat model, safe defaults, IaC/policy review, tests, canary, rollback | unsafe configuration and failed rollout | review, tests, deployment, drift and post-deploy verification |
+| VEM | asset-linked discovery, exposure/exploitability priority, patch/firmware lifecycle | emergency patch/canary and deployed-state retest | finding-to-asset-to-remediation-to-retest chain |
+| TEL | protected required telemetry, coverage/freshness inventory, detections as code | source loss, evidence tamper, ATT&CK/ATLAS behavior replay | event samples, health, tests, limitations and alert quality |
+| AIR | inventory, identity, delegation, impact, component integrity, typed tools, policy | prompt injection, confused deputy, tool abuse, memory/skill poisoning | versioned configuration, policy/approval, trace and verifier result proportional to risk |
+| ABU | trust tiers, AUP, quota/rate/cost/capacity, egress, cases and appeal | quota bypass, cryptomining, denial of wallet, prohibited egress | onboarding decision, enforcement reason, case and restoration |
+| IRR | command, playbooks, forensic readiness, notification and reopening gate | cross-tenant/root/agent/availability exercise | timeline, evidence chain, decisions, recovery and independent closure |
+| RES | dependency/SLO/RTO/RPO, protected backup, safe degradation, rebuild/failover | restore with unavailable primary identity/key dependency and regional/fabric failure | objective, integrity/isolation checks and reopening decision |
+| PHY | facility, BMC/OOB isolation, hardware/firmware lifecycle and sanitization | unauthorized OOB path and representative reassignment/decommission | access, firmware, maintenance, sanitization and custody evidence |
 
-## 7. Service-profile launch checklists
+## 7. Service-profile launch checks
 
-### 7.1 GPU IaaS
+### GPU IaaS
 
-Before launch, verify:
+Verify tenant-correct API/image authorization; explicit full-device, hardware-partitioned, virtualized, or time-sliced semantics; host, GPU/HBM/cache, NVLink, storage, Ethernet/RDMA, telemetry and support boundaries; allocation lineage; reset/error/quarantine; local-state cleanup; driver/firmware lifecycle; node isolation/rebuild; quota, billing, abuse and egress. Never use “dedicated” without stating each dedicated and shared resource.
 
-- tenant-correct API and image authorization;
-- VM/container, host, GPU/HBM/cache, NVLink, storage, Ethernet, InfiniBand/RDMA, telemetry, and support isolation claims;
-- allowed sharing modes by data sensitivity and customer commitment;
-- allocation lineage, reset/error/quarantine, local storage cleanup, and reassignment evidence;
-- host and driver/firmware lifecycle, node isolation, and rapid rebuild;
-- quota, billing, denial-of-wallet, abuse, and egress controls.
+### Bare-metal GPU
 
-Never market “dedicated” unless every relevant resource boundary is precisely stated.
+Add provider-credential removal; isolated BMC/OOB with JIT support; approved/measured firmware and provisioning image; dedicated or precisely declared network/fabric/storage; deprovisioning across GPU, local media, TPM, NIC/DPU, BMC users/certificates and fabric assignments; chain of custody; and method-appropriate sanitization before reassignment.
 
-### 7.2 Bare-metal GPU
+### Managed Kubernetes
 
-Add:
+Verify private API server/etcd; strong administrator and workload identity; restricted Pod Security Standards; least-privilege RBAC; default-deny admission/network policy where applicable; tenant namespaces/accounts and quotas; CNI/CSI/device plugin/operator/webhook/node privilege; artifact admission; audit/runtime detection; node quarantine; etcd backup and known-good restore/rebuild.
 
-- provider credential removal before handoff;
-- BMC/OOB isolation and JIT support access;
-- measured firmware and approved provisioning image;
-- dedicated or explicitly shared network/fabric/storage boundaries;
-- full deprovisioning ceremony covering GPU, local disk, TPM, NIC/DPU, BMC users, certificates, and fabric assignments;
-- chain-of-custody and sanitation evidence before reassignment.
+### Managed Slurm/HPC
 
-### 7.3 Managed Kubernetes
+Verify private, patched controller/database/REST endpoints; strong authentication; accounts/associations/partitions/QOS/reservations/job ownership; prolog/epilog, SPANK, modules, container runtime, shared storage and node credentials; queue/priority abuse; node/GPU/fabric placement and cleanup tied to job/tenant identity; accounting integrity; backup, failover and recovery.
 
-Verify:
+### Model training
 
-- private API server and etcd; strong administrator and workload identity;
-- restricted Pod Security Standards and default-deny admission;
-- RBAC isolation, tenant namespaces/accounts, quotas, network policy, and secret boundaries;
-- CNI, CSI, GPU device plugin, operator, webhook, and node privilege review;
-- signed/admitted images and deployment policy;
-- audit, runtime detection, node quarantine, etcd backup, restore, and known-good rebuild.
+Verify dataset purpose, rights, provenance, integrity and poisoning controls; experiment identity; code/image/config/data/model lineage; safe checkpoint/model formats and restricted deserialization; intermediate/cache/secret/temp cleanup; evaluation integrity; output/export; retention/deletion; privacy and customer ownership.
 
-### 7.4 Managed Slurm/HPC
+### Model serving
 
-Verify:
+Verify endpoint/model authorization; tenant-safe routing and KV/cache/session isolation; prompt/output handling and telemetry minimization; model provenance/runtime integrity; extraction/enumeration/adversarial input; quota/rate/cost/capacity; safe fallback/degradation; rollback and privacy-safe incident evidence.
 
-- private, patched controller/database/REST endpoints and strong authentication;
-- account, association, partition, QOS, reservation, and job ownership;
-- prolog/epilog, SPANK plugins, modules, container runtimes, shared storage, and node credential controls;
-- queue and priority abuse protections;
-- node/GPU/fabric placement and cleanup linked to job and tenant identity;
-- controller/database backup, accounting integrity, failover, and recovery.
+### Agent platform
 
-### 7.5 Model training
+Every production system requires inventory, owner, identity, delegator, use case, component versions, data/tenant/authority scope, impact assessment, monitoring and incident path. Tool-using systems add typed interfaces, policy mediation, least privilege, short-lived credentials where feasible, egress/data/cost controls and revocation. High-impact or adaptive systems add immutable scope, deterministic approval/stop, protected replayable trace, rollback/manual recovery and an independent verifier the agent cannot change.
 
-Add:
+### Sovereign or regulated service
 
-- dataset purpose, rights, provenance, integrity, poisoning checks, and access;
-- experiment identity, code/image/config/data/model lineage;
-- safe checkpoint/model formats and restricted deserialization;
-- intermediate artifact, cache, secret, and temporary-data cleanup;
-- evaluation integrity and separation from training influence;
-- output, export, retention, deletion, privacy, and customer ownership.
+Verify the complete jurisdictional boundary across people, identity, data, key release, support, telemetry, backup, suppliers, incident response, recovery, deletion and evidence. Storage residency alone is insufficient.
 
-### 7.6 Model serving
+## 8. Critical engineering patterns
 
-Add:
+### Preserve tenant and request context end to end
 
-- endpoint and model-level authorization;
-- tenant-safe routing, KV/cache/session isolation, prompt/output handling, and logging minimization;
-- model provenance and runtime integrity;
-- extraction, enumeration, adversarial-input, quota, rate, cost, and capacity controls;
-- safe fallback/degraded behavior and rollback;
-- privacy-safe incident evidence.
+Use stable tenant/request identifiers at every API object, message, controller record, Kubernetes/Slurm object, allocation, GPU/fabric/storage rule, log and evidence item. Reject missing or contradictory context. Compare intended and actual state continuously.
 
-### 7.7 Agent platform
+### Treat sharing modes separately
 
-Before any high-impact tool is enabled, require:
+Document memory, cache, DMA, fault, reset, telemetry, topology and operational properties for full-device, hardware partition, virtualization and time-slicing modes. Time-slicing is not memory or fault isolation. Hardware partitioning is not full-device or full-host dedication. Test the exact deployed hardware/firmware/driver/hypervisor/scheduler combination.
 
-- unique agent identity, explicit human/service delegator, immutable goal and scope;
-- approved and versioned models, prompts, skills, MCP/tool servers, connectors, memory, and RAG sources;
-- typed tool schemas, least privilege, short-lived credentials, tenant/data/egress/cost policy;
-- deterministic approval for destructive, external, customer-impacting, high-cost, or irreversible actions;
-- deterministic stops for success, budget, time, repeated failure, policy violation, and uncertainty;
-- tamper-resistant trace and independent verifier;
-- no ability for an agent to modify its own policy, credentials, approval authority, evidence, or verifier.
+### Validate InfiniBand/RDMA and DPU on the real path
 
-### 7.8 Sovereign or regulated service
+Test P_Key membership/enforcement, RDMA reachability, fabric-manager authority, DPU/NIC assignment, storage access, stale/partial controller state and reallocation cleanup. Protect fabric/DPU controllers as provider roots. A VPC or Kubernetes NetworkPolicy is not sufficient evidence.
 
-Verify the complete jurisdictional boundary across people, identity, data, keys, support, telemetry, backup, suppliers, incident response, and recovery. Residency of storage alone is insufficient.
+### Eliminate static workload credentials
 
-## 8. Critical technical patterns
+Use workload identity, scoped short-lived certificates/tokens, audience restriction, tenant/resource scope, revocation and, where justified, attested state. Metadata and default service identities must not grant broad provider/project authority to tenant workloads.
 
-### 8.1 Preserve tenant context end to end
+### Make artifact trust an admission decision
 
-Use immutable tenant and request identifiers at every API object, message, controller record, Kubernetes/Slurm object, node allocation, GPU assignment, fabric/storage rule, log, and evidence item. Reject missing or contradictory tenant context. Reconciliation must compare intent with actual state.
+For images, packages, models, checkpoints, drivers, firmware, operators, IaC, prompts, policies and skills, preserve source, build/train lineage, inventory/BOM, provenance/signature where required, scans, policy, revocation and deployed version. A valid signature is evidence of signing, not proof of safety.
 
-### 8.2 Choose accelerator sharing deliberately
+### Separate evidence from the evaluated system
 
-Treat dedication, hardware partitioning, virtualization, and time slicing as different products. Document memory, cache, DMA, fault, reset, telemetry, and topology properties. Do not use time slicing as a substitute for a hardware security boundary. Sensitive workloads use an isolation mode justified by the threat model and tested on the deployed hardware/driver/firmware stack.
+Export critical evidence to a boundary ordinary source administrators cannot silently modify. Preserve stable IDs, time integrity, tenant partitioning, access audit, minimization/redaction, retention and legal hold. Missing evidence is a control failure.
 
-### 8.3 Validate InfiniBand/RDMA and DPU boundaries
+### Recover from known-good state
 
-A VPC or Kubernetes NetworkPolicy does not prove the high-performance data path. Test P_Key membership and enforcement, RDMA reachability, fabric-manager authority, DPU assignment, storage access, stale-controller state, and reallocation cleanup. Protect fabric and DPU controllers as provider roots.
-
-### 8.4 Eliminate static workload credentials
-
-Use workload identity, short-lived certificates/tokens, audience restriction, tenant/resource scope, attested node/workload state where justified, and immediate revocation. Metadata services and default provider service identities must not grant broad project or fleet authority to tenant workloads.
-
-### 8.5 Make artifact trust an admission decision
-
-For images, packages, models, checkpoints, drivers, firmware, operators, IaC, and agent skills, preserve source, build/train lineage, BOM, provenance, signature, scanner result, policy decision, and deployed version. A valid signature is necessary evidence, not proof of safety.
-
-### 8.6 Separate evidence from the evaluated system
-
-Critical logs and evidence must be exported to a boundary that ordinary source administrators cannot silently alter. Preserve stable IDs, time synchronization, integrity, tenant partitioning, access audit, redaction, retention, and legal hold. Monitor missing evidence as a control failure.
-
-### 8.7 Use safe recovery, not optimistic cleanup
-
-When roots, hosts, controllers, or build systems are uncertain, prefer revocation and known-good rebuild over attempting to “clean” them. Reopening requires independent tests of identity, artifact integrity, tenant isolation, data integrity, and monitoring.
+When a root, host, controller, fabric manager or build system is uncertain, prefer revocation and known-good rebuild over optimistic cleanup. Reopening requires independent identity, artifact, data, isolation and monitoring checks.
 
 ## 9. Operating cadence
 
-| Cadence | Required activities |
+| Cadence | Required activity |
 |---|---|
-| Continuous | identity/policy decisions, asset reconciliation, public exposure, critical logs, root use, vulnerability signals, GPU/fabric assignments, quota/capacity, backup health, agent actions |
-| Daily | critical exposure and failed-control triage; unknown/unowned assets; overdue containment; evidence pipeline health |
-| Weekly | vulnerability SLA, privileged changes, risky tenant/egress activity, release and exception review, unresolved incident actions |
-| Monthly | executive critical-risk review, T0/T1 status, customer commitment drift, supplier and capacity risk, metric quality |
-| Quarterly | access review, T0/T1 revalidation, cross-tenant tests, restore/revocation exercise, detection replay, evidence sampling, agent adversarial review |
-| Semi-annual | major incident simulation, orchestrator recovery, destructive-agent scenario, root compromise, customer notification exercise |
-| Annual | independent architecture/penetration/isolation assessment, regional DR or known-good rebuild, supplier assurance, cryptographic recovery, roadmap reset |
-| Material change | re-scope and revalidate affected controls before or immediately after controlled deployment |
+| Continuous | feasible T0 state, identity/policy, public exposure, critical source health, root use, assignment drift, capacity/abuse, backup and high-impact agent action |
+| Daily | failed controls/collectors/tests, unknown/unowned critical state, urgent exposure and containment backlog |
+| Weekly | vulnerability SLA, privilege, release, risk decisions, detection failure and incident actions |
+| Monthly | executive gates/risks, customer commitment drift, supplier/capacity risk and metric quality |
+| Quarterly | T0/T1 verification, access review, isolation, revocation/restore, detection replay and applicable agent tests |
+| Semi-annual | T2 verification and major incident/control-plane/recovery exercises |
+| Annual | independent T3 architecture/isolation, regional recovery/rebuild, supplier and cryptographic recovery |
+| Material change | immediate re-scope and revalidation of affected assertions |
 
-## 10. Incident playbook minimums
+## 10. Minimum incident playbooks
 
-Every playbook must define detection, command, scope queries, preservation, containment boundary, identity/key actions, tenant/customer impact, legal/privacy assessment, recovery, reopening criteria, and independent closure.
+Every playbook defines detection, command, reliable scope queries, evidence preservation, containment boundary, identity/key actions, tenant/customer impact, legal/privacy assessment, communication, recovery, reopening and independently verified closure.
 
-Required NeoCloud scenarios:
+At minimum cover:
 
-1. cross-tenant API, storage, GPU, cache, telemetry, or fabric access;
-2. provider root, signing key, KMS/HSM, IdP, PAM, or break-glass compromise;
-3. Kubernetes/Slurm/controller/operator or provisioning takeover;
-4. BMC/OOB, DPU, fabric manager, firmware, or supply-chain compromise;
-5. accelerator memory/remanence, unsafe sharing, reset, or error-domain failure;
-6. malicious model/checkpoint/image/package/driver/operator/skill;
-7. destructive or exfiltrating agent/tool workflow;
-8. ransomware, region/fabric/storage outage, capacity exhaustion, or backup failure;
-9. tenant fraud, cryptomining, prohibited workload, quota bypass, or denial of wallet;
-10. data/model deletion failure, residency breach, or unsupported customer notification.
+1. cross-tenant API, storage, GPU/cache, telemetry, fabric or support access;
+2. provider root, signing key, KMS/HSM, IdP, PAM or break-glass compromise;
+3. Kubernetes/Slurm/controller/operator/provisioning takeover;
+4. BMC/OOB, DPU, fabric manager, firmware or supply-chain compromise;
+5. accelerator remanence, unsafe sharing, reset or error-domain failure;
+6. malicious model/checkpoint/image/package/driver/operator/prompt/policy/skill;
+7. destructive or exfiltrating agent/tool workflow and false completion;
+8. ransomware, regional/fabric/storage outage, capacity exhaustion or backup failure;
+9. tenant fraud, cryptomining, prohibited workload, quota bypass or denial of wallet;
+10. data/model deletion failure, residency breach or customer-notification failure.
 
-A playbook is not ready until at least one technical exercise proves that the required isolation, revocation, and evidence paths work.
+A playbook is ready only after a technical exercise proves its isolation, revocation, evidence and recovery paths.
 
-## 11. Evidence quality and independent verification
+## 11. Build, buy and integrate
 
-An evidence item should contain:
+Build or deeply integrate controls that encode service-specific tenancy and topology: tenant-correct authorization; desired/actual reconciliation; GPU/NVLink/fabric/DPU/storage/scheduler evidence; reset/sanitization; model/checkpoint safe loading and lifecycle; agent delegation/tool mediation; containment and reopening.
 
-- evidence ID and control ID;
-- service, profile, environment, tenant, region, asset, identity, and version scope;
-- assertion and collection method;
-- collector identity and observation time;
-- source, hash/signature or integrity protection, and storage location;
-- limitations, sampling method, and expiry;
-- validator, test procedure, result, findings, and retest date.
+Buy or adopt mature components where interfaces and evidence are strong: IdP/MFA, PAM, KMS/HSM, secrets/PKI, vulnerability and attack-surface management, SIEM/data lake, EDR/runtime security, case management, backup, DDoS/WAF/API gateway, signing and transparency.
 
-Evidence strength, from weakest to strongest:
+Require exportable APIs/events, stable identities, tenant-safe behavior, secure update, high availability and safe degradation, incident notification, data handling, independent test support, migration/exit and correlated evidence. A product dashboard alone is not proof of service-wide coverage.
 
-1. statement or policy;
-2. screenshot or manually curated report;
-3. repeatable API/query output;
-4. protected runtime event or signed attestation;
-5. authorized negative-path, restore, failure-injection, or adversarial test;
-6. independent reproduction using a separate observation path.
+## 12. Due diligence questions
 
-Use the [evidence register](../../templates/evidence-register.csv) and [Metrics and Assurance Guide](METRICS_AND_ASSURANCE.md).
+Ask providers and suppliers:
 
-## 12. Build, buy, and integrate
+- Which host, GPU/HBM/cache, NVLink, network/RDMA, storage, telemetry, BMC and support resources are dedicated or shared?
+- How is tenant/request context preserved from API through physical allocation, cleanup and deletion?
+- Which accelerator modes are used, and what memory, fault, reset and reassignment guarantees are tested?
+- How are P_Keys, RDMA, DPUs/NICs, BMC/OOB and fabric controllers governed and independently tested?
+- Who can access customer data/models, through which JIT workflow, with which evidence and notification?
+- Where do plaintext and keys exist, who controls release, and how are roots revoked/recovered?
+- Which artifacts require inventory, provenance, signature, admission, revocation and recall?
+- What are notification, evidence exchange, restore, export, deletion, residency and offboarding commitments?
+- Which controls remain provider, customer or shared during an incident?
+- Which claims were independently tested, when, against which exact service/version, and with what limitations?
 
-Build or deeply integrate controls that encode NeoCloud-specific tenancy and topology:
+## 13. Anti-patterns
 
-- tenant-aware authorization and desired/actual reconciliation;
-- GPU, NVLink, fabric, DPU, storage, and scheduler placement evidence;
-- reset/sanitization and reassignment workflow;
-- model/checkpoint lifecycle and safe loading;
-- agent identity, delegation, tool mediation, approval, stop, and verifier;
-- service-specific containment and reopening.
+Reject:
 
-Buy or use mature managed/open components where interfaces and evidence are strong:
+- one aggregate score that hides a failed T0;
+- a risk decision recorded as `PASS`;
+- “dedicated,” “isolated,” “zero trust,” “encrypted,” “confidential,” “immutable,” or “complete” without exact scope and evidence;
+- VPC/namespace isolation asserted as proof of GPU/RDMA/storage isolation;
+- time-sliced GPUs represented as memory/fault-isolated tenants;
+- shared provider identities or broad metadata credentials exposed to tenant workloads;
+- standing administration and unrecorded support access;
+- accepting signed artifacts without source/build/key-policy/admission context;
+- screenshots or vendor dashboards as the only evidence;
+- backups never restored or sanitization never tested;
+- agents allowed to approve or verify their own high-impact actions;
+- exceptions without owner, customer impact, containment, expiry and remediation;
+- security products without a service owner, integration contract, evidence output and failure mode.
 
-- IdP/MFA, PAM, KMS/HSM, secret manager, PKI;
-- vulnerability and attack-surface management;
-- SIEM/data lake, EDR/runtime security, case management;
-- backup, DDoS/WAF/API gateway, signing/transparency infrastructure.
+## 14. Definition of done
 
-Require exportable logs and APIs, tenant-safe behavior, HA and safe degraded mode, secure update, incident notification, data handling, independent testing, migration/exit, and stable identity integration. A vendor dashboard alone is not proof of service-wide coverage.
+A service is ready to be represented as conformant only when:
 
-## 13. Customer and supplier due diligence
-
-Ask for precise answers:
-
-- Which host, GPU, memory/cache, NVLink, network, RDMA, storage, telemetry, and support resources are dedicated or shared?
-- How is tenant context preserved from API request to physical allocation and deletion?
-- Which GPU sharing modes are used, and what memory/fault/reset guarantees are tested?
-- How are P_Keys, RDMA, DPUs, BMC/OOB, and fabric controllers isolated?
-- Who can access customer data/models, through which JIT workflow, and with what evidence?
-- Where do plaintext and keys exist, who controls them, and how are roots recovered?
-- Which artifacts require BOM, provenance, signature, admission, and recall?
-- What are notification, evidence exchange, restore, deletion, residency, and offboarding commitments?
-- Which controls are provider, customer, or shared, including during incidents?
-- Which assurance claims are independently tested, when, against which exact service/version, and what exceptions remain?
-
-## 14. Anti-patterns
-
-Reject these patterns:
-
-- one aggregate compliance score that hides failed T0 controls;
-- “dedicated,” “zero trust,” “encrypted,” or “confidential” claims without exact boundaries;
-- Kubernetes namespace or VPC isolation asserted as proof of RDMA/GPU/storage isolation;
-- time-sliced GPUs marketed as hardware-separated tenants;
-- shared provider service identities or broad metadata credentials exposed to workloads;
-- standing admin privilege and unrecorded support sessions;
-- signed artifacts accepted without source/build/key-policy context;
-- screenshots used as the only evidence;
-- restore plans that have never restored;
-- AI agents allowed to approve their own high-impact actions or mark their own work verified;
-- exceptions without owner, compensating control, expiry, customer impact, and remediation;
-- security products purchased without a service owner, integration contract, evidence output, or failure mode.
-
-## 15. Definition of done
-
-A service is ready for production only when:
-
-- the boundary, service profiles, responsibility, and customer commitments are explicit;
+- its boundary, profiles, versions, responsibility and customer commitments are explicit;
 - every applicable T0 is independently `VERIFIED`;
-- critical asset, identity, public exposure, root, GPU/fabric/OOB, data/model, and artifact state is known;
-- negative-path isolation, revocation, restore/rebuild, incident, and sanitization tests pass;
-- evidence is fresh, scoped, protected, reproducible, and independently reviewed;
-- unresolved material risks have accountable, authorized, time-bounded decisions;
+- critical service/asset/identity/root/GPU/fabric/OOB/data/model/artifact scope is known;
+- required telemetry sources are healthy and missing-source behavior is tested;
+- prohibited-path isolation, revocation, restore/rebuild, incident and sanitization tests pass;
+- evidence is current, scoped, protected, reproducible and independently reviewed;
+- unresolved risks have accountable decisions that do not alter control results;
 - monitoring detects drift and the team can contain and recover without improvisation.
 
-Use the machine-readable [control catalog](../../controls/neocloud-security-baseline.v1.json) as the source of control IDs, tiers, bilingual requirements, evidence profiles, verification profiles, and metrics.
+Use the machine-readable [control catalog](../../controls/neocloud-security-baseline.v1.json) as the normative source for stable control IDs, tiers, bilingual requirements, evidence/verification profiles and metric associations.

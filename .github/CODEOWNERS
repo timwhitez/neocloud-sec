@@ -1,0 +1,8 @@
+# Default owner
+* @timwhitez
+
+# Normative controls, bilingual documentation, executable validation, and workflows
+/controls/ @timwhitez
+/docs/ @timwhitez
+/scripts/ @timwhitez
+/.github/workflows/ @timwhitez

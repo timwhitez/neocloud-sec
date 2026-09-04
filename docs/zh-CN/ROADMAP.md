@@ -1,280 +1,264 @@
 # NeoCloud Cyber Security 发展路线图
 
-**周期：** 0–24 个月  
-**推进模型：** 阶段门驱动、风险优先、证据驱动
+**版本：** 1.0.0-draft.1  
+**基线日期：** 2026-09-04  
+**状态：** 面向实施的项目草案  
+**参考周期：** 0–24 个月
 
-## 1. 如何使用路线图
+## 1. 如何使用这份路线图
 
-这是一份参考推进顺序，而不是日历承诺。已经开放公网 API 和多租户 GPU 的初创服务商可能需要在数天内补齐 T0；完全专属的内部集群也可能合理地判定部分控制不适用。进展应以独立验证的安全结果和真实暴露下降衡量，而不是文档数量或采购工具数量。
+本路线图用于安排专业 AI/GPU 云的安全能力建设顺序，不能作为延后当前 T0 失败的理由。日期只是规划参考，每个阶段都必须通过证据门退出。
 
-先选择服务画像，定义生产边界与责任人，再评估全部 T0/T1。服务特有威胁可以进入风险台账，但任何数字评分都不能覆盖跨租户、Root Key、公网管理面、安全清除、日志、响应或恢复硬门槛失败。
+整个项目遵循三条规则：
 
-每个阶段都有**退出门槛**。不同阶段工作可以并行，但在上一阶段门未满足前，不应宣称达到下一成熟度。
+1. **T0 优先：** 每个适用 T0 都必须被独立 `VERIFIED`；失败、未知、过期、无法判定或未测试的 T0 始终保持 `NO_GO_NONCONFORMANT`。
+2. **建设可复用机制：** Identity、Delegated Authority、Policy、Isolation、Provenance、Evidence、Response 与 Recovery 应沉淀为共享平台能力，而不是每个服务单独堆 Ticket。
+3. **最后引入自动化：** 只有 Approval、Stop、Rollback、Trace、Evidence 与 Independent Verifier 的行为可度量后，才引入自适应防御。
+
+高管可以批准一项限时的紧急业务连续性决定，但该决定不会改变失败控制结果，也不能让相关服务被描述为符合本基线。
 
 ## 2. 24 个月目标状态
 
-成熟 NeoCloud 应能够证明：
+成熟的 NeoCloud 安全体系应当能够：
+
+- 识别全部范围内 Critical Service、Asset、Tenant Relation、Privileged Identity、Root、Accelerator/Fabric/OOB State、Data/Model、Deployed Artifact、Supplier 与 Dependency；
+- 从 API Authorization 一直保留 Tenant/Request Context，贯穿 Scheduler、Host/GPU、Network/RDMA/DPU、Storage、Telemetry、Cleanup 与 Deletion；
+- 准确声明并测试每种商业 Compute SKU 的隔离属性；
+- 通过强 Identity、范围受限的 Delegated Authority 与 Revocation 治理人员、Workload、Service、Device 与 Agent；
+- 从可归因来源准入、召回和重建 Software、Firmware、Infrastructure、Model、Checkpoint、Prompt、Policy 与 Skill Artifact；
+- 采集全部 T0 Required Telemetry，并分别度量 Priority Source 的 Coverage、Freshness 与 Failure；
+- 建立 Incident Command、Reliable Scope、Containment、Notification、Known-good Recovery 与独立验证后的 Reopening；
+- 产出服务范围明确、具有时效的 Assurance，而不是一个混合合规总分；
+- 在 Threat Model 与客户承诺确实需要时，运营高保证 Dedicated、Sovereign、Attested 或 Confidential-computing Profile；
+- 只有当 False Completion、Scope Violation、Approval Bypass、Stop、Rollback 与 Verifier Independence 可度量时，才使用受控自适应自动化。
+
+## 3. 项目工作流
+
+| Workstream | 可追责结果 | 典型 Owner |
+|---|---|---|
+| Governance and Assurance | Service Boundary、Responsibility、Risk、Decision、Evidence 与 Independent Review | Executive Risk Owner、CISO、Service Owner、Privacy/Legal、Assurance |
+| Inventory and Exposure | 权威 Service/Asset/Identity/Data/Model/Dependency；Independent Discovery 与 Drift | Platform Security、SRE、Asset/Configuration Owner |
+| Identity and Policy | Human/Tenant/Workload/Device/Agent Identity、JIT、Delegation、Policy 与 Revocation | IAM、Platform Identity、Security Architecture |
+| API and Control Plane | Tenant-correct Authorization、Private Administration、Safe Change 与 Failure | Product/Platform Engineering、SRE、Security |
+| Compute and Orchestration | Kubernetes/Slurm、Host/Runtime、GPU Sharing/Reset、Node Response | Compute、Kubernetes、HPC/Slurm、Accelerator Team |
+| Network, Fabric and OOB | Plane Separation、Ethernet/RDMA/P_Key/DPU、BMC/OOB 与 Path Validation | Network/Fabric、Hardware Platform、Facility Security |
+| Data, Model and Privacy | Purpose、Rights、Access、Lineage、Safe Format、Retention/Export/Deletion | Data/AI Platform、Privacy、Security |
+| Keys and Supply Chain | KMS/HSM/PKI/Secret、Source/Build/Train、Provenance、Admission、Recall | Cryptography、DevSecOps、Release、Model Platform |
+| Telemetry and Detection | Required-source Health、Evidence Integrity、Detection、Threat Hunting、Assurance Pipeline | Security Engineering、SOC、Platform Observability |
+| Abuse and Resilience | Tenant Trust、Quota/Cost、Egress、Capacity、Backup、Failover 与 Recovery | Trust & Safety、Fraud、SRE、Capacity、Billing |
+| Incident and Crisis | Command、Forensic、Notification、Containment、Recovery 与 Lessons | Incident Response、Legal/Privacy、Customer/Support |
+| Physical and Lifecycle | Facility、BMC、Firmware、Custody、Sanitization 与 Decommissioning | Data Center、Hardware、Facility、Security |
+
+每个 Workstream 必须有一个最终可追责 Owner，并定义 Dependency、Milestone、Service Coverage、Metric、Evidence、Test 与 Exit Criteria。“由安全团队负责”不能作为最终责任模型。
 
-- 一个权威关系图连接 Service、Tenant、Identity、Workload、Node、GPU、Fabric、Data/Model、Artifact、Control、Risk 与 Evidence；
-- 人员使用抗钓鱼/JIT 权限，Workload/Agent 使用经过证明的短期身份；
-- 租户正确策略在 API、Controller、Scheduler、Host、GPU、Fabric、Storage、Registry、KMS 和 Tool 边界执行；
-- 每种商业 SKU 都有明确且持续验证的隔离性质；
-- 软件/模型/固件供应链有清单、Provenance、签名、分阶段发布与召回；
-- 数据/模型全生命周期受保护，责任、驻留、保留、删除和导出对客户清晰；
-- 遥测和证据完整且租户安全，检测和 Playbook 经过测试；
-- Credential Revocation、Containment、Rebuild、Restore、Failover、Sanitization 和客户协同经过演练；
-- AI 辅助防御有明确权限、审批、成本、回滚和 Verifier；
-- 保证材料处于当前状态，并精确说明范围和例外。
+## 4. 阶段 0：立即建立指挥与暴露控制（第 0–7 天）
+
+### 目标结果
+
+- 为 Production Service、Critical Dependency、Control Plane、Root/Signing Key、Fabric Manager、BMC/OOB 与 Incident Command 指定 Owner；
+- 建立 Secure Incident Channel、Severity Model、On-call Escalation 与 Emergency Decision Record；
+- 建立 Service、Critical Asset/Identity、Public Exposure 与 Crown-jewel Data/Model 的第一版 Inventory；
+- 冻结或显式审批新的 Public Provider Administration、Accelerator Sharing Mode、Root/Fabric Change 与未审查 Production Artifact；
+- 轮换或禁用共享、未知、孤儿或离职人员遗留的 Privileged Credential；
+- 明确 Revocation、Quarantine、Isolation 与停止高风险发布的权限。
 
-## 3. 阶段 0——第 0–7 天：建立指挥
+### 退出门
 
-### 目标
+服务商能够建立指挥、识别正在调查的 Service/Tenant/Resource、撤销特权，并通过已知可信路径隔离服务。未知 Critical Root 或 Provider-admin Path 不得被表示为健康。
 
-任命可追责 Owner，建立唯一安全决策通道；识别可能造成跨租户、全局或不可恢复损害的紧急条件；在建立基线期间保护证据并防止无控制变更。
+## 5. 阶段 1：T0 隔离与最低可见性（第 8–30 天）
 
-### 交付物
+### 目标结果
 
-- 高管风险 Owner、CISO/安全负责人、服务 Owner 和 Incident Commander 轮值；
-- 客户服务、生产 Region、Orchestrator、GPU Sharing、Fabric、BMC/OOB、IdP、Signing Root、Registry、KMS 和关键 Supplier 初始清单；
-- Emergency Contact、独立安全通信和 SEV-0/SEV-1 标准；
-- 对新公网管理面、Root/Signing Key、新 GPU Sharing、Fabric Topology 和未 Review 生产镜像实施冻结或审批；
-- 轮换 Owner 未知、共享或离职人员遗留的高权限 Credential。
+- 为适用 Provider Privilege 与高影响 Tenant-owner Access 部署抗钓鱼 MFA；
+- Provider Control Plane、Kubernetes/Slurm Controller、Fabric Management 与 BMC/OOB 通过私有受治理路径访问；
+- 对关键 API 执行 Object/Action/Tenant/Purpose/Context Test；
+- 为每种 Commercial SKU 精确声明 Host/GPU/Cache/NVLink/Network/RDMA/Storage/Telemetry/Support 属性；
+- 隔离或移除边界含糊的 Time-slicing、Hardware Partition、Virtualization、P_Key/DPU、Storage、Support 或 Cleanup 模式；
+- 集中保护并验证 Root、Secret、PKI 与 Break-glass 的恢复；
+- 为关键 Trust Boundary 建立受保护的 Required Telemetry 与 Source-health Monitoring；
+- 建立 Cross-tenant、Root/Key、Control-plane、Accelerator/Fabric/BMC、Destructive Agent 与 Irrecoverable Data 场景的核心 Playbook。
 
-### 退出门槛
+### 退出门
 
-- 所有生产服务和关键 Root 均有 Owner；
-- 已知公网服务商管理接口都具备强认证并完成必要性决策；
-- 具备 24×7 吊销高权限、隔离服务和召集事件指挥的路径。
+每个适用 T0 都有 Scope、Owner、当前 Implementation State、Evidence Requirement、Validator 和有日期的 Containment/Remediation。任何失败或未知 T0 都不能被计为完成，也不能被综合分数覆盖。
 
-## 4. 阶段 1——第 8–30 天：停止关键暴露
+## 6. 阶段 2：权威状态与独立验证（第 31–90 天）
 
-### 目标
+### 目标结果
 
-满足最紧急 T0，建立身份、控制面、租户和物理分配的最低可见性，使事件隔离不再依赖临时发挥。
+- 建立 Service、Asset、Identity、Dependency、Data Flow、Model、Artifact、Key 与 Supplier Inventory；
+- 建立 Shared-responsibility Matrix 与客户安全联系人；
+- 建立 Joiner/Mover/Leaver、Service Account、Workload Identity、Agent、Certificate 与 Secret Lifecycle；
+- 将 Vulnerability/External Exposure 与真实 Asset 关联；
+- 定义 Data/Model Purpose、Rights、Classification、Residency、Retention、Export、Deletion 与 Backup Requirement；
+- 建立 Backup/Rebuild-source Inventory 与 Dependency Mapping；
+- 对 Tenant、Scheduler、Host/GPU、Network/Fabric/DPU、Storage、Quota、Policy 与 Artifact State 执行 Desired/Actual Reconciliation；
+- 对 API、Host/GPU、Storage、Ethernet/RDMA、DPU、Telemetry 与 Support 执行独立禁止路径测试；
+- 执行 Privileged Revocation/Break-glass、Orchestrator Restore/Rebuild、Critical Data/Model Restore、Tenant Offboarding/Deletion 与 End-to-end Incident Exercise；
+- 产出第一版 Service-scoped Assurance Package。
 
-### 工作包
+### 退出门
 
-**身份与信任根**
+- 所有适用 T0 均被独立 `VERIFIED`；
+- 范围内 Critical Asset 与 Privileged Identity Owner 覆盖为 100%；
+- Required T0 Telemetry Source Health 为 100%；
+- Priority Independent Discovery 与非硬门 Telemetry Coverage 具有明确分母并达到约定目标，95% 只是参考起点，不能替代硬门；
+- 失败测试均有可追责 Containment 与 Remediation；
+- Service Claim 与当前部署证据一致。
 
-- 服务商高权限和支持的 Tenant Owner 强制抗钓鱼 MFA；
-- 清理共享账户，盘点 Service/Automation Credential，保护 Break-glass；
-- 关键服务使用集中 KMS/Secret Store，限制并审计 Signing/Root Key。
+## 7. 阶段 3：平台化基础能力（第 3–6 个月）
 
-**控制面与网络**
+### 目标结果
 
-- 服务商管理迁移到 PAM Gateway 或 Private Path；
-- 验证最高风险 API 的 Object-level Tenant Authorization；
-- 分离 Public、Tenant、Provider Management 与 BMC/OOB；
-- 识别 InfiniBand/RDMA/NVLink/DPU 边界，隔离含糊绑定。
+- 将 Workload/Service Identity 与 Short-lived Credential 集成到 Kubernetes、Slurm、Storage、Registry 与 Internal API；
+- 对 Authorization、Sharing Mode、Placement、Egress、Quota/Cost、Artifact Admission 与 Agent Tool 实施 Policy-as-code；
+- 对 Material Tenant/Isolation Drift 执行 Desired/Actual Reconciliation 与 Quarantine；
+- 建立 Hardened、Versioned Host/Node/Controller Image 与 Rapid Rebuild；
+- 对高影响 Artifact 实施 Inventory/BOM、适用的 Provenance/Signature、Scan、Compatibility、Admission 与 Recall；
+- 建立带 Stable Service/Tenant/Request/Resource ID 的 Protected Evidence Pipeline；
+- 定义 Secure Engineering Gate、Canary、Rollback 与 Post-deployment Verification；
+- 建立 Tenant Trust Tier、Urgent Abuse Path 与 Quota/Rate/Cost/Capacity Control；
+- 发布面向客户的 Responsibility 与 Isolation Statement。
 
-**计算与数据**
+### 退出门
 
-- 发布每种 SKU 的临时隔离矩阵：Host、GPU、Memory、Fabric、Storage、Support；
-- 禁用或限制无法满足声明的 Sharing Mode；
-- 定义并实测 Tenant 切换时最低 GPU/Local Disk Cleanup；
-- 把 Signing Key、客户 Model/Checkpoint 和 Provider Control Plane Data 列为 Crown Jewel。
+新生产服务从平台能力继承 Identity、Policy、Telemetry、Evidence、Response 与 Recovery 默认能力，而不是手工重复实现。Material Drift 会产生带 Owner 与 Evidence 的 Alert、Block 或 Quarantine。
 
-**遥测与响应**
+## 8. 阶段 4：可持续多租户生产（第 6–12 个月）
 
-- 集中关键 IdP、Privileged Access、API/Control Plane、Kubernetes/Slurm、BMC/Fabric Change Log；
-- 防止 Source System 普通管理员篡改关键日志；
-- 建立 Credential/Root Compromise、Control Plane Takeover、Cross-tenant Exposure 和 Destructive Automation Playbook。
+### 目标结果
 
-### 退出门槛
+- 关闭 Engineering、Data/Model Lifecycle、Supply Chain、Key、Orchestration、Vulnerability Management、Evidence、Incident 与 Resilience 的适用 T2 缺口；
+- 持续或高频执行 Service/Asset/Identity/Artifact/Fabric Reconciliation；
+- 按真实 Exposure、Exploitability、Privilege、Tenant Impact 与 Blast Radius 排序 Vulnerability；
+- 在代表性的 Hardware/Firmware/Driver/Mode 组合上测试 GPU Reset/Error/Quarantine 与 Tenant Reassignment；
+- 定期测试 API、Kubernetes/Slurm、Fabric/RDMA/DPU、Storage、Support 与 OOB 禁止路径；
+- 将 Detection Engineering 关联到当前 ATT&CK/ATLAS-informed Threat Scenario，并执行授权 Behavior Replay；
+- 演练 Customer、Legal/Privacy 与 Ecosystem Notification；
+- 演练 Backup、Restore、Region/Fabric Failure 与 Known-good Rebuild；
+- 建立 Evidence Quality、Freshness、False-positive/False-negative Proxy 与 Remediation Metric。
 
-- 所有适用 T0 有 Owner、Scope、Implementation State、Evidence Requirement 和 Target Date；
-- 不存在未知 Critical Root、Privileged Identity 或 Production Management Path；
-- 可识别某租户当前资源并紧急吊销其访问；
-- 已知跨租户隔离不确定性被阻断、改为独占或明确升级，不能静默接受。
+### 退出门
 
-## 5. 阶段 2——第 31–90 天：建立基础
+适用 T2 作为有 Owner、有 SLO、有 Change Control、有 Failure Behavior、有当前 Evidence 且测试可重复的服务运行。Recovery 与 Isolation 结果满足服务承诺，而不是只在 Tabletop 中成立。
 
-### 目标
+## 9. 阶段 5：高保证服务（第 12–18 个月）
 
-生产范围完成 T0 并建立 T1；用权威清单、责任和实测流程替代口口相传；建立后续自动化所需的遥测与证据。
+### 目标结果
 
-| 工作流 | 90 天交付物 |
-|---|---|
-| 治理 | 安全章程、Service Profile、Risk/Exception、Shared Responsibility、Customer Commitment Register |
-| 资产 | 有 Owner 且持续对账的 Service/Asset/Identity/Data/Model/Dependency Inventory |
-| 身份 | Federation、MFA、JML、Privileged JIT Roadmap、Break-glass Test、Service Account Lifecycle |
-| API/控制面 | Inventory、AuthN/AuthZ Standard、Rate/Quota、Private Admin、Audit 与 Change Trace |
-| 计算/Fabric | SKU Isolation、Host Baseline、Placement、Reset/Sanitization Test、Network/P_Key Owner |
-| Kubernetes/Slurm | Hardened Control Plane、RBAC/Account Review、Admission/Job Control、Private Admin、Backup |
-| 数据/模型 | Classification、Encryption/Key Ownership、Residency/Retention/Deletion、Access/Lineage Minimum |
-| 供应链 | Approved Source、Image/Model Registry、SBOM、Signature/Provenance Pilot、Emergency Rollback |
-| 漏洞 | Asset-linked Scan、Exploitability SLA、Emergency Patch、Firmware/Driver Coverage |
-| 检测/IR | Log Coverage Dashboard、Core Detection、Severity、On-call、Evidence Handling、Tabletop |
-| 韧性 | Dependency Map、SLO/RTO/RPO、Critical Control Plane Immutable Backup、Restore/Revocation Test |
-| 滥用 | AUP、Tenant Risk Tier、Quota、Rate Control、Prohibited-use/Escalation Process |
+只在 Threat Model、监管、主权、数据敏感度或客户承诺确实值得成本时采用：
 
-### 退出门槛
+- Dedicated Host/Full-device，或准确声明的 Hardware-partitioned Service；
+- Measured Boot/Firmware，以及 Attestation-bound Admission 或 Key Release；
+- 明确 Hardware/Software/Attestation Boundary 与 Unsupported Component 的 Confidential-computing Profile；
+- Jurisdiction-bounded People、Identity、Key、Data、Support、Telemetry、Backup、Supplier 与 Recovery；
+- 更强 Build/Train Isolation、Reproducibility、Root Separation 与 Cryptographic Recovery；
+- 独立 Architecture、Penetration、Isolation、Supplier 与 Recovery Assessment；
+- 包含准确 Scope、Version、Limitation、Finding 与 Evidence Validity 的 Customer Assurance Package。
 
-- 每项适用 T0 均独立 `VERIFIED`，否则阻断服务上线；
-- 至少 95% Critical Asset 和 100% Privileged Identity 有 Owner 与当前记录；
-- Critical Log Source Coverage 至少 95%，缺口有 Owner 和日期；
-- 完成 Restore、Privileged Revocation 和一个 Cross-tenant Incident Exercise；
-- 客户可以获取 Shared Responsibility 与安全联系路径。
+### 退出门
 
-## 6. 阶段 3——第 3–6 个月：控制产品化
+每个 T3 Claim 都关联到明确的 Service/Profile 与真实部署边界，至少每年及重大变更后独立验证；证据到期或假设变化时，必须移除或降级声明。
 
-### 目标
+## 10. 阶段 6：受控自适应安全（第 18–24 个月）
 
-把人工控制转换为可复用 Paved Road；将策略决定和证据生成放入正常供应/部署路径；减少静态 Secret、Config Drift 和逐服务例外。
+### 前置条件
 
-### 核心项目
+只有当相关 Action Class 的 Identity/Delegation、Typed Tool、Least Privilege、Deterministic Approval、Stop/Containment、Rollback/Manual Recovery、Protected Trace、Independent Verification、Evidence Quality 与 Incident Ownership 均已证明后，才进入本阶段。
 
-1. **Workload Identity：** 为 Service、Job、Node、Agent 颁发短期、经过证明的 Identity，逐步消除嵌入 Credential。
-2. **Policy-as-Code：** 建立 Tenant Authorization、Isolation SKU、Region、Data Class、Artifact Admission、Egress、Tool Use 和 Approval 通用策略。
-3. **Trusted Artifact Pipeline：** 保护 Source、隔离 Build、SBOM、Provenance、Signature、Registry Policy 和 Admission Verification。
-4. **Desired/Actual Reconciliation：** 持续对比 API Intent 与 Kubernetes/Slurm、Host、GPU、Storage、Network、DPU 和 P_Key。
-5. **Runtime/Node Response：** Host/Runtime Telemetry、Quarantine 和 Immutable Node/Rapid Rebuild。
-6. **Evidence Automation：** 从策略和基础设施直接生成 Evidence ID、Hash、Scope 和 Freshness。
-7. **Tenant Trust/Abuse：** 将 Onboarding Risk、Quota、Egress、Behavior 和 Appeal 融入运营。
-8. **Secure Engineering：** 把 Threat Model、Security Test、Rollback 和 Observability 设为发布标准。
+### 候选用途
 
-### 退出门槛
+- Evidence Collection 与 Scope Reconciliation；
+- Detection Triage 与 Investigation Planning；
+- 可回滚的低风险 Configuration Correction；
+- Artifact/Vulnerability Prioritization；
+- 受控 Containment Preparation；
+- 在授权环境执行 Red-team、Validation 与 Recovery Exercise。
 
-- 新 Tier-1 服务统一接入 Identity、Logging、Secret、Policy、Artifact 和 Incident 能力；
-- 至少 80% 生产 Workload 使用短期或 Brokered Credential；
-- 高影响 Artifact 有 Inventory，关键 Build 产生 SBOM/Provenance；
-- Tenant/Fabric/GPU Assignment 错配可以检测并 Paging；
-- 优先控制证据自动生成且经过正确性 Review。
+### 默认禁止用途
 
-## 7. 阶段 4——第 6–12 个月：生产成熟
+- 无限制破坏性动作；
+- 自行扩大 Credential、Tool、Scope 或 Budget；
+- 自行审批影响客户的动作；
+- 自行修改 Policy、Evidence 或 Verifier；
+- 自主执行不可逆 Customer Communication、Legal Conclusion 或 Production Deletion；
+- 缺少独立 Evidence 却把自己的任务声明为 `VERIFIED`。
 
-### 目标
+### 退出门
 
-关闭 T2 缺口，并在攻击、故障和恢复条件下证明有效；使客户保证准确可重复；建立可持续运营节奏。
+对每类自动动作，度量并达到 Approval Bypass、Policy/Scope Violation、False Completion、Rollback/Manual Recovery、Stop Effectiveness、Evidence Integrity、Customer Impact 与 Independent-verifier Disagreement 目标。Kill Switch 与人工 Incident Path 均经过测试。
 
-### 核心项目
+## 11. 指标与高管 Scorecard
 
-- Workload Identity/Policy 覆盖所有生产服务；
-- 授权测试 GPU Memory Reset、Partition/Dedication、Device Error 和 Placement Transition；
-- 端到端验证 Ethernet、Storage、InfiniBand/RDMA，包括 Controller Misconfiguration 和 Stale Assignment；
-- 建立 ATT&CK/ATLAS Detection Engineering 与 Purple Team；
-- Provider Support 使用 JIT/JEA、Session Evidence 和 Tenant-safe Access；
-- 漏洞平台纳入 Exploitability、Exposure、Asset Criticality 以及 Firmware/BMC/DPU/Driver/Operator；
-- 演练 Cross-tenant Data、Signing/Root、Scheduler/Control-plane 和 Malicious/Destructive Agent；
-- 演练 Region/Major Dependency DR、Immutable Backup Restore 和 Known-good Rebuild；
-- 形成包含 Scope、Control Status、Test、Exception 和 Responsibility 的客户保证包。
+不要使用一个混合完成百分比。至少报告：
 
-### 退出门槛
+- 按 Service/Profile 的 Production Decision；
+- Failed、Unknown、Stale、Inconclusive 或 Untested T0；
+- Critical Unknown/Unowned Scope；
+- Commercial SKU 的精确 Isolation Declaration 与最近 Prohibited-path Test；
+- Required T0 Telemetry Health，以及单独度量的 Priority-source Coverage；
+- Privileged MFA/JIT/Revocation 与 Root/Secret State；
+- Vulnerability/Exposure SLA 与 Deployed-state Retest；
+- Artifact Inventory、Provenance/Admission 与 Recall；
+- Incident Command、Reliable Scope 与 Effective Containment Time；
+- Restore/Rebuild、Tenant Offboarding/Deletion 与 Sanitization Result；
+- Agent Approval Bypass、Scope Violation、False Completion、Stop 与 Rollback；
+- Customer Commitment Drift、Evidence Expiry 与未关闭 Business Decision。
 
-- T2 Verified Completion 达到组织目标，T0 失败为零，Critical Exception 无逾期；
-- 所有生产画像的 Cross-tenant Negative Test 和 Restore/Rebuild 通过；
-- Priority Detection Coverage/Alert Quality 达标并接受独立抽样；
-- Customer Notification、Evidence Exchange 和 Support Access 经过演练；
-- Privileged/Workload Revocation 与 Tenant/Resource Isolation 达到 SLO。
+具体定义与分母见[度量与持续证明指南](METRICS_AND_ASSURANCE.md)。
 
-## 8. 阶段 5——第 12–18 个月：高保证
+## 12. Build、Buy 与人员优先级
 
-### 目标
+### 应自建或深度集成
 
-为敏感、受监管、专属或主权工作负载增加有必要性的控制，提高对信任根、隔离、供应链和内部风险的信心。
+- Tenant-correct Authorization 与 Desired/Actual Reconciliation；
+- GPU/NVLink/Fabric/DPU/Storage/Scheduler Assignment Evidence；
+- Reset、Cleanup、Sanitization 与 Reassignment Workflow；
+- Model/Checkpoint Lineage、Safe Loading 与 Lifecycle；
+- Agent Identity、Delegation、Tool Policy、Approval、Stop 与 Verifier；
+- Service-specific Containment、Recovery 与 Reopening。
 
-### 核心项目
+### 可以采购或采用成熟组件
 
-- 明确覆盖 GPU/Fabric/Control Plane 的独立渗透与架构测试；
-- Dedicated Host/Fabric/Storage 和 Regulated Service Profile；
-- Measured Boot、Node/Device Attestation 与 Policy-governed Key Release；
-- 对适用威胁模型提供 Confidential Computing；
-- Region/Jurisdiction-specific Key Custody、Support Personnel、Telemetry 和 Recovery；
-- Root/Signing、High-impact Release、Destructive Fleet Action 和 Sensitive Support 双人控制；
-- Hardware/Firmware/Driver/Operator/Remote Support/Supplier Assurance；
-- 兼顾员工隐私和正当程序的 Insider Risk；
-- Cryptographic Agility、Signing Root Rotation 和 Compromise Recovery Exercise。
+- IdP、抗钓鱼 MFA、PAM、KMS/HSM、PKI 与 Secret Management；
+- Vulnerability、Exposure 与 Attack-surface Management；
+- SIEM/Data Lake、Runtime Detection、Case Management 与 Evidence Storage；
+- Backup、DDoS/WAF/API Gateway、Signing 与 Transparency Service。
 
-### 退出门槛
+采购必须要求 Exportable API/Event、Stable Identity Integration、Tenant-safe Behavior、Secure Update、HA 与 Safe Degradation、Incident Notification、Evidence Quality、Independent Testing 与 Migration/Exit。厂商 Dashboard 不能单独证明覆盖。
 
-- T3 声明有 Service-specific Independent Evidence；
-- Sovereign/Regulated Boundary 覆盖 Data、Identity、Key、Support、Telemetry、Backup 和 Supplier Flow；
-- Root/Key Compromise 和 Confidential Workload Recovery 经过演练；
-- Dedicated/Isolation 使用精确资源边界，不使用模糊营销词。
+### 人员顺序
 
-## 9. 阶段 6——第 18–24 个月：受控自适应安全
+早期人员配置应覆盖可追责安全负责人、Platform Security Architecture、Identity/Policy、Cloud/HPC/GPU/Fabric Engineering、Detection/Response、Data/Model Security、Vulnerability/Exposure、Facility/Hardware 与 Assurance/Privacy。规模较小时一人可以覆盖多个职能，但 Implementation 与 Independent Verification 不能合并成未经检查的同一角色。
 
-### 目标
+## 13. 主要项目风险
 
-引入持续控制监控和边界严格的 AI 辅助防御，在不让自动化成为无控制信任根的前提下缩短 Detection、Evidence、Triage 与 Safe Remediation 闭环。
+| 风险 | 失败模式 | 应对措施 |
+|---|---|---|
+| Compliance Theater | Policy 与 Dashboard 替代真实部署测试 | T0 Gate、Negative Test、Evidence Freshness 与 Independent Review |
+| Platform/Security 割裂 | Service Owner 误以为中央安全团队承担全部正确性 | 明确 Shared Responsibility 与 Service Acceptance Criteria |
+| GPU 营销歧义 | “Dedicated/Isolated”隐藏真实 Sharing | 精确 SKU Statement 与版本化 Deployed-path Test |
+| Coverage Gaming | Unknown Asset/Log 从分母中消失 | Unknown Critical Scope 直接失败；公布分子、分母与排除项 |
+| Control-plane Centralization | Identity/Policy/Evidence 故障导致 Fail-open | Local Safe Behavior、Bounded Cache、Expiry、Quarantine 与 Recovery Test |
+| Tool Sprawl | 产品之间不共享 Identity、State 与 Evidence | Capability Contract、Integration Architecture 与 Retirement Plan |
+| Agent Overreach | 尚未证明就获得破坏性权限 | Risk Tier、Deterministic Approval/Stop、Rollback、Trace 与 Verifier |
+| Recovery Optimism | Backup 存在，但 Root/Data/Isolation 不可信 | Known-good Rebuild 与独立 Reopening Test |
+| Unreviewed Standards Drift | 正式版、草案和厂商指南被视为同等权威 | Reference Status Tracking 与定期 Evidence-cutoff Review |
 
-### 核心项目
+## 14. 管理层必须作出的决定
 
-- 持续评估 Identity、Policy、Asset、Vulnerability、Artifact、GPU/Fabric 和 Evidence State；
-- 安全 Agent 轨迹采用 `Goal → State Summary → Evidence → Reasoning → Action → Observation → Verifier → State Update`；
-- Planner 与 Executor 分离，主动测试必须 Explicit Authorization 和 Sandbox；
-- Typed Tool、Least Privilege、Short-lived Credential、Immutable Scope、Budget 和 Deterministic Stop；
-- Destructive、External、Customer-impacting、High-cost 或 Irreversible 行为 Human Approval；
-- 只有 Independent Verifier 通过后，Control/Incident/Remediation 才能变成 `VERIFIED`/Closed；
-- Replayable Environment 与 Signed Trace 支持 Regression、Evaluation、SFT/RL Data 和 Failure Analysis；
-- 自主等级逐步提升：Recommend → Draft → Execute Reversible Low-risk → Execute Bounded Containment；禁止类别永不自主执行。
+1. Service Profile、Risk Appetite 与 Customer Assurance Commitment；
+2. 可追责 Service/Control Owner 与 Independent-verification Authority；
+3. 哪些失败 T0 暴露必须立即停止，以及谁可以在不改变符合性结果的前提下作出单独的限时紧急业务决定；
+4. 公司对外销售哪些 Isolation Product，以及每个声明的准确含义；
+5. 接受哪些 Jurisdiction、Data/Model Class 与 Workload；
+6. Build/Buy Boundary 与战略平台投资；
+7. Recovery Objective、Capacity Reserve 与 Notification Principle；
+8. 哪些高影响 Agent Action Class 允许、禁止或需要 Approval；
+9. Publication、License、Vulnerability Reporting 与 External Assurance Strategy；
+10. 每月审阅哪些 Metric 与 Evidence。
 
-### 退出门槛
+## 15. 路线图完成定义
 
-- 自动化具备 Precision、Rollback Success、Approval-bypass、Policy-violation 和 False-completion 指标；
-- Agent 无法修改自身 Goal、Scope、Tool、Credential、Policy、Approval Authority、Evidence 或 Verifier；
-- 每条自动隔离/修复路径有实测 Kill Switch 和 Manual Recovery；
-- 自适应控制降低 Verified Time-to-containment 或成本，同时不提高重大事件/Unsupported Claim。
-
-## 10. 并行工作流与 Owner
-
-| 工作流 | Accountable Owner | 关键协作方 | 主要结果 |
-|---|---|---|---|
-| 治理与保证 | CISO / Risk Executive | Legal、Privacy、Audit、Product | 决策、义务、证据和例外明确 |
-| 身份与策略 | Identity/Platform | Security Architecture、Product、IT | 统一人员/工作负载/租户/Agent 信任模型 |
-| API 与控制面 | Product/Platform Engineering | AppSec、SRE、IAM | Tenant-correct、Private、Resilient、Auditable |
-| Compute/GPU/Runtime | Compute Platform | Virtualization、Kernel、SRE、Vendor | 隔离、重置、加固和重建可证明 |
-| Network/Fabric/OOB | Network/Platform Security | HPC、Facility、Vendor | 端到端租户与管理平面隔离 |
-| Kubernetes/Slurm | Orchestration Platform | Service Team、SRE、Security | 安全调度、准入、作业与 Controller Lifecycle |
-| Data/Model/Privacy | Data/AI Platform | Privacy、Product、Customer Team | 数据/模型 Lifecycle 与 Provenance |
-| Supply Chain/Engineering | Engineering Productivity | AppSec、Build、Procurement | 可信 Source-to-deployment 与 Recall |
-| Detection/Response | SecOps / IR | Platform、Legal、Support | 完整遥测、实测检测、快速安全恢复 |
-| Abuse/Customer Trust | Trust & Safety / Product | Fraud、Legal、Support、SRE | 安全准入、容量保护、公平处置 |
-| Resilience/Facility | SRE/Infrastructure | Network、Facility、Security | 连续性、重建、备份和物理信任根 |
-
-小型组织可以兼任，但责任与独立验证不能消失。
-
-## 11. Build / Buy / 平台化建议
-
-**自行开发或深度集成**表达 NeoCloud 特有租户/拓扑的能力：Tenant-aware Authorization、Provisioning Reconciliation、GPU/Fabric Placement Evidence、Reset/Sanitization、Scheduler Policy、Model/Checkpoint Lifecycle、Agent Tool Mediation 和 Service-specific Containment。
-
-**采购或采用成熟托管/开源组件**处理标准化问题：IdP/MFA、PAM、KMS/HSM、Secret Manager、Vulnerability Scanner、SIEM/Data Lake、EDR/Runtime、Ticket、PKI、Backup、DDoS/WAF 和 Artifact Signing Infrastructure。
-
-**责任不能外包。** 厂商 Dashboard 不能证明完整服务边界已覆盖。采购必须要求可导出 Log/API、租户安全、HA/Degraded Mode、明确 Data Handling、独立测试、安全更新、事件通知、Exit/Migration，并与稳定身份集成。
-
-## 12. 优先级方法
-
-按以下顺序排期：
-
-1. T0 生产门失败；
-2. 已确认 Active Compromise 或 Cross-tenant Path；
-3. Root of Trust、Fleet-wide Blast Radius 或 Irrecoverable Data Loss；
-4. 外部可达且可利用路径；
-5. 高价值 Data/Model 或 Destructive Authority；
-6. 导致范围无法判断的 Control/Evidence Blind Spot；
-7. 重复运营失败或过期例外；
-8. 可消除大量人工风险的平台控制；
-9. 由服务承诺或量化价值支撑的 T3/T4。
-
-可以估算工作量和依赖，但不能让低成本卫生项长期挤掉困难的 T0 隔离问题。
-
-## 13. 项目风险与对策
-
-| 风险 | 对策 |
-|---|---|
-| 先买工具、后找问题 | 采购前定义 Service/Control/Evidence Outcome 和 Integration Owner |
-| 合规表演 | 要求部署范围证据、Negative Test 和独立验证 |
-| 隐藏共享责任 | 发布 Per-service Matrix 并测试 Incident/Offboarding Handoff |
-| 安全总在末期阻塞产品 | 尽早提供 Identity、Policy、Artifact、Logging、Isolation Paved Road |
-| 例外变成架构 | Expiration、Owner、Customer Impact、Compensating Control、高管可见 |
-| 中央策略/日志成为单点 | Distributed Enforcement、Bounded Cache、Protected Buffer、Degraded Test |
-| AI 自动化虚假完成 | State Machine、Immutable Evidence、Independent Verifier、False-completion Metric |
-| 敏感日志形成新风险 | Minimization、Tenant Partition、Masking、Role Separation、Retention、Access Audit |
-| GPU/Fabric 假设不测试 | Service-specific Isolation Matrix 和 Authorized End-to-end Negative Test |
-| 高速增长超过资产盘点 | Event-driven Registration、Reconciliation 和绑定 Service ID 的 Launch Gate |
-
-## 14. 首月高管决策
-
-领导层需要明确决定：生产 Service/Region 范围；何种 Isolation Mode 可承载何种 Data Class；是否允许 Provider Admin 公网暴露；Root/Signing/KMS/BMC/Fabric Owner；T0 Exception Authority/Maximum Lifetime；Notification Commitment；Support Access 与 Customer Visibility；默认 Tenant Identity/MFA/Egress/Quota；Evidence Retention 与 Assurance；RTO/RPO 和 Known-good Rebuild；禁止 Agent 自主执行的行为类别；首 90 天 Owner 与资源。
-
-没有这些决策，技术团队无法可靠落地控制，因为信任边界和可接受失败尚未定义。
+路线图成功的标志，是安全不再是一组互不相连的控制：Service Boundary 与 Identity 权威可信；Tenant Context 穿过每次转换；Isolation Claim 精确且经过测试；Data/Model/Artifact 具有 Lifecycle 与 Provenance；Required Telemetry 健康；Response/Recovery 经历演练；Evidence 可被独立复现；Automation 无法超越、审批或验证自身权限。

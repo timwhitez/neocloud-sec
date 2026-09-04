@@ -68,15 +68,16 @@ Evaluate at minimum:
 1. Public API abuse, credential theft, account takeover, and privilege escalation.
 2. Cross-tenant compute, storage, cache, telemetry, or fabric exposure.
 3. Container/VM escape, privileged workload, host compromise, and control-plane takeover.
-4. GPU memory remanence, time-slicing without isolation, side channels, and device reset failure.
-5. InfiniBand PKey, VRF/VXLAN, network-policy, or DPU misassignment.
-6. Dataset or model poisoning, malicious model formats, unsafe deserialization, and checkpoint theft.
-7. Build, image, driver, operator, firmware, model, package, and IaC supply-chain compromise.
-8. Prompt injection, tool misuse, excessive agency, skill poisoning, memory poisoning, and confused-deputy behavior.
-9. Exfiltration through egress, logs, metrics, support channels, snapshots, or model outputs.
-10. GPU capacity hoarding, queue manipulation, denial of wallet, DDoS, cryptomining abuse, or prohibited workloads.
-11. Malicious insider, support impersonation, break-glass abuse, and audit-log tampering.
-12. Ransomware, destructive automation, regional outage, dependency failure, and failed recovery.
+4. GPU memory remanence, time-slicing used without a separately justified memory/fault-isolation boundary, side channels, and device reset failure.
+5. InfiniBand P_Key, VRF/VXLAN, network-policy, storage-path, or DPU misassignment; include fabric-manager authority and stale controller state.
+6. Slurm account/association/partition/QOS/MCS/PrivateData controls mistaken for complete network, storage, GPU, process, or data isolation.
+7. Dataset or model poisoning, malicious model formats, unsafe deserialization, and checkpoint theft.
+8. Build, image, driver, operator, firmware, model, package, and IaC supply-chain compromise.
+9. Prompt injection, tool misuse, excessive agency, skill poisoning, memory poisoning, and confused-deputy behavior.
+10. Exfiltration through egress, logs, metrics, support channels, snapshots, or model outputs.
+11. GPU capacity hoarding, queue manipulation, denial of wallet, DDoS, cryptomining abuse, or prohibited workloads.
+12. Malicious insider, support impersonation, break-glass abuse, and audit-log tampering.
+13. Ransomware, destructive automation, regional outage, dependency failure, and failed recovery.
 
 ## 8. Risk analysis
 
@@ -96,4 +97,4 @@ Include positive, negative, adversarial, recovery, and misconfiguration tests. A
 
 ## 11. Residual-risk decision
 
-Record accepted risks, approvers, affected tenants, customer disclosures, expiration dates, and re-review triggers.
+Record accepted risks, approvers, affected tenants, customer disclosures, expiration dates, and re-review triggers. A business-risk decision does not convert a failed applicable T0 into `VERIFIED` or a conformant result.
