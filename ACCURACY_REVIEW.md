@@ -25,8 +25,9 @@ The repository is structurally coherent and suitable as a **project-defined impl
 | Attestation/confidential computing | Wording risked treating an attestation label as end-to-end proof | Made claims product/version/configuration/threat-model specific and retained independent validation |
 | Evidence independence | Could imply mandatory physical separation | Defined administrative and observational independence appropriate to risk |
 | MFA | Risked implying NIST universally mandates phishing resistance for every private tenant owner | Kept phishing-resistant MFA as this project's privileged-access baseline and clarified NIST applicability |
-| Contributions | CONTRIBUTING incorrectly stated that the repository did not require GitHub Actions | Replaced with the actual local/CI validator workflow |
-| Publication | No License, Security Policy, description, homepage, or topics were documented | Added scope, security reporting, and intended repository-metadata documents; license remains explicitly undecided |
+| Contributions | CONTRIBUTING incorrectly stated that the repository did not require GitHub Actions | Replaced it with the actual local/CI validator workflow and clarified that structural validation is not substantive proof |
+| GitHub metadata | Description and topics were absent; topics and private vulnerability reporting had disclosure/applicability traps | Added a concise intended description, capped topics at 20, recorded that topics are always public, and deferred researcher-facing private vulnerability reporting until public release if supported |
+| Publication | No license, scope document, or security-reporting policy existed | Added scope, security reporting, and intended repository-metadata documents; license remains explicitly undecided |
 
 ## Primary-source checks / 一手资料核对
 
@@ -37,8 +38,9 @@ The repository is structurally coherent and suitable as a **project-defined impl
 - NIST SP 800-88 Rev. 2 is the current final media-sanitization guide; conventional media guidance must not be overextended to volatile accelerator state without device evidence.
 - NIST SP 800-63 Revision 4 is current; AAL- and federal-specific phishing-resistance requirements should not be generalized without an applicability decision.
 - OWASP Agent Control Standard was released on 2026-09-01; it is treated as an emerging informative source, not a certification standard.
+- GitHub allows at most 20 repository topics, topic names are always public even for a private repository, and researcher-facing Private Vulnerability Reporting is a public-repository feature.
 
-Authoritative links and publication status are maintained in [`REFERENCES.md`](REFERENCES.md).
+Authoritative links and publication status are maintained in [`REFERENCES.md`](REFERENCES.md). GitHub-specific operational guidance is maintained in [`PROJECT_METADATA.md`](PROJECT_METADATA.md).
 
 ## Remaining limitations / 剩余局限
 
@@ -47,6 +49,7 @@ Authoritative links and publication status are maintained in [`REFERENCES.md`](R
 3. Hardware isolation and cleanup claims vary by product, generation, firmware, driver, hypervisor, topology, and configuration.
 4. Roadmap dates and numerical metrics are planning defaults, not validated industry benchmarks.
 5. The repository is private and has no selected license. Public release and reuse terms remain unresolved.
-6. GitHub sidebar metadata is represented in [`.github/repository-metadata.json`](.github/repository-metadata.json) but requires manual synchronization because the available repository integration does not expose a metadata-update operation.
+6. GitHub sidebar metadata is represented in [`.github/repository-metadata.json`](.github/repository-metadata.json) but requires manual synchronization because the available repository integration does not expose a metadata-update operation. Applying the topic set also creates public topic names even while the repository remains private.
+7. The current private repository needs an already established trusted reporting channel; researcher-facing GitHub Private Vulnerability Reporting should be enabled and documented only after public release if supported.
 
 See [Scope and Limitations](docs/en/SCOPE_AND_LIMITATIONS.md) / [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md).
