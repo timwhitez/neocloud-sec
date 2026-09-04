@@ -2,285 +2,305 @@
 
 **版本：** 1.0.0-draft.1  
 **基线日期：** 2026-09-04  
-**状态：** 面向实施的公开草案
+**状态：** 面向实施的项目草案
 
 ## 执行摘要
 
-NeoCloud 是面向 AI 的专业云平台，核心目标是承载 GPU/加速器密集型训练、推理、高性能计算和 Agent 工作负载。它把云 API、物理 GPU 集群、裸金属、Kubernetes、Slurm、高吞吐存储、以太网、InfiniBand/RDMA、NVLink 域、DPU、固件、模型仓库、数据服务以及越来越自主的 AI 系统组合在一起。昂贵算力与高价值数据的高度集中，使其安全问题明显不同于传统企业 IT；简单地给 GPU 平台附加一份通用云安全检查表并不能解决问题。
+本项目将 “NeoCloud” 作为行业工作术语，用来描述主要服务于加速器密集型人工智能与高性能计算工作负载的专业云服务商。这个词具备沟通价值，但目前没有唯一、正式、监管认可或普遍接受的定义。因此，本白皮书依靠明确的服务边界开展讨论，而不依赖标签本身。
 
-NeoCloud Cyber Security 为该环境定义统一的网络安全控制平面：以身份为信任根，以策略为决策核心，把人员、租户、工作负载、设备和 AI Agent 都视为一等安全主体。控制范围覆盖端点与管理访问、控制面、云原生运行时、GPU 与高性能互联隔离、数据与模型保护、软件与模型供应链、安全运营、业务韧性和物理基础设施，最终形成“可见性—策略决策—预防或响应式执行—持久证据—独立验证”的完整闭环。
+NeoCloud 通常把云 API、物理 GPU 集群、裸金属、Hypervisor、Kubernetes、Slurm、高吞吐存储、以太网、InfiniBand/RDMA、NVLink 感知拓扑、DPU、固件、BMC/OOB 管理、模型与制品仓库、数据服务以及能力越来越强的 AI Agent 组合在一起。昂贵且共享的算力、高价值数据与模型、多套调度器、直接内存数据路径、深层软硬件供应链，以及机器速度的委托执行，共同形成传统企业安全或通用云安全检查表无法充分表达的失效模式。
 
-本基线由五个采用等级和十八个安全域构成。T0 是生产硬门槛；T1 建立完整责任和最低可行可见性；T2 把控制产品化为可规模复用的平台能力；T3 面向受监管、主权、敏感或专属服务提供更高保证；T4 引入持续验证、机密计算模式和带护栏的自动化。任何综合得分都不得抵消一个失败的 T0 控制。
+NeoCloud Cyber Security 是一套面向该环境的**厂商中立安全基线、参考架构、发展路线图与实践指南**。它描述运营方如何设计和运行一套连贯的安全控制体系：身份与委托权限决定行动主体，策略治理信任决策，执行发生在靠近受保护资源的位置，证据与独立验证决定某项安全结果是否真的成立。
 
-本文不是概念宣传材料，而是面向落地的白皮书，覆盖安全问题、架构、运营模型、威胁模型、基线、发展路线、证据模型及云服务商/客户责任。配套的[安全基线](SECURITY_BASELINE.md)、[实践指南](PRACTICE_GUIDE.md)、[参考架构](REFERENCE_ARCHITECTURE.md)、[发展路线图](ROADMAP.md)和[度量与持续证明](METRICS_AND_ASSURANCE.md)将其转换为可执行工作。
+本仓库不是可直接部署的安全产品、正式标准、认证体系、法律意见，也不能证明任何服务商已经安全。它是一份由项目维护者编制的草案，目标是把服务边界、风险、控制、证据、验证、责任和建设优先级表达清楚并变得可测试。
 
-## 1. 定义与目标
+本基线包含 18 个安全域、90 项控制和五个采用等级。T0 是生产硬门，每个适用 T0 都必须被独立验证为 `VERIFIED`；T1 建立责任、范围、安全卫生、可见性、响应与恢复基础；T2 将控制建设为可规模复用的平台能力；T3 在合理场景面向敏感、受监管、主权、专属、证明或机密计算画像增加可由独立证据支持的高保证；T4 仅用于受控自适应自动化与持续验证，并且必须先证明权限、审批、停止、回滚、Trace 和 Verifier。
 
-**NeoCloud Cyber Security 是 NeoCloud 面向 AI-native 组织和专业 AI 云构建的统一网络安全控制平面：以身份为信任根、以策略为决策核心、以 Agent 与工作负载为重点保护对象，通过端点、云原生运行时、网络与高性能互联、数据、软件/模型供应链和安全运营协同，实现从“看见风险”到“实时阻断”和“持续证明”的闭环。**
+任何分数、补偿控制、风险接受或高管决定都不能把失败的适用 T0 变成符合项。具备权限的高管可以记录一项限时的紧急业务连续性决定，但在该硬门独立验证通过前，控制仍然失败，相关服务在本基线下仍然不符合。
 
-它的目标并不是再造一个单点安全产品，而是在完整服务生命周期内建立一致、可验证的信任决策：
+## 1. 目标与系统边界
 
-`设计 → 引入依赖 → 构建 → 供应 → 认证 → 调度 → 执行 → 观测 → 响应 → 恢复 → 删除 → 退役`
+目标是在完整服务生命周期内持续维持可信决策：
 
-只有当这些决策在所有层次保持一致时，NeoCloud 才能称为安全。强 API 认证无法补偿不可靠的 GPU 清理；加固后的 Kubernetes 无法补偿错误的 InfiniBand 分区；镜像签名无法补偿被攻陷的签名根；事件响应制度无法补偿控制面没有日志。因此，安全必须是一项系统属性，而不是一组彼此分离的工具。
+```text
+设计 → 引入来源 → 构建/训练 → 供应 → 认证/委托
+→ 调度 → 执行 → 观测 → 响应 → 恢复
+→ 导出/删除 → 清除 → 退役
+```
 
-## 2. NeoCloud 安全为什么不同
+安全是贯穿整条链路的系统属性。强 API 认证无法补偿错误的对象/租户授权；加固 Kubernetes 不能自动证明 Slurm、RDMA、Storage 或 GPU 已隔离；Artifact Signature 不能证明 Source、Build、Review、Key Custody、Policy 与 Runtime Behavior 安全；Backup 可用不能证明 Identity、Integrity、Tenant Isolation 与恢复可信；模型生成的成功声明也不能证明 Agent 在授权范围内安全完成任务。
 
-### 2.1 共享加速器形成非常规租户边界
-
-GPU 可以采用整卡独占、硬件分区、虚拟化或调度器时间切片等方式分配，这些模式的隔离性质并不等价。隔离声明必须覆盖设备内存、缓存、DMA、驱动状态、故障域、重置行为、遥测和放置拓扑，而不能只证明进程或容器被分开。敏感工作负载绝不能被调度到不满足服务承诺的共享模式上。
-
-### 2.2 高性能互联可能绕过常规控制
-
-训练集群会使用以消除瓶颈为目标的高带宽、低时延互联。以太网 Overlay、存储网络、InfiniBand P_Key、RDMA、NVLink 域、DPU 和带外管理分别可能构成独立信任边界。VPC 策略正确并不能证明 RDMA 路径、Fabric Manager 或 DPU 绑定正确；安全验证必须真正走完数据路径。
-
-### 2.3 云与 HPC 的控制模型并存
-
-Kubernetes 与 Slurm 对身份、租户、调度、配额和隔离的表达方式不同。一个服务可能同时包含公网 API、内部供应系统、Kubernetes Operator、Slurm Controller、镜像工厂、节点 Agent 和厂商管理组件。每次对象转换、调度和状态协调都必须保持租户授权的正确性。
-
-### 2.4 AI 数据和模型既是核心资产也是攻击面
-
-训练数据集、私有 Prompt、模型权重、Checkpoint、Adapter、Embedding、向量库、推理输入输出、Agent Memory、KV Cache 和评测数据可能包含知识产权、个人信息、凭据或运营秘密。模型和 Checkpoint 也可能包含恶意序列化对象或被投毒行为。NeoCloud 不仅要提供存储加密，还必须保护机密性、完整性、来源、保留期限、删除能力和安全加载过程。
-
-### 2.5 基础设施供应链深且权限极高
-
-可信计算基包括固件、BMC、DPU、NIC、GPU 驱动、内核、Hypervisor、容器运行时、Kubernetes/Slurm 组件、Device Plugin、Operator、镜像、软件包、IaC、模型服务框架、模型格式以及构建/签名系统。服务商必须回答：正在运行什么、来自哪里、谁批准、如何发现失陷、如何隔离和回滚。
-
-### 2.6 AI Agent 改变了授权的基本单位
-
-Agent 可以读取数据、调用工具、执行代码、修改基础设施、对外通信并以机器速度决策。传统“应用”和“管理员”的二分法不再充分。每个 Agent 都必须具备独立身份、明确目标、不可静默修改的作用域、授权工具、短期凭据、审批边界、预算、确定性停止条件、完整行为轨迹和独立验证器。外部内容绝不能悄悄改变其 Goal、Scope、权限、Hook、Skill 或 Policy。
-
-### 2.7 稀缺算力会吸引滥用和可用性攻击
-
-GPU 资源可能被盗用、囤积、转售、用于被禁止活动，或因 Denial-of-Wallet 攻击被耗尽。队列操纵、欺诈账户、凭据转卖、挖矿、恶意模型服务、DDoS 和关键依赖失效会同时伤害安全与商业模型。因此，租户信任、滥用治理、速率限制、配额、出网控制、容量工程与事件响应都属于网络安全基线。
-
-## 3. 范围与服务画像
-
-本基线适用于服务商运营或面向客户、并会实质影响机密性、完整性、可用性、隐私、租户隔离、安全性、主权要求或可恢复性的组件。
+项目覆盖服务商运营及面向客户、并会实质影响机密性、完整性、可用性、隐私、租户隔离、滥用抵抗、主权、安全性、可恢复性或客户保证的组件。一个服务可以同时选择多个画像：
 
 | 服务画像 | 典型边界 | 核心安全重点 |
 |---|---|---|
-| **GPU-IaaS** | 租户 VM/容器运行于服务商加速器池 | 身份、API 正确性、主机/GPU/Fabric 隔离、镜像来源、可靠重置 |
-| **Bare-Metal-GPU** | 向租户交付一台或多台物理主机 | 供应、BMC 隔离、固件状态、网络/Fabric 分段和介质清除 |
-| **Managed-Kubernetes** | 服务商管理控制面，通常也管理节点 | 租户 RBAC、准入、运行时、Secret、节点/GPU 隔离 |
-| **Managed-Slurm-HPC** | 服务商管理调度器、分区、节点和计费 | Controller、安全认证、用户/作业隔离、Module、共享存储、队列/Fabric |
-| **Model-Training** | 托管数据、作业、Checkpoint 和实验服务 | 数据/模型血缘、抗投毒、工作负载身份、制品完整性和隐私 |
-| **Model-Serving** | 托管 Endpoint、路由、缓存和模型运行时 | API 滥用、模型授权、Prompt/输出、缓存隔离和可用性 |
-| **Agent-Platform** | 托管 Agent、Tool、Memory、Skill 和 Connector | 委托权限、Prompt Injection、工具策略、审批、审计、停止和验证 |
-| **Sovereign-Regulated** | 人员、数据、密钥和运维受司法辖区限制 | 驻留、人员、密码控制、支持边界、证据和高保证 |
+| **GPU-IaaS** | 租户 VM/Container 运行于服务商加速器池 | API 授权、Host/GPU/Fabric/Storage 隔离、Image Provenance、分配与重置 |
+| **Bare-Metal-GPU** | 向租户交付一台或多台物理主机 | 供应/退供、BMC/OOB、Firmware、专属/共享边界与清除 |
+| **Managed-Kubernetes** | 服务商管理控制面，通常也管理 Node | Tenant RBAC、Admission、Plugin/Operator、Workload Identity、Node/GPU 隔离与恢复 |
+| **Managed-Slurm-HPC** | 服务商管理 Scheduler、Partition、Node 与 Accounting | Controller/Auth、Account/Job 隔离、Queue/Fabric/Storage、Accounting 与恢复 |
+| **Model-Training** | 托管 Dataset、Job、Checkpoint 与实验服务 | 权利/目的、血缘、投毒/完整性、安全格式、临时数据、导出/删除 |
+| **Model-Serving** | 托管 Model Endpoint、Routing、Cache 与 Runtime | Endpoint/Model 授权、租户路由/缓存、抽取/滥用、配额与韧性 |
+| **Agent-Platform** | 托管 Agent、Tool、Memory、Skill 与 Connector | 委托、外部内容边界、Tool Policy、Approval、Stop、Trace 与 Verification |
+| **Sovereign-Regulated** | 人员、数据、密钥与运营受司法辖区限制 | 完整司法辖区边界、Support、Telemetry、Supplier、Recovery 与 Assurance |
 
-一个服务可以同时选择多个画像。所有“不适用”控制都必须记录理由并由评审人确认。
+合同边界外完全由客户控制的系统不属于服务商直接控制范围，但仍可能构成依赖或共同责任。具体法律结论、与安全无关的模型质量评估，以及认证声明也不属于本文范围。
 
-本白皮书不直接覆盖合同边界外完全由客户控制的系统、与安全无关的模型质量保证、具体法律结论，也不认为框架映射本身即可证明认证。但这些事项仍可能构成依赖或共享责任。
+## 2. NeoCloud 安全为什么不同
 
-## 4. 资产与核心保护对象
+### 2.1 加速器共享方式实际上是不同产品
 
-NeoCloud 资产模型必须同时覆盖逻辑、物理、人员和信息资产，至少包括：
+GPU 可以采用整卡独占、受支持的硬件分区、虚拟化或调度器 Time-slicing 等方式分配。它们不是可以相互替代的安全边界。
 
-- 租户账户、组织、配额、计费状态、支持身份和联邦映射；
-- 人员管理员、Break-glass、服务账户、工作负载身份、Agent 身份、API Key、证书和签名根；
-- 公网 API、管理接口、供应系统、调度器、Controller、Operator、准入系统、策略引擎和 CI/CD；
-- 主机、Hypervisor、内核、容器、BMC、DPU、NIC、GPU、HBM、本地盘、网络与高速互联、机架、Region 和可用区；
-- 镜像、软件包、固件、驱动、Operator、IaC、SBOM、Provenance、签名和透明日志证据；
-- 客户数据集、Prompt、输出、模型、Adapter、Checkpoint、Embedding、Cache、实验元数据、日志、快照和备份；
-- 安全遥测、事件证据、检测规则、漏洞状态、例外记录和保证报告；
-- 第三方 SaaS、IdP、软件仓库、源码平台、硬件供应商、远程支持通道和关键公共设施。
+- **整卡独占**可以减少设备级共驻，但仍依赖 Host、Reset、本地盘、Network/Fabric、Telemetry、Support 与重新分配控制。
+- **硬件分区**（例如受支持的 MIG 配置）可以在一个设备内提供独立的计算和显存资源；它不等于整卡或整机独占，仍依赖准确的 GPU 型号、Firmware、Driver、Virtualization、Topology、Scheduler 与运营流程。
+- **虚拟化**的保证取决于具体 Passthrough/Mediated Architecture，以及 Host、IOMMU、Driver、Management 与 Reset Path。
+- **Time-slicing**通过调度共享设备，不提供副本之间的显存或故障隔离；不得把它宣传或接受为硬件级租户隔离边界。
 
-资产盘点不是一次性填表。每个关键资产都必须有责任人、所属服务、租户范围、身份、位置、生命周期状态、数据分类、依赖关系、期望配置、遥测来源以及恢复或销毁方式。
+每种商业 SKU 都必须声明并测试 Host、GPU/HBM/Cache、DMA、Fault、Reset、NVLink Topology、Network/RDMA、Storage、Telemetry、Support 与 Cleanup 属性。敏感工作负载必须采用经威胁模型和客户承诺证明合适的方式。
 
-## 5. 威胁模型
+### 2.2 高性能数据路径可能绕过普通假设
 
-NeoCloud 必须考虑外部攻击者、恶意或已失陷租户、内部人员、失陷的服务商身份、供应链攻击者、欺诈客户、失陷的工作负载/模型/Agent，以及司法辖区和物理风险。以下失效类型是基线设计输入。
+训练集群追求降低开销。Ethernet Overlay、Storage Network、InfiniBand P_Key、RDMA、DPU/NIC、NVLink Domain、BMC/OOB 和厂商 Controller 都可能形成单独的信任边界。VPC 或 Kubernetes NetworkPolicy 正确，不能证明 RDMA、DPU、Storage 或管理路径已经正确隔离。
 
-| 威胁类型 | 代表性失效 | 可能影响 | 第一层控制 |
-|---|---|---|---|
-| 账户与 API 失陷 | 凭据被盗、对象级授权错误、冒充客服 | 租户接管、跨租户访问、欺诈消耗 | 抗钓鱼 MFA、联邦认证、租户正确授权、JIT 权限、不可篡改审计 |
-| 控制面接管 | 管理接口暴露、Operator 漏洞、自动化 Token 泄露 | 全集群失陷和持久化 | 私有管理面、工作负载身份、策略门、Controller 加固、快速吊销 |
-| 计算逃逸 | 容器/VM 逃逸、特权工作负载、Host 失陷 | 访问主机、邻居工作负载、凭据或设备 | 强隔离、准入策略、补丁、运行时检测和放置控制 |
-| 加速器泄露 | 显存残留、不安全共享、重置失败、侧信道 | 作业间或跨租户模型/数据泄露 | 明确 SKU 隔离、独占/硬件分区、重置验证和对抗测试 |
-| Fabric 边界错误 | VRF/VXLAN/P_Key/DPU 绑定错误或 RDMA 绕过 | 跨租户网络/存储直达 | 默认拒绝、平面分离、控制器协调和端到端路径测试 |
-| 数据/模型失陷 | 窃取、投毒、恶意格式、不安全反序列化 | 隐私/IP 损失、模型破坏、代码执行 | 分类、加密、血缘、签名、安全加载、访问与完整性监控 |
-| 供应链失陷 | 软件包、镜像、Operator、驱动、固件或模型被投毒 | 大规模高权限代码执行 | 批准源、SBOM、来源证明、签名、隔离构建、分阶段发布/回滚 |
-| Agent/工具滥用 | Prompt Injection、Confused Deputy、过度自主、Skill/Memory 投毒 | 未授权操作、外泄、破坏 | Agent 身份、工具策略、Schema 校验、审批、预算、Trace 和 Verifier |
-| 滥用与成本耗尽 | 欺诈租户、绕过配额、算力囤积、被禁止用途 | 财务损失、服务退化、法律/安全风险 | 租户信任分级、配额、限流、出网策略、行为检测和处置流程 |
-| 内部与支持滥用 | 常驻权限、隐蔽访问、篡改日志 | 高可信路径接触敏感资产 | 职责分离、JIT/JEA、会话记录、双人控制、证据不可变 |
-| 可用性与破坏事件 | DDoS、勒索、自动化误操作、Region/Fabric 故障 | 长时间中断、数据损坏、不安全恢复 | 容量控制、不可变备份、重建验证、Region 策略、Kill Switch 和演练 |
-| 物理/固件失陷 | BMC 接管、恶意部件、盗窃、恶意维护 | OS 以下持久控制 | 隔离 OOB、状态度量、供应控制、机房门禁、硬件生命周期证据 |
+P_Key Membership 是 InfiniBand 隔离的一项相关控制，但它依赖受到正确治理的 Fabric Management、Membership 配置、Endpoint 行为与实际 Enforcement。服务商必须保护 Subnet/Fabric Manager，对账期望与实际分配，测试禁止路径，发现 Stale/Partial State，并验证租户重新分配时的清理。
 
-威胁建模必须覆盖正常与异常路径、跨信任边界、依赖失效、不安全默认、人员误操作、恶意配置、恢复行为和证据完整性。灾难性的跨租户或信任根失效不能因为“概率低”而被平均分数掩盖。
+### 2.3 云与 HPC 控制模型并存
 
-## 6. 安全原则
+一个租户请求可能穿过 API Gateway、Identity/Policy、Provisioning Database、Kubernetes Operator、Slurm Controller、Image Factory、Node Agent、Network/Fabric Controller、Storage 以及 Billing/Quota 服务。每次转换都可能产生 Object、Action、Tenant、Purpose 或 State Confusion。因此，稳定的 Request、Tenant、Workload、Job、Node、Device、Data、Artifact、Policy 和 Evidence ID 本身就是核心安全控制。
 
-1. **身份优先于位置。** 人员、租户、工作负载、设备、Agent 和自动化都必须独立认证和授权。
-2. **最小权限是动态的。** 优先使用短期、JIT、任务绑定授权，避免常驻角色和静态 Secret。
-3. **租户隔离必须端到端。** API、身份、控制面、计算、GPU、存储、Cache、遥测、以太网、RDMA 和支持运维都要验证边界。
-4. **安全默认属于服务商责任。** MFA、审计、安全隔离模式、加密、安全更新和删除能力不能成为额外付费选项。
-5. **策略和证据都应代码化。** 关键决策必须可测试、可版本化、可复现、可归因。
-6. **外部内容只是非可信数据。** Prompt、模型、软件包、Skill、文档、图片、Ticket 和网页都不能授予权限。
-7. **假设失陷并限制爆炸半径。** 体系必须支持快速隔离、吊销、重建和租户安全的证据收集。
-8. **持续证明恢复能力。** 备份、恢复、切换、安全清除、密钥恢复和租户退租都必须演练。
-9. **自动化需要先赢得自主权。** 行为必须有边界、可观测、尽可能可回滚，并由独立验证器判断结果。
-10. **复杂性必须证明值得。** 优先选择身份、隔离、策略、证据、反馈与验证等通用机制，而不是脆弱例外。
+### 2.4 数据、模型和中间状态既是资产也是攻击面
 
-## 7. 运营模型
+Dataset、Prompt、Output、Model Weight、Checkpoint、Adapter、Embedding、Vector Store、KV Cache、Agent Memory、Experiment Metadata、Log、Snapshot 与 Backup 可能包含知识产权、个人信息、Credential 或运营秘密；模型与 Checkpoint 还可能包含不安全序列化或投毒行为。
 
-### 7.1 责任体系
+保护范围必须覆盖 Purpose/Rights、Tenant-correct Access、Encryption/Key Ownership、Lineage/Integrity、Safe Format/Loader、Temporary State、Output/Export、Privacy、Residency、Retention、Deletion、Backup Treatment 与 Offboarding，而不能只停留在静态存储加密。
 
-董事会或高管风险责任人设定风险偏好并批准重大剩余风险；CISO 或等效角色负责安全体系。每个客户服务都必须有业务负责人、技术负责人、安全负责人、数据负责人和事件升级路径。平台团队建设可复用控制，服务团队仍对正确接入负责。
+### 2.5 可信供应链很深且权限很高
 
-### 7.2 三条互补防线
+可信计算基可能包括 Firmware、BMC、DPU、NIC、GPU Driver、Kernel、Hypervisor、Runtime、Kubernetes/Slurm、Device Plugin、Operator、Image、Package、IaC、Model-serving Framework、Model/Checkpoint Format、Prompt、Policy、Skill、Build System、Registry 与 Signing Root。
 
-- **第一道防线：** 产品、平台、基础设施、SRE、网络、数据和 AI 团队实施并运营控制。
-- **第二道防线：** 安全、隐私、风险和合规团队制定策略、挑战设计、监控风险并协调保证活动。
-- **第三道防线：** 独立审计或验证者检查声明和证据是否可靠。
+运营方必须知道正在运行什么、来自哪里、由哪个身份构建与批准、证据是什么、如何撤销，以及如何召回、隔离、回滚或重建。有效签名只证明某个 Key 签署了某些 Byte，不能自动证明 Source、Review、Key Policy、Runtime Behavior 或安全性。
 
-独立性指决策权独立，而不是组织规模。小型 NeoCloud 可以采用跨团队 Review 或合格外部评估，但实现者不能成为唯一验证者。
+### 2.6 Agent 改变授权单位与失效速度
 
-### 7.3 安全能力服务化
+Agent 可以读取数据、执行代码、调用基础设施或业务工具、修改资源、对外通信，并以机器速度反复决策。控制强度应随权限和影响增加，而不应对所有 AI 功能套用相同的重型机制。
 
-安全应被建设为共享平台能力，包括：统一身份与联邦、工作负载身份、策略决策与执行、Secret/密钥、可信构建与制品验证、资产依赖图、漏洞与暴露面、遥测与证据平面、事件指挥、租户信任与滥用治理、恢复与清除、客户安全保证。
+每个生产 AI System 或 Agent 都需要 Owner、Identity、Use Case、Model/Prompt/RAG/Memory/Skill/Tool Inventory、Data/Tenant Scope、Delegated Authority、Impact Assessment、Monitoring 与 Incident Path。Tool-using System 还需要 Typed Interface、Policy Mediation、Least Privilege、技术可行时的短期 Credential、Egress/Data/Cost Control 与 Revocation。高影响、破坏性、对外、影响客户、高成本或不可逆动作需要确定性审批和明确 Stop/Containment。自适应或自治安全工作流还需要不可变 Goal/Scope、受保护可重放 Trace、Budget/Time/Repetition/Uncertainty Stop、Rollback/Manual Recovery，以及 Agent 无法修改的独立 Verifier。
 
-每项能力都要定义 Owner、SLO、支持等级、消费者、依赖、证据输出、On-call 和路线图状态。[安全服务目录模板](../../templates/security-service-catalog.csv)给出了最小字段。
+外部 Prompt、Document、Ticket、Web Page、Package、Model、RAG Data、Memory 与 Tool Output 只能提供观察，不能提供权限，也不能扩大 Identity、Goal、Scope、Tool、Credential、Policy、Approval、Budget、Evidence 或 Verifier Authority。
 
-### 7.4 共享责任
+### 2.7 稀缺算力吸引滥用和可用性攻击
 
-服务商不能把自己独占控制的基础设施责任转嫁给客户；除非合同约定，客户也不能假定服务商会负责客户代码、数据分类、租户角色或 Guest OS。每项服务都必须公开覆盖日常运营、事件响应、证据、备份恢复、删除与终止服务的责任矩阵。责任模糊本身就是控制失败。
+欺诈准入、Credential 转售、挖矿、禁止用途、Quota Bypass、Queue Manipulation、Capacity Hoarding、Model Extraction、Denial of Wallet、DDoS、依赖失效和破坏性自动化会同时影响安全、客户、商业和法律风险。因此，Tenant Trust、AUP、Quota/Rate/Cost/Concurrency、Egress、Capacity Engineering、公平执行、Incident Response 与 Appeal 都属于安全基线。
 
-## 8. 参考架构
+## 3. 资产、信任根与威胁主体
 
-统一安全架构由七个协同平面组成：
+完整清单应覆盖：
 
-1. **治理与保证平面：** 服务目录、风险、义务、例外、证据、控制状态与客户保证。
-2. **身份与策略平面：** 人员/租户/工作负载/Agent 身份、联邦、PKI、授权、JIT、策略决策与审批。
-3. **边缘与控制平面：** API Gateway、管理接口、供应、计费/配额、支持工具和编排 Controller。
-4. **编排与运行时平面：** Kubernetes、Slurm、Admission、Scheduler、Runtime、Node Agent、Sandbox 和工作负载策略。
-5. **计算、互联与存储平面：** Host、Hypervisor、GPU、DPU、BMC、Ethernet、InfiniBand/RDMA、NVLink、存储、快照、重置和清除。
-6. **数据、模型与供应链平面：** Source、Build、Registry、SBOM、Provenance、Signing、Dataset、Model Registry、安全加载和发布。
-7. **遥测、响应与恢复平面：** Log、Trace、Detection、Case、Evidence Store、吊销、隔离、备份、恢复和重建。
+- Tenant Organization、User、Owner、Federation、Quota、Billing、Support 与 Emergency Contact；
+- Human Administrator、Service/Workload/Device/Agent Identity、API Key、Certificate、Break-glass 与 Signing/Recovery Root；
+- API、Controller、Scheduler、Database、Operator、Policy Engine、CI/CD、Support System 与 Evidence Pipeline；
+- Host、Hypervisor、Kernel、Runtime、BMC、DPU/NIC、GPU/HBM、Local Media、Network/Fabric、Rack、Region 与公共设施；
+- Image、Package、Firmware、Driver、Operator、IaC、SBOM、Provenance、Signature、Model、Checkpoint、Prompt、Skill 与 Policy；
+- Customer Data/Model Artifact、Cache、Output、Log、Snapshot、Backup、Deletion 与 Sanitization State；
+- Supplier、SaaS、IdP、Registry、Repository、Remote Support 与 Critical Facility。
 
-策略执行应尽可能靠近受保护资源，所有决策和证据则通过稳定身份与资产关系关联起来。任何单一平面都不能仅凭自身声明证明控制有效。具体信任区、数据流、组件和服务画像变体见[参考架构](REFERENCE_ARCHITECTURE.md)。
+每个关键对象都需要可追责 Owner、Service/Tenant Relation、Identity、Location、Lifecycle、Expected State、Classification、Dependency、Telemetry、Recovery 与 Disposal Method。未知关键范围属于断言失败，不能从指标分母中删除。
 
-## 9. 十八个安全域
+威胁主体包括外部攻击者、恶意或失陷租户、欺诈客户、失陷 Workload/Model/Agent、内部人员、Support、失陷 Provider Identity、供应链攻击者、恶意或故障自动化、司法辖区行为者与物理攻击者。基础失效类型包括：
 
-| 安全域 | 必须实现的结果 |
-|---|---|
-| 治理、风险、合规与共享责任 | 决策可追责、义务明确、例外受控、责任对客户透明 |
-| 资产、服务、依赖与数据流 | 知道什么存在、谁负责、如何连接、哪些证据缺失 |
-| 人员、租户、工作负载与 Agent 身份 | 每个行动主体都有强、短期、受限且可复核的身份 |
-| 控制面、API 与管理接口 | 租户正确授权、私有管理、抗滥用和变更可追踪 |
-| 网络、Fabric、RDMA/InfiniBand 与 DPU | 每条报文与直接内存路径都经过验证隔离 |
-| 计算、Hypervisor、裸金属、GPU 与加速器 | 隔离属性明确、Host 加固、分配/重置/证明安全 |
-| Kubernetes、容器、Slurm 与调度 | Controller、准入、作业、配额、运行时和恢复安全 |
-| 数据、数据集、模型、制品与隐私 | 生命周期、来源、完整性、机密性、保留与删除受控 |
-| Secret、密钥、PKI、证明与机密计算 | 信任根受保护、Secret 短期化、密钥释放与密码敏捷受控 |
-| 软件、模型与基础设施供应链 | 输入已知、获批、签名、可复现，并可快速吊销回滚 |
-| 安全工程、IaC、变更与配置 | 设计受威胁驱动、变更可 Review、默认安全、策略与漂移受控 |
-| 漏洞、暴露面、补丁与固件 | 全层持续发现、按风险修复并验证闭环 |
-| 遥测、检测、情报与审计 | 证据完整、租户安全、不可篡改，检测经过测试 |
-| AI 应用、Agent、Tool、Skill 与 Prompt | 权限受限、上下文受保护、工具安全、全程可追踪和独立验证 |
-| 滥用防护、租户信任、出网与 AUP | 分级准入、资源控制、误用检测、公平处置与申诉 |
-| 事件响应、取证、危机与恢复 | 快速指挥、安全隔离、证据保全、通知和验证后恢复 |
-| 韧性、可用性、容量、备份与 DR | 控制面可生存、恢复/重建经过测试并抵御容量耗尽 |
-| 物理、机房、BMC、硬件生命周期与介质 | 机房/OOB 受控、硬件状态可信、清除可证明 |
-
-完整的规范性结果和证据要求见安全基线及机器可读控制目录。
-
-## 10. 采用等级与生产准入
-
-| 等级 | 含义 | 典型决策 |
+| 失效类型 | 示例 | 主要后果 |
 |---|---|---|
-| **T0 硬门槛** | 在处理租户数据或开放生产能力前不可妥协的条件 | 未通过则阻断发布，除非触发高管批准的紧急例外流程 |
-| **T1 基础级** | 责任、资产、基本安全卫生、可见性、响应与恢复基础 | 前 90 天或规模化前完成 |
-| **T2 生产级** | 支撑多租户正式商用的可复用、策略化、可度量控制 | 可持续生产运营的必要条件 |
-| **T3 可信级** | 独立测试以及更强隔离、主权和韧性保证 | 高影响、监管或明确承诺的服务必须采用 |
-| **T4 自适应级** | 持续验证、受控自动化、进阶证明和机密性 | 仅在理解失败模式和回滚后采用 |
+| Identity/API | Credential 被盗、Federation 错误、Object/Tenant Authorization 缺陷 | Account Takeover、跨租户访问、欺诈消耗 |
+| Provider Control Plane | 公网管理路径、Controller/Operator 漏洞、Automation Identity 泄露 | Fleet-wide Compromise、持久化、破坏性变更 |
+| Compute/Runtime | VM/Container Escape、Privileged Job、Host Compromise | 访问 Host、邻居、Credential 或 Device |
+| Accelerator | Memory Remanence、不安全共享、Reset/Error 失败、Side Channel | Data/Model 泄露与跨分配影响 |
+| Fabric/Storage | VRF/VXLAN/P_Key/DPU/Storage 分配错误、RDMA Bypass | 跨租户直达或数据破坏 |
+| Data/Model | 窃取、投毒、不安全格式/反序列化、删除失败 | IP/Privacy 损失、Code Execution、模型失陷 |
+| Supply Chain | 被投毒的 Package/Image/Operator/Driver/Firmware/Model/Skill | 大规模高权限失陷 |
+| Agent/Tool | Prompt Injection、Confused Deputy、权限过大、False Completion | 外传、未授权动作、破坏 |
+| Abuse/Capacity | 欺诈、Quota/Cost Bypass、囤积、DDoS | 财务损失、服务退化、法律/安全风险 |
+| Insider/Support | Standing Privilege、隐蔽访问、Evidence Tampering | 高可信路径访问与保证失效 |
+| Recovery/Availability | Ransomware、Region/Fabric Failure、错误自动化、Backup 不可用 | 长时间中断、数据丢失、不安全开服 |
+| Physical/Firmware | BMC Compromise、恶意部件、恶意维护 | OS 以下持久控制 |
 
-生产准入至少要求：
+威胁建模必须覆盖正常和禁止路径、依赖与 Controller Failure、Stale/Partial State、Operator Error、Malicious Configuration、Recovery 与 Evidence Integrity。灾难性的跨租户、Root-of-trust、破坏性或不可恢复失败不能被综合风险分数平均掉。
 
-- 所有适用 T0 均由独立验证者标记为 `VERIFIED`；
-- 不存在无 Owner 的关键资产/高权限身份、暴露公网的管理路径或未知租户隔离模式；
-- 威胁模型和共享责任矩阵处于当前状态；
-- 凭据吊销、事件升级、恢复/重建和租户退租均已测试；
-- 证据来自实际部署服务，而不是参考设计；
-- 所有未解决高风险均有明确剩余风险批准。
+## 4. 安全原则
 
-## 11. 融入完整生命周期
+1. **身份与委托优先于位置。** 人员、租户、服务、工作负载、设备、Agent 与自动化都应独立认证和授权。
+2. **最小权限同时绑定时间、任务、租户、目的和资源。** 技术可行时优先使用短期 Credential、Session 与 Delegated Authority。
+3. **租户隔离必须端到端。** 测试 API、Control Plane、Scheduler、Host、GPU、Storage、Cache、Telemetry、Ethernet、RDMA、DPU、OOB 与 Support Path。
+4. **共享方式必须作为不同产品明确说明。** 不得把整卡、硬件分区、虚拟化和 Time-slicing 混成一个“隔离 GPU”声明。
+5. **服务商独占控制仍由服务商负责。** 客户无法访问和治理的基础设施不能通过文档转嫁责任。
+6. **外部内容是不可信数据，而不是权限。** 授权来自 Identity、Delegation、Policy 与批准决定。
+7. **证据属于控制。** 机制部署后，还需要 Scope、Failure Behavior、Negative Test、Freshness 与 Independent Verification 才能证明有效。
+8. **假设失陷并限制爆炸半径。** 设计快速 Revocation、Isolation、Quarantine、Rebuild、Recall 与租户安全取证。
+9. **恢复要恢复信任，而不只是可用性。** 重新开服前验证 Identity、Artifact、Data、Tenant Isolation、Monitoring 与目标。
+10. **自动化先赢得权限。** 只有在 Approval、Stop、Rollback、Trace、Budget 与 Verifier 被证明后才增加自主性。
+11. **复杂性必须证明值得。** 优先采用 Identity、Policy、Isolation、Provenance、Evidence、Recovery、Feedback 与 Verification 等通用机制。
+12. **准确表达不确定性。** 使用“完整”“不可变”“专属”“机密”“零信任”等词时必须附带范围和证据契约。
 
-### 设计与产品定义
+## 5. 运营模型与共享责任
 
-实现前定义服务画像、租户边界、数据等级、司法辖区、隔离 SKU、责任拆分、滥用场景、SLO/RTO/RPO、证据义务和退役行为。安全要求必须成为验收标准，而不是上线后的发现项。
+高管风险 Owner 设定风险偏好并作出特殊业务决定；CISO 或等效角色负责安全体系。每个客户服务都应有业务、技术、安全、数据和事件 Owner。平台团队建设复用能力，服务团队仍对接入正确性和服务声明负责。
 
-### 引入依赖、构建与发布
+即使组织很小，也要区分三类功能：
 
-使用受保护源码、经过 Review 的 IaC、隔离构建、锁定依赖、SBOM、Provenance、制品签名、可信 Registry、策略校验、分阶段发布、Canary 和回滚演练。模型、Checkpoint、Skill、Prompt、Policy 和 Firmware 都应作为受治理制品。
+- **实施与运营：** Product、Platform、Infrastructure、SRE、Network、Facility、Data 与 AI Team；
+- **Policy、Risk、Privacy 与 Challenge：** Security、Privacy、Legal/Risk 与 Compliance；
+- **独立验证：** 能挑战实施者的不同人员/团队、Observation Path、Test Harness 或 Qualified Assessor。
 
-### 供应与运营
+服务商不能把 BMC/OOB、Fabric Manager、Host Reset、Provider Control Plane、Signing Root 等独占控制转嫁给客户。除非合同另有约定，客户对自身 Code、Data Classification、Role Assignment、Guest/Workload Configuration 与 Use 负责。每项服务必须明确正常运营和事件期间的 Identity、Workload、Data/Model、GPU/Fabric、Logging、Support、Backup/Restore、Export/Deletion、Evidence 与 End-of-service 责任。
 
-颁发短期身份，在 API/编排/Host/Fabric/Storage 边界执行策略，记录资源分配拓扑，验证隔离，持续协调期望状态与实际状态，并把遥测送入受保护证据平面。支持人员采用 JIT、明确目的、会话证据和租户安全的数据处理方式。
+## 6. 参考架构
 
-### 响应与恢复
+目标安全体系由七个协同平面构成：
 
-在最强可靠边界处隔离；保全证据；按需轮换 Root 和委托凭据；按租户与司法辖区沟通；从已知可信源重建；独立验证隔离、完整性和恢复状态后才能重新开放。
+1. **治理与保证：** Service、Scope、Obligation、Responsibility、Risk、Decision、Exception、Control State、Evidence 与 Assurance。
+2. **身份与策略：** Human/Tenant/Service/Workload/Device/Agent Identity、Federation、PKI、JIT Privilege、Delegation、Policy Decision 与 Approval。
+3. **边缘与控制面：** Public API、Support/Privileged Access、Provisioning、Quota/Billing、Controller 与 Administrative Interface。
+4. **编排与运行时：** Kubernetes、Slurm、Admission/Job Policy、Scheduler、Runtime、Node Agent、Sandbox 与 Workload Control。
+5. **计算、Fabric、存储与物理 Root：** Host、Hypervisor、Accelerator、DPU/NIC、Ethernet、InfiniBand/RDMA、NVLink Topology、Storage、BMC/OOB、Facility、Reset 与 Sanitization。
+6. **数据、模型与供应链：** Source、Build/Train、Registry、SBOM/Provenance/Signing、Dataset、Model、Checkpoint、Prompt、Skill、Policy、Safe Loading 与 Release。
+7. **遥测、响应与恢复：** 必需 Log/Trace、Inventory/Reconciliation、Detection、Case、Protected Evidence、Revocation、Containment、Backup、Restore 与 Known-good Rebuild。
 
-### 删除与退役
+Policy Enforcement 应靠近受保护资源；中央 Decision 或 Evidence Service 故障时不能形成静默 Fail-open。稳定 ID 应关联 Subject、Delegation、Tenant、Request、Policy Version、Desired/Actual State、Workload/Job、Host/GPU/Fabric/Storage Assignment、Data/Model Access、Result、Cleanup 与 Evidence。
 
-按策略删除逻辑数据、快照、Cache、模型制品和备份；重置或清除加速器、本地盘和介质；吊销身份和证书；移除 Fabric/网络分配；回收 BMC/DPU 权限；形成删除与保管链证据。
+任何组件都不能只凭自己的 Dashboard 证明自己有效。关键证据应导出到普通源系统管理员无法静默修改的边界，同时实施 Tenant Partitioning、Minimization、Privacy、Retention、Legal Hold、Time Integrity 与 Access Audit。
 
-## 12. 证据与持续证明
+## 7. 十八个安全域
 
-控制不能因为“写了制度”或“控制台显示绿色”就被视为完成。每项评估遵循：
+1. 治理、风险、合规与共享责任；
+2. 资产、服务、依赖与数据流清单；
+3. 人员、租户、工作负载与 Agent 身份；
+4. 控制面、API 与管理接口；
+5. 网络、Fabric、RDMA/InfiniBand 与 DPU 隔离；
+6. 计算、虚拟化、裸金属、GPU 与加速器隔离；
+7. Kubernetes、容器、Slurm 与调度器；
+8. 数据、数据集、模型、制品与隐私；
+9. Secret、密钥、PKI、Attestation 与机密计算；
+10. 软件、模型与基础设施供应链；
+11. 安全工程、IaC、变更与配置；
+12. 漏洞、暴露面、补丁与固件；
+13. 遥测、检测工程、威胁情报与审计；
+14. AI 应用、Agent、Tool、Skill 与 Prompt；
+15. 滥用防护、租户信任、出网与 AUP；
+16. 事件响应、取证、危机管理与恢复；
+17. 韧性、可用性、容量、备份与灾难恢复；
+18. 物理、机房、BMC、硬件生命周期与介质清除。
 
-`PROPOSED → READY → IMPLEMENTED → CANDIDATE_DONE → VERIFIED`
+[安全基线](SECURITY_BASELINE.md)定义稳定 ID 和生产硬门；机器可读[控制目录](../../controls/neocloud-security-baseline.v1.json)提供双语要求、证据/验证画像、等级频率与指标关联。
 
-只有独立验证者返回 `PASS` 才能进入 `VERIFIED`。证据必须标明控制、服务、资产与租户范围、采集者、观察时间、完整性保护、局限、有效期、存储位置和验证者；证据新鲜度属于控制要求的一部分。
+## 8. 等级、验证与例外
 
-持续证明应组合：
+| 等级 | 目的 | 默认验证方式 |
+|---|---|---|
+| **T0 硬门槛** | 生产准入硬门 | 技术可行时持续监控；至少每季度及重大变更后独立验证 |
+| **T1 基础级** | 责任、范围、安全卫生、可见性、响应与恢复 | 至少每季度及重大变更后验证 |
+| **T2 生产级** | 可复用、可执行、可度量控制 | 至少每半年及重大变更后验证 |
+| **T3 可信级** | 服务特定高保证 | 至少每年独立验证，并在重大变更后验证 |
+| **T4 自适应级** | 受控自适应自动化 | 持续度量，并至少每季度进行对抗与失败模式复核 |
 
-- 配置与策略评估；
-- 资产/身份/依赖关系对账；
-- 经过授权的隔离和异常路径测试；
-- 恢复、吊销、切换与清除演练；
-- 映射相关 ATT&CK/ATLAS 行为的检测验证；
-- 对高影响行为进行抽样人工复核；
-- 向客户提供明确范围与例外的保证材料。
+控制生命周期为：
 
-目标不是得到一个漂亮分数，而是能够用当前证据回答：**保护什么？谁或什么可以行动？哪条策略允许？发生了什么？边界是否保持？能否隔离并恢复？谁独立验证了声明？**
+```text
+PROPOSED → READY → IMPLEMENTED → CANDIDATE_DONE → VERIFIED
+```
 
-## 13. 发展路线
+`IMPLEMENTED` 只证明已经部署，不证明有效。只有独立验证者针对明确 Service、Version、Region、Asset/Tenant Scope、Test、Evidence 与 Validity Period 返回 `PASS`，才能进入 `VERIFIED`。`FAIL`、`INCONCLUSIVE`、`NOT_TESTED`、证据过期、重大变更或无法复现都会使原结论失效。
 
-典型体系通过六个阶段门：
+Exception Record 可以记录偏离要求的运营事实，但不能改变要求或结果。适用 T0 的例外仍然是失败/不符合硬门。对外保证必须说明 Scope、Date、Version、Limitation、Failed Test、Exception 与 Verifier，而不能只展示一个混合分数。
 
-1. **0–30 天：建立指挥并停止关键暴露。** 任命 Owner，关闭不安全公网管理面，强制 MFA，保护信任根，盘点关键服务，定义事件分级和指挥，识别 GPU 共享/隔离方式。
-2. **31–90 天：建立基础。** 完成 T0/T1 评估，统一身份/日志/Secret，绘制数据流，发布共享责任，测试备份和吊销，建立补丁/漏洞 SLA。
-3. **3–6 个月：控制产品化。** 引入工作负载身份、Policy-as-Code、可信构建与来源、高性能互联验证、准入/运行时控制、证据采集、租户信任和滥用流程。
-4. **6–12 个月：达到生产成熟。** 关闭 T2 缺口，建立检测工程与 Purple Team 节奏，验证 GPU/Fabric 隔离，接入客户保证，开展完整事件和 DR 演练。
-5. **12–18 个月：增加高保证。** 独立测试、专属/监管画像、更强证明和密钥释放、主权运维、进阶内部与供应链控制。
-6. **18–24 个月：采用受控自适应。** 持续控制监控、边界明确的安全 Agent、自动化证据，以及受审批、回滚和 Verifier 约束的隔离/修复。
+## 9. 融入完整生命周期
 
-详细依赖、里程碑、指标、团队模型及 Build/Buy 建议见[发展路线图](ROADMAP.md)。
+### 设计
 
-## 14. 客户与生态透明度
+实现前定义 Service Profile、Tenant/Trust Boundary、Isolation SKU、Data Class/Purpose、Jurisdiction、Responsibility、Abuse Case、SLO/RTO/RPO、Evidence Contract、Failure Behavior、Recovery、Deletion 与 Decommission。安全要求必须成为发布验收标准。
 
-可信服务商应在适当保密条件下提供：
+### 引入来源、构建、训练与发布
 
-- 服务边界和当前共享责任矩阵；
-- 每种 SKU 支持的隔离方式及限制；
-- 加密、密钥归属、数据驻留、保留和删除行为；
-- 安全事件、漏洞和客户通知承诺；
-- 独立保证报告及重大例外；
-- Subprocessor 与关键依赖信息；
-- API、身份、日志、导出、备份和退租能力；
-- 安全开发和制品来源方案；
-- 事件协同与证据交换流程。
+保护 Source/Build Identity；Review IaC 与 Policy-as-Code；隔离高影响 Build；盘点直接/传递依赖；生成适当 BOM/Provenance/Signature；治理 Dataset、Model、Prompt、Skill、Driver 与 Firmware；只允许符合 Policy 的 Artifact；分阶段部署；观察规定信号；测试 Recall 与 Rollback。
 
-安全声明必须精确。“独占”要说明 Host、GPU、网络、Fabric、Storage、Support 和 Telemetry 哪些独占；“加密”要说明哪里存在明文、谁控制密钥；“零信任”要说明身份、策略、执行点和验证方法。
+### 供应、调度与执行
+
+认证 Subject/Tenant；评估 Action、Object、Purpose、Context、Isolation 与 Cost Policy；生成不可变 Request/Correlation ID；带 Tenant Identity 分配 Network/Fabric/Storage/Host/Accelerator；对账 Desired/Actual State；签发范围受限的短期 Workload Credential；在 Admission/Node 边界复验 Artifact 与 Placement；关联 Runtime Event；任务结束时清理 Credential、Accelerator/Local State 和 Assignment。
+
+### 观测与响应
+
+采集定义好的安全相关 Telemetry；监控 Source Coverage/Freshness；保全 Evidence；建立 Incident Command；确定可靠 Scope；在最强可信边界 Contain；吊销 Identity/Key；按需隔离 Artifact、Node、Device、Path、Data 或 Tenant；判断 Customer/Regulatory Impact；记录决定。
+
+### 恢复、删除与退役
+
+Root 无法确认可信时，优先 Revocation 与 Known-good Rebuild。Restore/Rebuild 在满足 RTO/RPO 的同时验证 Identity、Artifact Integrity、Tenant Isolation、Data Correctness 与 Monitoring。执行授权 Export/Deletion，按 Policy 处理 Backup Retention，依据风险和设备能力清除 Media 与 Accelerator/Host State，移除 Network/Fabric Assignment 和 Credential，并保留 Chain-of-custody Evidence。
+
+## 10. 证据与持续证明
+
+有效证据项应标识：
+
+- Control 与人类可读 Assertion；
+- Service/Profile、Environment、Region、Version、Tenant/Asset/Data Scope；
+- Collector Identity、Source System、Method/Query/Test Version 与 Time；
+- Result、Limitation、Sampling 与 Blind Spot；
+- Integrity Protection 与 Protected Location；
+- Validity Period 与 Invalidation Trigger；
+- Validator、Test Result、Finding 与 Retest Date。
+
+证据强度通常从 Statement、Screenshot/Manual Report、Reproducible Query/Export、Protected Runtime Event 或 Verified Attestation、Authorized Negative/Failure/Recovery Test，逐步提升到通过独立 Observation Path 的复现。具体证据必须与断言匹配，Evidence Score 不能替代判断或生产硬门。
+
+持续证明组合 Inventory Reconciliation、Policy Evaluation、Exposure Discovery、Required-source Health、Isolation Test、Revocation/Restore Exercise、Detection Replay、Artifact Recall、Sanitization Evidence、Agent Adversarial Evaluation、Exception Expiry 与 Independent Sampling。系统还必须发现自身 Collector、Schema、Permission、Clock、Evidence Store、Test 与 Verifier 的故障。
+
+## 11. 发展路线
+
+典型体系通过证据门推进，而不能只按日期宣称成熟：
+
+1. **第 0–7 天：** 建立 Owner、Incident Command、关键清单、Change Freeze 与 Emergency Revocation。
+2. **第 8–30 天：** 清理关键公网/管理暴露；实施抗钓鱼特权访问、私有管理、明确 SKU 隔离、Root Protection、必需 Telemetry 与核心 Playbook。
+3. **第 31–90 天：** 建立权威 Service/Asset/Identity/Data/Model/Dependency 清单、共享责任、生命周期、漏洞/暴露管理、Backup Dependency 与 Desired/Actual Reconciliation；独立验证所有适用 T0。
+4. **第 3–6 个月：** 产品化 Workload Identity、Policy-as-Code、Trusted Artifact、Reconciliation、Node/Runtime Response、Evidence Automation、Tenant Trust 与 Secure Engineering。
+5. **第 6–12 个月：** 关闭 T2 缺口；执行跨租户、Accelerator、Fabric、Recovery、Detection、Incident 与 Customer-notification 演练。
+6. **第 12–18 个月：** 按专属、敏感、监管、主权、证明或机密计算承诺增加 T3；独立测试 Root、Isolation、Supplier 与 Recovery。
+7. **第 18–24 个月：** 只有在 Precision、Approval Bypass、Scope Violation、False Completion、Rollback、Kill Switch 与 Independent Verifier 可度量时，才引入 T4 自适应自动化。
+
+[发展路线图](ROADMAP.md)定义 Workstream、Dependency、Exit Gate 与 Build/Buy 建议。日期只是参考；今天存在的 T0 失败不能因为路线图把工作排到未来阶段而继续暴露。
+
+## 12. 客户与生态透明度
+
+可信服务商应能在适当保密条件下提供：
+
+- 精确 Service Boundary、Profile、Region 与 Version；
+- 当前 Provider/Customer/Shared Responsibility；
+- Host、GPU/HBM/Cache、NVLink、Network/RDMA、Storage、Telemetry、BMC 与 Support 的共享/隔离声明；
+- Data/Model Purpose、Access、Encryption/Key Ownership、Residency、Retention、Export 与 Deletion；
+- Support Access、Vulnerability、Incident、Notification 与 Evidence-exchange 承诺；
+- Artifact/Firmware Provenance 方案；
+- Backup、Restore、Rebuild、Offboarding 与 Sanitization 行为；
+- Independent Test、Evidence Validity、Material Finding、Exception 与 Remediation Date；
+- 与声明有关的 Supplier、Subprocessor 与 Critical Dependency。
+
+安全声明必须精确。“专属”要说明每种专属和共享资源；“加密”要说明明文在哪里存在、谁控制 Key Release；“机密”要说明 Threat Model、Hardware/Software/Attestation Boundary、Unsupported Component 与 Key-release Policy；“零信任”要说明 Subject、Policy、Enforcement Point、Failure Behavior 与 Verification；“合规”要说明具体 Obligation、Scope、Assessor、Date 与 Exception。
+
+## 13. Build、Buy 与深度集成
+
+应自建或深度集成编码 NeoCloud 特有租户与拓扑语义的能力：Tenant-aware Authorization、Desired/Actual Reconciliation、GPU/NVLink/Fabric/DPU/Storage/Scheduler Placement Evidence、Reset/Sanitization、Model/Checkpoint Lifecycle 与 Safe Loading、Agent Delegation/Tool Mediation，以及服务特定的 Containment/Reopening。
+
+成熟且接口和证据清晰的能力可以采购或采用托管/开源组件，例如 IdP/MFA、PAM、KMS/HSM、Secret Management、PKI、Vulnerability/Attack-surface Management、SIEM/Data Lake、Runtime Detection、Case Management、Backup、DDoS/WAF/API Gateway、Signing/Transparency Infrastructure。
+
+厂商 Dashboard 不能证明边界覆盖。必须要求可导出数据/API、稳定 Identity、Tenant-safe Behavior、Secure Update、HA 与 Safe Degraded Mode、Failure Detection、Incident Notification、Data Handling、Independent Testing、Migration/Exit，以及能够关联服务边界的证据。
+
+## 14. 局限
+
+本基线有意覆盖较广，无法编码每种产品、司法辖区、服务合同、硬件代际、Driver/Firmware 组合、威胁主体与 Safety Requirement。部分指标只是参考起点，不是普遍阈值。草案和厂商资料可以影响项目，但不会自动成为规范要求。Control Mapping 不是认证；通过基线也不能消除所有风险；失败控制不应被虚假的精确分数隐藏。
+
+组织必须按当前服务威胁模型调整控制，获取合格 Legal/Privacy/Safety/Audit 意见，测试真实部署路径，明确表达不确定性，并使 Assurance 保持时效。
 
 ## 15. 结论
 
-NeoCloud 安全的本质，是在物理密集、高度共享、软件定义、依赖深层供应链并逐步自主化的 AI 基础设施中，持续维持可信决策。最低可行体系不是一张证书或一组设备，而是明确服务边界、强身份、端到端租户隔离、可信制品、受保护的数据与模型、完整遥测、经过测试的响应恢复、受控自动化以及经得住独立挑战的证据。
+NeoCloud 安全的本质，是在物理密集、高度共享、软件定义、深度依赖供应链并越来越自主化的 AI 基础设施中，持续维持可信、租户正确且可恢复的决策。
 
-组织应先落实 T0 生产门槛，再建立 T1 可见性与责任，把 T2 控制转换为共享平台服务，在后果需要时应用 T3 高保证，并且只有在权限和失败模式受控后才引入 T4 自动化。这样形成的架构才能随算力、模型、Agent、客户和监管规模增长，而不把每种新风险都变成脆弱例外。
+最低可行体系包括：明确服务边界、可追责责任、强身份与委托、准确的 Accelerator/Fabric/Storage 隔离、受保护的 Data/Model/Artifact、必需 Telemetry、经过测试的 Response/Recovery/Sanitization、按风险治理的 Agent，以及经得住独立挑战的证据。
+
+先落实 T0 生产硬门；建立 T1 责任与可见性；将 T2 转为平台服务；只有在后果或承诺需要时增加 T3；只有在权限和失败模式可度量、可约束时引入 T4。这个顺序可以让安全随 Compute、Model、Agent、Customer 与 Regulation 扩展，而不把每种新风险变成无法验证的例外。
 
 ## 免责声明
 
-本白皮书是面向实施的行业基线，不构成认证、法律意见、绝对保证，也不能替代适用法律法规、合同、隐私评估、安全评估或合格独立审计。外部框架映射仅供参考，必须针对实际组织、服务、司法辖区和采用版本进行验证。
+本白皮书是一份由项目维护者编制、面向实施的草案，不构成认证、正式标准、法律意见、绝对保证，也不能替代适用法律法规、合同、隐私评估、安全评估、产品文档或合格独立审计。外部框架映射与来源引用仅供参考，必须针对实际组织、服务、司法辖区、采用版本与保证目标重新验证。
