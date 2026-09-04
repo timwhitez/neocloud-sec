@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/timwhitez/neocloud-sec/blob/main/controls/neocloud-security-baseline.v1.errata.schema.json",
+  "title": "NeoCloud Security Baseline v1 Errata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "errata_id",
+    "version",
+    "effective_date",
+    "base_catalog_id",
+    "base_catalog_version",
+    "status",
+    "precedence",
+    "corrections",
+    "retirement_condition"
+  ],
+  "properties": {
+    "$schema": { "const": "./neocloud-security-baseline.v1.errata.schema.json" },
+    "errata_id": { "const": "NCS-BASELINE-V1-ERRATA" },
+    "version": { "const": "1.0.0" },
+    "effective_date": { "type": "string", "format": "date" },
+    "base_catalog_id": { "const": "NCS-BASELINE" },
+    "base_catalog_version": { "const": "1.0.0-draft.1" },
+    "status": { "const": "normative project errata" },
+    "precedence": { "$ref": "#/$defs/bilingual" },
+    "corrections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "erratum_id",
+          "control_id",
+          "field",
+          "reason",
+          "replacement",
+          "verification",
+          "sources"
+        ],
+        "properties": {
+          "erratum_id": { "type": "string", "pattern": "^NCS-ERRATA-[0-9]{3}$" },
+          "control_id": { "type": "string", "pattern": "^NCS-[A-Z]+-[0-9]{2}$" },
+          "field": { "const": "requirement" },
+          "reason": { "$ref": "#/$defs/bilingual" },
+          "replacement": { "$ref": "#/$defs/bilingual" },
+          "verification": { "$ref": "#/$defs/bilingual" },
+          "sources": { "type": "array", "minItems": 1 }
+        }
+      }
+    },
+    "retirement_condition": { "$ref": "#/$defs/bilingual" }
+  },
+  "$defs": {
+    "bilingual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "zh-CN"],
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "zh-CN": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
