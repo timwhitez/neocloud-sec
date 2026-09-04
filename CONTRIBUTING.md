@@ -24,7 +24,7 @@ Run the repository contract locally before review:
 python3 scripts/validate_repository.py
 ```
 
-The validator checks catalog structure, exact control IDs/counts/tier distribution, bilingual baseline parity, cross-references, release versions, required deliverables, intended repository metadata, and relative Markdown links. GitHub Actions runs the same validator for pull requests and `main`; local success does not replace independent review, and CI success does not prove the substantive correctness of a security claim. Mermaid diagrams should also be visually reviewed in GitHub Markdown.
+The validator checks catalog structure, exact control IDs/counts/tier distribution, bilingual baseline parity, cross-references, release versions, required deliverables—including the intended repository-metadata file—and relative Markdown links. GitHub Actions runs the same validator for pull requests and `main`; local success does not replace independent review, and CI success does not prove the substantive correctness of a security claim. Mermaid diagrams should also be visually reviewed in GitHub Markdown.
 
 ## Writing style
 
@@ -36,8 +36,8 @@ The validator checks catalog structure, exact control IDs/counts/tier distributi
 
 ## Security-sensitive contributions
 
-Do not open a public issue containing a live credential, customer data, exploitable production detail, or uncoordinated vulnerability. Follow [`SECURITY.md`](SECURITY.md), use GitHub private vulnerability reporting when enabled or another established private maintainer channel, and redact evidence before committing it.
+Do not open an issue containing a live credential, customer data, exploitable production detail, or uncoordinated vulnerability. Follow [`SECURITY.md`](SECURITY.md), use an existing trusted private maintainer channel while this repository is private, and redact evidence before committing it.
 
 ## 中文摘要
 
-规范性修改必须说明威胁、适用范围、责任方、实现方式、最小证据、验证方法、兼容性与权威来源。禁止把专有标准正文直接复制进仓库；禁止提交真实密钥、客户数据和未协调披露的生产漏洞。提交前运行 `python3 scripts/validate_repository.py`，Pull Request 还会执行相同 CI；只有独立验证返回 `PASS` 后才能宣称控制已完成。
+规范性修改必须说明威胁、适用范围、责任方、实现方式、最小证据、验证方法、兼容性与权威来源。禁止把专有标准正文直接复制进仓库；禁止在 Issue 中提交真实密钥、客户数据和未协调披露的生产漏洞。提交前运行 `python3 scripts/validate_repository.py`，Pull Request 还会执行相同 CI；只有独立验证返回 `PASS` 后才能宣称控制已完成。当前 Private 状态下，敏感问题应通过已有的可信私密渠道报告。
