@@ -1,307 +1,266 @@
 # NeoCloud Cyber Security Development Roadmap
 
-**Horizon:** 0–24 months  
-**Planning model:** gate-based, risk-prioritized, evidence-driven
+**Version:** 1.0.0-draft.1  
+**Baseline date:** 2026-09-04  
+**Status:** implementation-oriented project draft  
+**Reference horizon:** 0–24 months
 
-## 1. How to use this roadmap
+## 1. How to use the roadmap
 
-This roadmap is a reference sequence, not a calendar promise. A young provider with public APIs and multi-tenant GPUs may need to complete T0 guardrails in days. A dedicated internal cluster may legitimately mark some controls not applicable. Progress is measured by independently verified outcomes and reduced exposure, not documents produced or tools purchased.
+This roadmap sequences security capabilities for a specialized AI/GPU cloud. It is not permission to defer a currently failed T0 control. Dates are planning references; each phase exits through evidence gates.
 
-Start by selecting service profiles, defining the production boundary, identifying accountable owners, and assessing every T0/T1 control. Use the risk register for service-specific threats, but do not let a numeric score override a failed cross-tenant, root-key, public-admin, secure-erase, logging, response or recovery guardrail.
+The program follows three rules:
 
-Each phase below has an **exit gate**. Work may overlap across phases, but the program should not claim the next maturity level until the prior gate is satisfied.
+1. **T0 first:** every applicable T0 must be independently `VERIFIED`; failed, unknown, stale, inconclusive or untested T0 remains `NO_GO_NONCONFORMANT`.
+2. **Build reusable mechanisms:** identity, delegated authority, policy, isolation, provenance, evidence, response and recovery should become shared platform capabilities rather than service-specific tickets.
+3. **Add automation last:** adaptive defense is introduced only after approval, stop, rollback, trace, evidence and independent-verifier behavior are measured.
 
-## 2. Target state after 24 months
+An executive may authorize a time-bounded emergency business-continuity decision, but the decision does not change the failed control result or allow the service to be described as conformant.
 
-A mature NeoCloud security program should be able to demonstrate:
+## 2. Target state at 24 months
 
-- one authoritative graph linking services, tenants, identities, workloads, nodes, GPUs, fabrics, data/models, artifacts, controls, risks and evidence;
-- phishing-resistant and just-in-time human access plus attested, short-lived workload/agent identity;
-- tenant-correct policy enforced at API, controller, scheduler, host, GPU, fabric, storage, registry, KMS and tool boundaries;
-- declared and continuously validated isolation properties for every commercial SKU;
-- trusted software/model/firmware supply chains with inventory, provenance, signatures, staged rollout and recall;
-- protected data/model lifecycle, customer-visible responsibility, residency, retention, deletion and export;
-- complete, tenant-safe telemetry and evidence with tested detection and incident playbooks;
-- tested credential revocation, containment, rebuild, restore, failover, sanitization and customer coordination;
-- bounded AI-assisted defense whose authority, approval, cost, rollback and verifier are explicit;
-- current assurance material that states scope and exceptions precisely.
+A mature NeoCloud security program should be able to:
 
-## 3. Phase 0 — Days 0–7: establish command
+- identify every in-scope critical service, asset, tenant relationship, privileged identity, root, accelerator/fabric/OOB state, data/model, deployed artifact, supplier and dependency;
+- preserve tenant and request context from API authorization through scheduler, host/GPU, network/RDMA/DPU, storage, telemetry, cleanup and deletion;
+- state and test the exact isolation properties of every commercial compute SKU;
+- govern people, workloads, services, devices and agents through strong identity, scoped delegated authority and revocation;
+- admit, recall and rebuild software, firmware, infrastructure, model, checkpoint, prompt, policy and skill artifacts from attributable sources;
+- collect all required T0 telemetry and measure priority-source coverage, freshness and failure separately;
+- establish incident command, reliable scope, containment, notification, known-good recovery and independently verified reopening;
+- produce service-scoped, time-bound assurance rather than one aggregate compliance score;
+- operate high-assurance dedicated, sovereign, attested or confidential-computing profiles where justified by threat model and customer commitment;
+- use guarded adaptive automation only where false completion, scope violation, approval bypass, stop, rollback and verifier independence are measurable.
 
-### Objectives
+## 3. Program workstreams
 
-- Name accountable owners and create a single security decision channel.
-- Identify immediate conditions that could cause cross-tenant, fleet-wide or unrecoverable harm.
-- Preserve evidence and prevent uncontrolled change while the baseline is established.
+| Workstream | Accountable outcome | Typical owners |
+|---|---|---|
+| Governance and assurance | service boundaries, responsibility, risks, decisions, evidence, independent review | executive risk owner, CISO, service owners, privacy/legal, assurance |
+| Inventory and exposure | authoritative services/assets/identities/data/models/dependencies; independent discovery and drift | platform security, SRE, asset/configuration owners |
+| Identity and policy | human/tenant/workload/device/agent identity, JIT privilege, delegation, policy and revocation | IAM, platform identity, security architecture |
+| API and control plane | tenant-correct authorization, private administration, safe change and failure | product/platform engineering, SRE, security |
+| Compute and orchestration | Kubernetes/Slurm, host/runtime, GPU sharing/reset, node response | compute, Kubernetes, HPC/Slurm, accelerator teams |
+| Network, fabric and OOB | plane separation, Ethernet/RDMA/P_Key/DPU, BMC/OOB and path validation | network/fabric, hardware platform, facilities security |
+| Data, model and privacy | purpose, rights, access, lineage, safe formats, retention/export/deletion | data/AI platform, privacy, security |
+| Keys and supply chain | KMS/HSM/PKI/secrets, source/build/train, provenance, admission, recall | cryptography, DevSecOps, release, model platform |
+| Telemetry and detection | required-source health, evidence integrity, detections, threat hunting, assurance pipeline | security engineering, SOC, platform observability |
+| Abuse and resilience | tenant trust, quotas/cost, egress, capacity, backup, failover and recovery | trust and safety, fraud, SRE, capacity, billing |
+| Incident and crisis | command, forensics, notification, containment, recovery and lessons | incident response, legal/privacy, customer/support |
+| Physical and lifecycle | facility, BMC, firmware, custody, sanitization and decommissioning | data-center, hardware, facilities, security |
 
-### Deliverables
+Each workstream needs one accountable owner, dependencies, milestones, service coverage, metrics, evidence, tests and exit criteria. “Security owns it” is not an acceptable final ownership model.
 
-- Executive risk owner, CISO/security lead, service owners and incident commander rotation.
-- Initial list of customer-facing services, production regions, orchestrators, GPU sharing modes, fabrics, BMC/OOB systems, identity providers, signing roots, registries, key stores and critical suppliers.
-- Emergency contact tree, secure incident channel and SEV-0/SEV-1 criteria.
-- Freeze or approval requirement for new public administrative interfaces, root/signing-key changes, new GPU-sharing modes, fabric topology changes and unreviewed production images.
-- Immediate credential rotation for unknown, shared or departed-owner privileged accounts.
+## 4. Phase 0 — Immediate command and exposure control (days 0–7)
 
-### Exit gate
+### Outcomes
 
-- Every production service and critical root has a named owner.
-- No known public provider-management interface lacks strong authentication and an explicit necessity decision.
-- A 24×7 path exists to revoke privileged access, isolate a service and convene incident command.
-
-## 4. Phase 1 — Days 8–30: stop critical exposure
-
-### Objectives
-
-- Meet the most urgent T0 guardrails.
-- Establish minimum visibility into identities, control planes, tenancy and physical allocation.
-- Make incident containment possible without improvisation.
-
-### Work packages
-
-**Identity and roots**
-
-- Enforce phishing-resistant MFA for provider privileged access and tenant owners where supported.
-- Remove shared accounts; inventory service/automation credentials; protect break-glass.
-- Centralize KMS/secret storage for critical services; restrict and log signing/root-key use.
-
-**Control plane and network**
-
-- Move provider administration behind a privileged gateway or private path.
-- Validate object-level tenant authorization on highest-risk APIs.
-- Separate public, tenant, provider-management and BMC/OOB networks.
-- Identify InfiniBand/RDMA/NVLink and DPU boundaries; quarantine ambiguous assignments.
-
-**Compute and data**
-
-- Publish an interim isolation matrix for each SKU: host, GPU, memory, fabric, storage and support.
-- Disable or restrict sharing modes that cannot meet the claimed isolation.
-- Define and test minimum GPU/local-disk cleanup between tenants.
-- Classify signing keys, customer models/checkpoints and provider control-plane data as crown jewels.
-
-**Telemetry and response**
-
-- Centralize identity, privileged access, API/control-plane, Kubernetes/Slurm and BMC/fabric change logs for critical systems.
-- Protect logs from ordinary source administrators.
-- Create playbooks for credential/root compromise, control-plane takeover, cross-tenant exposure and destructive automation.
+- name owners for production services, critical dependencies, control planes, roots/signing keys, fabric managers, BMC/OOB and incident command;
+- establish a secure incident channel, severity model, on-call escalation and emergency decision record;
+- create an initial inventory of services, critical assets/identities, public exposure and crown-jewel data/models;
+- freeze or explicitly approve new public provider administration, new accelerator-sharing modes, root/fabric changes and unreviewed production artifacts;
+- rotate or disable shared, unknown, orphaned or departed-owner privileged credentials;
+- define authority to revoke, quarantine, isolate and stop a risky deployment.
 
 ### Exit gate
 
-- All applicable T0 controls have owners, scope, implementation state, evidence requirement and target date.
-- No critical root, privileged identity or production management path is unknown.
-- Provider can identify a tenant's active resources and revoke access in an emergency.
-- Known cross-tenant isolation uncertainty is blocked, dedicated or explicitly escalated—not silently accepted.
+The provider can establish command, identify the service/tenant/resource under investigation, revoke privilege and isolate a service through a known trusted path. Unknown critical roots or provider-admin paths are not represented as healthy.
 
-## 5. Phase 2 — Days 31–90: build the foundation
+## 5. Phase 1 — T0 containment and minimum visibility (days 8–30)
 
-### Objectives
+### Outcomes
 
-- Complete T0 and establish T1 across production.
-- Replace tribal knowledge with authoritative inventories, responsibilities and tested procedures.
-- Build the telemetry and evidence needed for later automation.
-
-### Deliverables by workstream
-
-| Workstream | 90-day deliverables |
-|---|---|
-| Governance | approved security charter, service profiles, risk/exception process, shared-responsibility matrices, customer commitment register |
-| Inventory | authoritative service/asset/identity/data/model/dependency inventory with owners and reconciliation |
-| Identity | federation, MFA, joiner/mover/leaver, privileged JIT roadmap, break-glass test, service-account lifecycle |
-| API/control plane | inventory, authentication/authorization standards, rate/quotas, private admin, audit and change traceability |
-| Compute/fabric | documented SKU isolation, host baselines, placement records, reset/sanitization tests, network/P_Key ownership |
-| Kubernetes/Slurm | hardened control-plane baselines, RBAC/account review, admission/job controls, private management and backups |
-| Data/model | classification, encryption/key ownership, residency/retention/deletion requirements, access and lineage minimums |
-| Supply chain | approved sources, image/model registries, SBOM inventory, signature/provenance pilot, emergency rollback |
-| Vulnerability | asset-linked scanning, severity/exploitability SLAs, emergency patch path, firmware/driver coverage |
-| Detection/IR | log coverage dashboard, core detections, incident severity, on-call, evidence handling, tabletop exercise |
-| Resilience | service dependency maps, SLO/RTO/RPO, immutable backup for critical control planes, restore and revocation tests |
-| Abuse | AUP, tenant risk tiers, quotas, rate controls, prohibited-use and escalation process |
+- phishing-resistant MFA for applicable provider privilege and high-impact tenant-owner access;
+- private governed access to provider control planes, Kubernetes/Slurm controllers, fabric management and BMC/OOB;
+- critical API object/action/tenant/purpose/context tests;
+- exact host/GPU/cache/NVLink/network/RDMA/storage/telemetry/support declarations for every commercial SKU;
+- quarantine or removal of ambiguous time-slicing, hardware-partition, virtualization, P_Key/DPU, storage, support or cleanup boundaries;
+- central protection and recovery of roots, secrets, PKI and break-glass;
+- protected required telemetry and source-health monitoring for critical trust boundaries;
+- core playbooks for cross-tenant, root/key, control-plane, accelerator/fabric/BMC, destructive-agent and irrecoverable-data scenarios.
 
 ### Exit gate
 
-- Every applicable T0 is independently `VERIFIED` or service launch is blocked.
-- At least 95% of critical assets and 100% of privileged identities have owners and current inventory records.
-- Critical log-source coverage is at least 95%, with known gaps assigned and dated.
-- Restore, privileged revocation and one cross-tenant incident scenario have been exercised.
-- Shared responsibility and security contact paths are customer accessible.
+Every applicable T0 has scope, owner, current implementation state, evidence requirement, validator, and dated containment/remediation. No failed or unknown T0 is counted as complete or covered by a score.
 
-## 6. Phase 3 — Months 3–6: productize controls
+## 6. Phase 2 — Authoritative state and independent verification (days 31–90)
 
-### Objectives
+### Outcomes
 
-- Turn manual controls into reusable, paved-road platform services.
-- Push policy decisions and evidence generation into normal provisioning and deployment paths.
-- Reduce static secrets, configuration drift and service-by-service exceptions.
-
-### Major initiatives
-
-1. **Workload identity:** issue short-lived, attested identities to services, jobs, nodes and agents; remove embedded cloud/API credentials.
-2. **Policy-as-code:** define reusable policies for tenant authorization, isolation SKU, region, data class, artifact admission, egress, tool use and approvals.
-3. **Trusted artifact pipeline:** protected source, isolated build, SBOM, provenance, signature, registry policy and admission verification for high-impact components.
-4. **Desired/actual reconciliation:** continuously compare API intent with Kubernetes/Slurm, host, GPU, storage, network, DPU and P_Key state.
-5. **Runtime and node response:** establish host/runtime telemetry, quarantine workflow, immutable-node or rapid-rebuild approach.
-6. **Evidence automation:** generate evidence IDs, hashes, scope and freshness directly from policy and infrastructure systems.
-7. **Tenant trust and abuse:** integrate onboarding risk, quotas, egress, behavior and appeals with service operation.
-8. **Secure engineering:** make threat model, security tests, rollback and observability release criteria.
+- service, asset, identity, dependency, data-flow, model, artifact, key and supplier inventories;
+- shared-responsibility matrices and customer security contacts;
+- joiner/mover/leaver, service account, workload identity, agent, certificate and secret lifecycle;
+- asset-linked vulnerability and external-exposure discovery;
+- data/model purpose, rights, classification, residency, retention, export, deletion and backup requirements;
+- backup/rebuild-source inventory and dependency mapping;
+- desired/actual reconciliation for tenant, scheduler, host/GPU, network/fabric/DPU, storage, quota, policy and artifact state;
+- independent prohibited-path tests across API, host/GPU, storage, Ethernet/RDMA, DPU, telemetry and support;
+- privileged revocation/break-glass, orchestrator restore/rebuild, critical data/model restore, tenant offboarding/deletion and end-to-end incident exercises;
+- initial service-scoped assurance package.
 
 ### Exit gate
 
-- New tier-1 services use standard identity, logging, secrets, policy, artifact and incident capabilities.
-- At least 80% of production workloads use short-lived or brokered credentials.
-- High-impact artifacts are inventoried; critical build paths produce SBOM and provenance.
-- Tenant/fabric/GPU assignment reconciliation detects and pages on material mismatch.
-- Security evidence for priority controls is generated automatically and reviewed for correctness.
+- every applicable T0 is independently `VERIFIED`;
+- in-scope critical asset and privileged-identity ownership is 100%;
+- required T0 telemetry-source health is 100%;
+- priority independent discovery and non-gate telemetry coverage has a declared denominator and reaches the agreed target, with 95% as a reference starting point rather than a hard-gate substitute;
+- failed tests have accountable containment and remediation;
+- service claims match current deployed evidence.
 
-## 7. Phase 4 — Months 6–12: production maturity
+## 7. Phase 3 — Productize the foundation (months 3–6)
 
-### Objectives
+### Outcomes
 
-- Close T2 gaps and demonstrate effectiveness under attack, failure and recovery.
-- Make customer assurance accurate and repeatable.
-- Establish a sustainable operating cadence.
-
-### Major initiatives
-
-- Expand policy enforcement and workload identity to all production service classes.
-- Validate GPU memory reset, partitioning/dedication, device errors and placement transitions through authorized tests.
-- Exercise Ethernet, storage and InfiniBand/RDMA isolation end to end, including controller misconfiguration and stale assignment.
-- Establish detection engineering mapped to relevant ATT&CK/ATLAS behaviors; run purple-team tests and measure coverage.
-- Implement provider-support JIT/JEA, session evidence and tenant-safe access.
-- Integrate vulnerability, exploitability, exposure and asset criticality; include firmware, BMC, DPU, driver and operators.
-- Conduct full incident simulations for cross-tenant data, signing/root compromise, scheduler/control-plane takeover and malicious/destructive agent.
-- Conduct region or major dependency DR, immutable-backup restore and known-good rebuild exercises.
-- Produce a customer assurance package with service scope, control status, testing, exceptions and responsibility.
+- workload/service identity and short-lived credentials integrated into Kubernetes, Slurm, storage, registry and internal APIs;
+- policy-as-code for authorization, sharing modes, placement, egress, quota/cost, artifact admission and agent tools;
+- reconciled desired/actual state and quarantine for material tenant/isolation drift;
+- hardened, versioned host/node/controller images with rapid rebuild;
+- inventory/BOM, provenance/signature where required, scan, compatibility, admission and recall for high-impact artifacts;
+- protected evidence pipelines with stable service/tenant/request/resource identifiers;
+- defined secure engineering gates, canary, rollback and post-deployment verification;
+- tenant trust tiers, urgent abuse path and quota/rate/cost/capacity controls;
+- customer-facing responsibility and isolation statements.
 
 ### Exit gate
 
-- T2 verified completion reaches the organization target, with zero failed T0 and no overdue critical exception.
-- Cross-tenant negative tests and restore/rebuild exercises pass for every production service profile.
-- Priority detection coverage and alert-quality targets are met and independently sampled.
-- Customer notification, evidence exchange and support-access processes are exercised.
-- Mean time to revoke privileged/workload access and isolate a tenant/resource meets defined SLOs.
+New production services inherit identity, policy, telemetry, evidence, response and recovery defaults from platform services rather than implementing them manually. Material drift creates an alert, block or quarantine with an owner and evidence.
 
-## 8. Phase 5 — Months 12–18: high assurance
+## 8. Phase 4 — Sustainable multi-tenant production (months 6–12)
 
-### Objectives
+### Outcomes
 
-- Add controls justified by sensitive, regulated, dedicated or sovereign workloads.
-- Increase confidence in roots, isolation, supply chain and insider resistance.
-
-### Major initiatives
-
-- Independent penetration and architecture testing with explicit GPU/fabric/control-plane scope.
-- Dedicated-host/fabric/storage and regulated-service profiles with precise customer commitments.
-- Measured boot, node/device attestation and policy-governed key release where supported.
-- Confidential-computing options for suitable workload and threat models.
-- Region/jurisdiction-specific key custody, support personnel, telemetry and recovery boundaries.
-- Two-person control for root/signing, high-impact release, destructive fleet action and sensitive support operations.
-- Supplier assurance for hardware, firmware, drivers, operators, remote support and critical dependencies.
-- Advanced insider-risk detections that preserve workforce privacy and due process.
-- Cryptographic agility, signing-root rotation and compromise recovery exercise.
+- close applicable T2 gaps across engineering, data/model lifecycle, supply chain, keys, orchestration, vulnerability management, evidence, incident and resilience;
+- continuous or frequent service/asset/identity/artifact/fabric reconciliation;
+- vulnerability prioritization based on real exposure, exploitability, privilege, tenant impact and blast radius;
+- tested GPU reset/error/quarantine and tenant-reassignment workflow across representative hardware/firmware/driver/mode variants;
+- regular API, Kubernetes/Slurm, fabric/RDMA/DPU, storage, support and OOB prohibited-path tests;
+- detection engineering linked to current ATT&CK/ATLAS-informed threat scenarios and authorized behavior replay;
+- customer, legal/privacy and ecosystem notification exercises;
+- backup, restore, regional/fabric failure and known-good rebuild exercises;
+- evidence-quality, freshness, false-positive/false-negative proxy and remediation metrics.
 
 ### Exit gate
 
-- T3 claims are backed by service-specific, independent evidence.
-- Sovereign/regulated boundaries are verified across data, identity, key, support, telemetry, backup and supplier flows.
-- Root/key compromise and confidential-workload recovery are exercised.
-- Dedicated/isolation statements use precise resource boundaries rather than marketing language.
+Applicable T2 controls operate as owned services with SLOs, change control, failure behavior, current evidence and repeatable tests. Recovery and isolation results meet service commitments, not just tabletop expectations.
 
-## 9. Phase 6 — Months 18–24: guarded adaptive security
+## 9. Phase 5 — Higher-assurance services (months 12–18)
 
-### Objectives
+### Outcomes
 
-- Introduce continuous controls monitoring and carefully bounded AI-assisted defense.
-- Shorten detection, evidence, triage and safe-remediation loops without allowing automation to become an uncontrolled root of trust.
+Apply only where threat model, regulation, sovereignty, data sensitivity or customer commitment justifies the cost:
 
-### Major initiatives
-
-- Continuous evaluation of identity, policy, asset, vulnerability, artifact, GPU/fabric and evidence state.
-- Security-agent workflows represented as `Goal → State Summary → Evidence → Reasoning → Action → Observation → Verifier → State Update`.
-- Separate planner from executor; require explicit authorization and sandboxing for active testing.
-- Typed tools with least privilege, short-lived credentials, immutable scope, budgets and deterministic stops.
-- Human approval for destructive, external, customer-impacting, high-cost or irreversible actions.
-- Independent verifier gates before controls, incidents or remediation tasks become `VERIFIED`/closed.
-- Replayable environments and signed traces for regression, evaluation, SFT/RL data and failure analysis.
-- Gradual autonomy levels: recommend → draft → execute reversible low-risk action → execute bounded containment → never autonomous for prohibited classes.
+- dedicated host/full-device or precisely stated hardware-partitioned services;
+- measured boot/firmware and attestation-bound admission or key release;
+- confidential-computing profiles with explicit hardware/software/attestation boundary and unsupported components;
+- jurisdiction-bounded people, identity, key, data, support, telemetry, backup, suppliers and recovery;
+- stronger build/train isolation, reproducibility, root separation and cryptographic recovery;
+- independent architecture, penetration, isolation, supplier and recovery assessments;
+- customer assurance packages with exact scope, versions, limitations, findings and evidence validity.
 
 ### Exit gate
 
-- Automation has measurable precision, rollback success, approval-bypass rate, policy-violation rate and false-completion rate.
-- No agent can alter its own goal, scope, tools, credentials, policy, approval authority, evidence or verifier.
-- Every automated containment/remediation path has a tested kill switch and manual recovery path.
-- Adaptive controls reduce verified time-to-containment or cost without increasing material incidents or unsupported claims.
+Every T3 claim is linked to a named service/profile and exact deployed boundary, independently tested at least annually and after material change, and removed or downgraded when evidence expires or assumptions change.
 
-## 10. Parallel workstreams and accountable owners
+## 10. Phase 6 — Guarded adaptive security (months 18–24)
 
-| Workstream | Accountable owner | Essential partners | Primary outcome |
-|---|---|---|---|
-| Governance and assurance | CISO / risk executive | legal, privacy, audit, product | explicit decisions, obligations, evidence and exceptions |
-| Identity and policy | identity/platform leader | security architecture, product, IT | one trust model for human, workload, tenant and agent subjects |
-| API and control plane | product/platform engineering | AppSec, SRE, IAM | tenant-correct, private, resilient and auditable control paths |
-| Compute/GPU/runtime | compute platform | virtualization, kernel, SRE, vendor | declared and proven isolation, reset, hardening and rebuild |
-| Network/fabric/OOB | network/platform security | HPC, facilities, hardware vendor | end-to-end tenant and management-plane separation |
-| Kubernetes/Slurm | orchestration platform | service teams, SRE, security | secure scheduling, admission, jobs and controller lifecycle |
-| Data/model/privacy | data/AI platform | privacy, product, customer teams | protected lifecycle and provenance for data and models |
-| Supply chain/engineering | engineering productivity | AppSec, build, procurement | trusted source-to-deployment path and recall |
-| Detection/response | SecOps / incident response | all platform teams, legal, support | complete telemetry, tested detections, fast safe recovery |
-| Abuse and customer trust | trust and safety / product | fraud, legal, support, SRE | safe onboarding, capacity protection and fair enforcement |
-| Resilience and facilities | SRE/infrastructure | network, facilities, security | tested continuity, rebuild, backup and physical roots |
+### Preconditions
 
-Small organizations may combine roles, but accountability and independent verification must remain explicit.
+Do not begin until identity/delegation, typed tools, least privilege, deterministic approval, stop/containment, rollback/manual recovery, protected traces, independent verification, evidence quality and incident ownership are proven for the relevant action class.
 
-## 11. Build, buy and shared-platform guidance
+### Candidate uses
 
-**Build or deeply integrate** capabilities that encode NeoCloud-specific tenancy or topology: tenant-aware authorization, provisioning reconciliation, GPU/fabric placement evidence, secure reset/sanitization, scheduler policy, model/checkpoint lifecycle, agent-tool mediation and service-specific containment.
+- evidence collection and scope reconciliation;
+- detection triage and investigation planning;
+- reversible low-risk configuration correction;
+- artifact/vulnerability prioritization;
+- guided containment preparation;
+- controlled red-team, validation and recovery exercises in authorized environments.
 
-**Buy or use managed/open components** where the problem is mature and interoperability is strong: IdP/MFA, PAM, KMS/HSM, secret manager, vulnerability scanners, SIEM/data lake, EDR/runtime detection, ticketing, PKI, backup, DDoS/WAF and artifact signing infrastructure.
+### Prohibited default uses
 
-**Do not outsource accountability.** A vendor dashboard is not evidence that the complete service boundary is covered. Require exportable logs, APIs, tenant-safe operation, HA/degraded-mode design, documented data handling, independent testing, secure update, incident notification, exit/migration and integration with stable identities.
+- unrestricted destructive action;
+- self-expanding credentials, tools, scope or budget;
+- self-approval of customer-impacting action;
+- self-modification of policy, evidence or verifier;
+- autonomous irreversible customer communication, legal conclusion or production deletion;
+- declaring its own task `VERIFIED` without independent evidence.
 
-## 12. Prioritization method
+### Exit gate
 
-Prioritize work in this order:
+For each automated action class, measure and meet targets for approval bypass, policy/scope violation, false completion, rollback/manual recovery, stop effectiveness, evidence integrity, customer impact and independent-verifier disagreement. A kill switch and human incident path are tested.
 
-1. T0 production gate failure.
-2. Confirmed active compromise or cross-tenant path.
-3. Root of trust, fleet-wide blast radius or irrecoverable data loss.
-4. Externally reachable and exploitable path.
-5. High-value data/model exposure or destructive authority.
-6. Control/evidence blind spot that prevents scope determination.
-7. Repeated operational failure or overdue exception.
-8. Scalable platform control that removes many manual risks.
-9. T3/T4 improvements justified by service commitment or measured value.
+## 11. Metrics and executive scorecard
 
-Estimate effort and dependency, but do not let a low-effort hygiene task displace a difficult T0 isolation failure.
+Do not use one blended completion percentage. Report:
 
-## 13. Program risks and countermeasures
+- production decision by service/profile;
+- failed, unknown, stale, inconclusive or untested T0;
+- critical unknown/unowned scope;
+- exact commercial-SKU isolation declarations and latest prohibited-path tests;
+- required T0 telemetry health and separately measured priority-source coverage;
+- privileged MFA/JIT/revocation and root/secret state;
+- vulnerability/exposure SLA and deployed-state retest;
+- artifact inventory, provenance/admission and recall;
+- incident command, reliable-scope and effective-containment time;
+- restore/rebuild, tenant offboarding/deletion and sanitization results;
+- agent approval bypass, scope violation, false completion, stop and rollback;
+- customer commitment drift, evidence expiry and unresolved business decisions.
 
-| Program risk | Countermeasure |
-|---|---|
-| Tool-first procurement without ownership | define service/control/evidence outcome and integration owner before buying |
-| Compliance theatre | require deployed-scope evidence, negative tests and independent verification |
-| Hidden shared responsibility | publish per-service matrix and test incident/offboarding handoffs |
-| Security blocks product through late review | make paved-road identity, policy, artifact, logging and isolation services available early |
-| Excessive exceptions become architecture | expiration, owner, customer impact, compensating control and executive visibility |
-| Central policy/logging becomes single point of failure | distributed enforcement, bounded cache, protected buffering and tested degraded mode |
-| AI automation overclaims completion | state machine, immutable evidence, independent verifier and false-completion metric |
-| Sensitive logs create new data risk | minimization, tenant partitioning, masking, role separation, retention and access audit |
-| GPU/fabric assumptions remain untested | service-specific isolation matrix and authorized end-to-end negative tests |
-| Fast growth outruns inventory | event-driven registration, reconciliation and launch gates tied to asset/service IDs |
+Use the [Metrics and Assurance Guide](METRICS_AND_ASSURANCE.md) for definitions and denominators.
 
-## 14. First executive decisions
+## 12. Build, buy and staffing priorities
 
-Within the first month, leadership should explicitly decide:
+### Build or deeply integrate
 
-- which services and regions are in production scope;
-- which isolation modes may carry which data classes;
-- whether any provider administration may be public;
-- who owns root/signing/KMS/BMC/fabric authority;
-- T0 exception authority and maximum lifetime;
-- notification commitments and decision makers;
-- support-access model and customer visibility;
-- default tenant identity, MFA, egress and quota posture;
-- evidence retention and customer assurance commitments;
-- RTO/RPO and whether the business can rebuild from known-good sources;
-- prohibited autonomous-agent action classes;
-- resources and accountable owners for the first 90 days.
+- tenant-correct authorization and desired/actual reconciliation;
+- GPU/NVLink/fabric/DPU/storage/scheduler assignment evidence;
+- reset, cleanup, sanitization and reassignment workflow;
+- model/checkpoint lineage, safe loading and lifecycle;
+- agent identity, delegation, tool policy, approval, stop and verifier;
+- service-specific containment, recovery and reopening.
 
-Without these decisions, security teams cannot reliably implement technical controls because the trust boundary and acceptable failure are undefined.
+### Buy or adopt mature components
+
+- IdP, phishing-resistant MFA, PAM, KMS/HSM, PKI and secret management;
+- vulnerability, exposure and attack-surface management;
+- SIEM/data lake, runtime detection, case management and evidence storage;
+- backup, DDoS/WAF/API gateway, signing and transparency services.
+
+Procurement requires exportable APIs/events, stable identity integration, tenant-safe behavior, secure update, high availability and safe degradation, incident notification, evidence quality, independent testing and migration/exit. A vendor dashboard alone is not coverage.
+
+### Staffing sequence
+
+Early staffing should cover accountable security leadership, platform security architecture, identity/policy, cloud/HPC/GPU/fabric engineering, detection/response, data/model security, vulnerability/exposure, facilities/hardware and assurance/privacy. At small scale, individuals may cover several functions, but implementation and independent verification cannot collapse into one unchecked role.
+
+## 13. Principal program risks
+
+| Risk | Failure pattern | Countermeasure |
+|---|---|---|
+| compliance theater | policies and dashboards replace deployed tests | T0 gates, negative tests, evidence freshness and independent review |
+| platform/security split | service owners assume central security owns correctness | explicit shared responsibility and service acceptance criteria |
+| GPU marketing ambiguity | “dedicated” or “isolated” hides sharing | exact SKU statement and versioned deployed-path tests |
+| coverage gaming | unknown assets/logs disappear from denominators | unknown critical scope fails; publish numerator, denominator and exclusions |
+| control-plane centralization | identity/policy/evidence outage causes fail-open | local safe behavior, bounded cache, expiry, quarantine and recovery tests |
+| tool sprawl | products do not share identities, state or evidence | capability contracts, integration architecture and retirement plan |
+| agent overreach | automation gains destructive authority before proof | risk tiers, deterministic approval/stop, rollback, trace and verifier |
+| recovery optimism | backup exists but roots/data/isolation are not trustworthy | known-good rebuild and independent reopening tests |
+| unreviewed standards drift | final, draft and vendor guidance treated equally | reference-status tracking and periodic evidence-cutoff review |
+
+## 14. Executive decisions required
+
+Leadership must decide and document:
+
+1. service profiles, risk appetite and customer assurance commitments;
+2. accountable service/control owners and independent-verification authority;
+3. which failed T0 exposures are stopped immediately, and who may make a separate time-bounded emergency business decision without changing the conformance result;
+4. isolation products the company will sell and the exact meaning of each claim;
+5. jurisdictions, data/model classes and workloads accepted;
+6. build/buy boundaries and strategic platform investments;
+7. recovery objectives, capacity reserve and notification principles;
+8. high-impact agent action classes allowed, prohibited or approval-gated;
+9. publication, license, vulnerability-reporting and external-assurance strategy;
+10. metrics and evidence that will be reviewed monthly.
+
+## 15. Roadmap completion definition
+
+The roadmap is successful when security is no longer a collection of disconnected controls. Service boundaries and identities are authoritative; tenant context survives every translation; isolation claims are precise and tested; data/models/artifacts have lifecycle and provenance; required telemetry is healthy; response and recovery are exercised; evidence is independently reproducible; and automation cannot exceed, approve or verify its own authority.
