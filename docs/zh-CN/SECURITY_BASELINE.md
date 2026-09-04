@@ -285,7 +285,7 @@ Policy、访谈、Screenshot、Scanner Result、Vendor Dashboard、Signature 或
 | ID | 等级 | 控制 |
 |---|---:|---|
 | NCS-RES-01 | T0 | 服务目标、依赖与恢复要求 |
-| NCS-RES-02 | T0 | 不可变备份与验证恢复 |
+| NCS-RES-02 | T0 | 受保护备份与验证恢复 |
 | NCS-RES-03 | T2 | 控制面与 Region 韧性 |
 | NCS-RES-04 | T1 | 容量、DDoS、队列与 GPU 耗尽韧性 |
 | NCS-RES-05 | T3 | 已知可信重建、灾备与退出可迁移性 |

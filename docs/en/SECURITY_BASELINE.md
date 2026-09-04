@@ -285,7 +285,7 @@ A service must not enter or remain conformant production when any applicable gat
 | ID | Tier | Control |
 |---|---:|---|
 | NCS-RES-01 | T0 | Service objectives, dependency, and recovery requirements |
-| NCS-RES-02 | T0 | Immutable backup and verified restore |
+| NCS-RES-02 | T0 | Protected backup and verified restore |
 | NCS-RES-03 | T2 | Control-plane and regional resilience |
 | NCS-RES-04 | T1 | Capacity, DDoS, queue, and GPU-exhaustion resilience |
 | NCS-RES-05 | T3 | Known-good rebuild, disaster recovery, and exit portability |

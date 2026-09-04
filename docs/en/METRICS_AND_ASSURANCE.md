@@ -211,11 +211,11 @@ Targets below are project reference points. They do not replace threat modeling,
 | NCSM-VEM-02 | Verified remediation | closed findings retested against deployed state / closed findings | 100% critical; reference ≥95% overall |
 | NCSM-VEM-03 | Firmware/driver state visibility | production devices with current, attributable firmware/driver state / production devices | 100% critical roots; reference ≥95% overall |
 | NCSM-TEL-01 | Required T0 telemetry coverage | healthy, queryable required T0 sources / required T0 sources | 100%; hard gate; missing telemetry is not zero activity |
-| NCSM-TEL-02 | Priority telemetry coverage | healthy, queryable priority sources / defined priority sources | reference ≥95% by day 90, with gaps and risk explicit |
-| NCSM-TEL-03 | Telemetry freshness | sources delivering within expected latency / required sources | target set per source; reference ≥99% critical |
-| NCSM-TEL-04 | Detection validation pass rate | priority detections passing authorized behavior replay / due priority detections | 100% catastrophic scenarios; reference ≥95% other priority detections |
-| NCSM-TEL-05 | Evidence tamper detection | simulated unauthorized evidence changes or source-health failures detected / tests | 100% priority tests |
-| NCSM-TEL-06 | Alert decision precision and recall proxy | actionable outcomes and known missed test behaviors / reviewed alerts and test corpus | track by use case; publish limitations and sampling |
+| NCSM-TEL-02 | Telemetry freshness | sources delivering within expected latency / required sources | target set per source; reference ≥99% critical |
+| NCSM-TEL-03 | Detection validation pass rate | priority detections passing authorized behavior replay / due priority detections | 100% catastrophic scenarios; reference ≥95% other priority detections |
+| NCSM-TEL-04 | Alert decision precision and recall proxy | actionable outcomes and known missed test behaviors / reviewed alerts and test corpus | track by use case; publish limitations and sampling |
+| NCSM-TEL-05 | Evidence tamper and source-failure detection | simulated unauthorized evidence changes or source-health failures detected / tests | 100% priority tests |
+| NCSM-TEL-06 | Priority non-gate telemetry coverage | healthy, queryable priority sources outside the T0 required set / defined priority non-gate sources | reference ≥95% by day 90, with gaps and risk explicit |
 
 ### 6.9 AI agent and automated-defense safety
 

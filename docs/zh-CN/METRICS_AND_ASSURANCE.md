@@ -211,11 +211,11 @@ verification:
 | NCSM-VEM-02 | 已验证修复率 | 经部署状态 Retest 的已关闭 Finding / 已关闭 Finding | 关键 100%，总体参考至少 95% |
 | NCSM-VEM-03 | Firmware/Driver 状态可见度 | 具有当前、可归因 Firmware/Driver State 的生产设备 / 生产设备 | 关键 Root 100%，总体参考至少 95% |
 | NCSM-TEL-01 | T0 必需遥测覆盖 | 健康且可查询的 T0 必需 Source / T0 必需 Source | 100%；硬门；缺失遥测不能解释为没有活动 |
-| NCSM-TEL-02 | 优先遥测覆盖 | 健康且可查询的 Priority Source / 已定义 Priority Source | 第 90 天参考至少 95%，缺口与风险显式 |
-| NCSM-TEL-03 | 遥测新鲜度 | 在期望延迟内交付的 Source / Required Source | 按 Source 设定；关键参考至少 99% |
-| NCSM-TEL-04 | Detection 验证通过率 | 通过授权 Behavior Replay 的 Priority Detection / 到期 Priority Detection | 灾难性场景 100%，其他优先项参考至少 95% |
-| NCSM-TEL-05 | Evidence Tamper Detection | 被发现的模拟未授权修改或 Source-health Failure / 测试 | 优先测试 100% |
-| NCSM-TEL-06 | Alert Decision Precision 与 Recall Proxy | 可行动结果和已知漏检测试行为 / 已复核 Alert 与 Test Corpus | 按 Use Case 跟踪，披露局限和抽样 |
+| NCSM-TEL-02 | 遥测新鲜度 | 在期望延迟内交付的 Source / Required Source | 按 Source 设定；关键参考至少 99% |
+| NCSM-TEL-03 | Detection 验证通过率 | 通过授权 Behavior Replay 的 Priority Detection / 到期 Priority Detection | 灾难性场景 100%，其他优先项参考至少 95% |
+| NCSM-TEL-04 | Alert Decision Precision 与 Recall Proxy | 可行动结果和已知漏检测试行为 / 已复核 Alert 与 Test Corpus | 按 Use Case 跟踪，披露局限和抽样 |
+| NCSM-TEL-05 | Evidence Tamper 与 Source-failure Detection | 被发现的模拟未授权修改或 Source-health Failure / 测试 | 优先测试 100% |
+| NCSM-TEL-06 | 非硬门优先遥测覆盖 | 健康且可查询的 T0 Required Set 之外 Priority Source / 已定义 Non-gate Priority Source | 第 90 天参考至少 95%，缺口与风险显式 |
 
 ### 6.9 AI Agent 与自动化防御
 
