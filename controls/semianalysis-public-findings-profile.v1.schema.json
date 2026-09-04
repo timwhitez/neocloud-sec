@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/timwhitez/neocloud-sec/blob/main/controls/semianalysis-public-findings-profile.v1.schema.json",
+  "title": "NeoCloud SemiAnalysis Public Findings Interoperability Profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "profile_id",
+    "version",
+    "review_date",
+    "baseline_version",
+    "status",
+    "non_affiliation",
+    "scope",
+    "coverage_summary",
+    "assurance_views",
+    "service_profiles",
+    "dimensions",
+    "sources",
+    "findings",
+    "public_security_page_coverage",
+    "public_methodology",
+    "normative_errata"
+  ],
+  "properties": {
+    "$schema": { "const": "./semianalysis-public-findings-profile.v1.schema.json" },
+    "profile_id": { "const": "NCS-PROFILE-SEMIANALYSIS-PUBLIC-2026" },
+    "version": { "const": "1.0.0" },
+    "review_date": { "type": "string", "format": "date" },
+    "baseline_version": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "minLength": 1 },
+    "non_affiliation": { "$ref": "#/$defs/bilingual" },
+    "scope": { "type": "object" },
+    "coverage_summary": { "type": "object" },
+    "assurance_views": {
+      "type": "array",
+      "const": ["tenant-black-box", "provider-white-box", "independent-failure-recovery"]
+    },
+    "service_profiles": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true
+    },
+    "dimensions": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 5
+    },
+    "findings": {
+      "type": "array",
+      "minItems": 40,
+      "maxItems": 40,
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "public_security_page_coverage": {
+      "type": "object",
+      "required": [
+        "canonical_enumerated",
+        "mapped",
+        "alternate_host_reported",
+        "unresolved_delta",
+        "exact_parity_claimed",
+        "items"
+      ],
+      "properties": {
+        "canonical_enumerated": { "const": 20 },
+        "mapped": { "const": 20 },
+        "alternate_host_reported": { "const": 21 },
+        "unresolved_delta": { "const": 1 },
+        "exact_parity_claimed": { "const": false },
+        "items": {
+          "type": "array",
+          "minItems": 20,
+          "maxItems": 20
+        }
+      }
+    },
+    "public_methodology": { "type": "object" },
+    "normative_errata": { "type": "object" }
+  },
+  "$defs": {
+    "bilingual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "zh-CN"],
+      "properties": {
+        "en": { "type": "string", "minLength": 1 },
+        "zh-CN": { "type": "string", "minLength": 1 }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "macro_pattern",
+        "severity",
+        "title",
+        "prior_coverage",
+        "mapped_controls",
+        "assurance_views",
+        "minimum_evidence"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^SA-NC-[0-9]{3}$" },
+        "macro_pattern": {
+          "enum": [
+            "tenant-control-plane",
+            "oob-dpu-fabric",
+            "vulnerability-supply-chain",
+            "agent-monitoring",
+            "assurance"
+          ]
+        },
+        "severity": { "enum": ["critical", "high", "medium", "low"] },
+        "title": { "$ref": "#/$defs/bilingual" },
+        "prior_coverage": { "enum": ["covered", "partial", "gap"] },
+        "mapped_controls": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^NCS-[A-Z]+-[0-9]{2}$" }
+        },
+        "assurance_views": {
+          "type": "array",
+          "const": ["tenant-black-box", "provider-white-box", "independent-failure-recovery"]
+        },
+        "minimum_evidence": {
+          "type": "array",
+          "minItems": 4
+        }
+      }
+    }
+  }
+}

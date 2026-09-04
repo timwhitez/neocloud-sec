@@ -1,0 +1,50 @@
+{
+  "$schema": "./neocloud-security-baseline.v1.errata.schema.json",
+  "errata_id": "NCS-BASELINE-V1-ERRATA",
+  "version": "1.0.0",
+  "effective_date": "2026-09-05",
+  "base_catalog_id": "NCS-BASELINE",
+  "base_catalog_version": "1.0.0-draft.1",
+  "status": "normative project errata",
+  "precedence": {
+    "en": "For the named control and field, this replacement text supersedes the corresponding text in controls/neocloud-security-baseline.v1.json until incorporated into a later catalog version.",
+    "zh-CN": "对于指定控制与字段，本文件中的替代文本在被后续目录版本吸收前，优先于 controls/neocloud-security-baseline.v1.json 中的对应文本。"
+  },
+  "corrections": [
+    {
+      "erratum_id": "NCS-ERRATA-001",
+      "control_id": "NCS-CMP-02",
+      "field": "requirement",
+      "reason": {
+        "en": "The generic term time-slicing covered materially different mechanisms. Kubernetes device-plugin scheduler-level time-slicing does not provide memory or fault isolation between replicas, while hypervisor-mediated time-sliced vGPU may provide product-, version- and configuration-specific hardware memory/fault isolation. The exact mechanism must be named and tested.",
+        "zh-CN": "通用术语 Time-slicing 混合了实质不同的机制。Kubernetes Device Plugin 的调度器级 Time-slicing 不为 Replica 提供显存或故障隔离；由 Hypervisor 仲裁的 Time-sliced vGPU 则可能具备与产品、版本和配置相关的硬件显存/故障隔离。必须明确机制并按真实部署验证。"
+      },
+      "replacement": {
+        "en": "The provider MUST distinguish full-device dedication, hardware partitioning, hypervisor-mediated vGPU, and scheduler-level bare-device-plugin time-slicing; select modes by threat model; never represent scheduler-level time-slicing as memory or fault isolation; validate any mediated-vGPU isolation claim for the exact product, GPU, hypervisor, manager/driver, firmware, topology, configuration and lifecycle; prevent sensitive placement on insufficient boundaries; and verify reset, error containment, quarantine, memory handling and inter-tenant cleanup on the deployed stack.",
+        "zh-CN": "服务商必须区分整卡独占、硬件分区、由 Hypervisor 仲裁的 vGPU，以及基于裸 Device Plugin 的调度器级 Time-slicing；按威胁模型选择模式；不得把调度器级 Time-slicing 表述为显存或故障隔离；对任何受仲裁 vGPU 的隔离声明，必须绑定准确 Product、GPU、Hypervisor、Manager/Driver、Firmware、Topology、Configuration 与 Lifecycle 进行验证；禁止敏感任务使用不足边界，并在真实部署 Stack 上验证 Reset、Error Containment、Quarantine、Memory Handling 与跨租户 Cleanup。"
+      },
+      "verification": {
+        "en": "Inventory the exact assignment path and mode; verify the customer-visible product statement; execute authorized cross-tenant memory, fault, reset, DMA, telemetry, topology, lifecycle and reassignment tests on representative deployed versions; do not infer isolation from the generic label time-sliced.",
+        "zh-CN": "盘点准确分配路径与模式，验证面向客户的产品声明，并在代表性真实版本上执行经授权的跨租户显存、故障、Reset、DMA、Telemetry、Topology、Lifecycle 与 Reassignment 测试；不得仅依据 Time-sliced 标签推断隔离。"
+      },
+      "sources": [
+        {
+          "publisher": "NVIDIA",
+          "url": "https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-sharing.html",
+          "status": "vendor implementation guidance",
+          "observed_at": "2026-09-05"
+        },
+        {
+          "publisher": "NVIDIA",
+          "url": "https://docs.nvidia.com/ai-enterprise/release-8/latest/infra-software/vgpu/overview.html",
+          "status": "vendor implementation guidance",
+          "observed_at": "2026-09-05"
+        }
+      ]
+    }
+  ],
+  "retirement_condition": {
+    "en": "Retire this erratum only after a later normative catalog incorporates equivalent or stronger mechanism-specific wording and all bilingual documents, validators and templates are updated.",
+    "zh-CN": "仅当后续规范目录纳入等效或更强的机制特定表述，并同步更新全部双语文档、校验器和模板后，才可退役本勘误。"
+  }
+}
