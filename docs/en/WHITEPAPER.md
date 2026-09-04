@@ -2,285 +2,307 @@
 
 **Version:** 1.0.0-draft.1  
 **Baseline date:** 2026-09-04  
-**Status:** Implementation-oriented public draft
+**Status:** implementation-oriented project draft
 
 ## Executive summary
 
-NeoClouds are specialized, AI-first cloud platforms optimized for accelerator-heavy training, inference, high-performance computing, and agentic workloads. They combine cloud APIs with physical GPU fleets, bare metal, Kubernetes, Slurm, high-throughput storage, Ethernet, InfiniBand/RDMA, NVLink domains, DPUs, firmware, model registries, data services, and increasingly autonomous AI systems. This concentration of expensive capacity and high-value data creates a security problem that is materially different from conventional enterprise IT and cannot be solved by adding a generic cloud checklist to a GPU platform.
+“NeoCloud” is used in this project as a working industry term for specialized cloud providers that primarily serve accelerator-intensive artificial-intelligence and high-performance-computing workloads. The term is useful, but it does not yet have one formal, regulatory, or universally accepted definition. This white paper therefore defines its service boundary explicitly rather than relying on the label.
 
-NeoCloud Cyber Security defines a unified cybersecurity control plane for this environment. Identity is the root of trust; policy is the decision core; people, tenants, workloads, devices, and AI agents are first-class security subjects. Controls span endpoint and administrative access, control planes, cloud-native runtime, GPU and fabric isolation, data and model protection, software and model supply chains, security operations, resilience, and physical infrastructure. The desired outcome is a closed loop from visibility, to policy decision, to preventive or responsive enforcement, to durable evidence and independent verification.
+A NeoCloud commonly combines cloud APIs, physical GPU fleets, bare metal, hypervisors, Kubernetes, Slurm, high-throughput storage, Ethernet, InfiniBand/RDMA, NVLink-aware topology, DPUs, firmware, BMC/OOB management, model and artifact registries, data services, and increasingly capable AI agents. Expensive shared capacity, high-value data/models, multiple schedulers, direct-memory data paths, deep firmware/software supply chains, and machine-speed delegated action create failure modes that a generic enterprise or cloud checklist does not fully express.
 
-The baseline is designed around five adoption tiers and eighteen security domains. T0 controls are hard production guardrails. T1 establishes complete ownership and minimum viable visibility. T2 turns controls into scalable platform capabilities. T3 provides higher assurance for regulated, sovereign, sensitive, or dedicated services. T4 introduces continuous verification, confidential-computing patterns, and guarded automation. No aggregate score may compensate for a failed T0 control.
+NeoCloud Cyber Security is a **vendor-neutral security baseline, reference architecture, roadmap, and implementation guide** for this environment. It describes how an operator can design and run a coherent security control system in which identity and delegated authority establish the acting subject, policy governs trust decisions, enforcement occurs close to protected resources, and evidence plus independent verification determine whether an outcome is actually true.
 
-This document is intentionally implementation oriented. It defines the security problem, architecture, operating model, threat model, baseline, roadmap, evidence model, and provider/customer responsibilities. The companion [Security Baseline](SECURITY_BASELINE.md), [Practice Guide](PRACTICE_GUIDE.md), [Reference Architecture](REFERENCE_ARCHITECTURE.md), [Roadmap](ROADMAP.md), and [Metrics and Assurance Guide](METRICS_AND_ASSURANCE.md) convert the model into deployable work.
+This repository is not a deployable security product, formal standard, certification scheme, legal opinion, or proof that any provider is secure. It is a project-authored draft intended to make service boundaries, risks, controls, evidence, verification, responsibility, and development priorities explicit and testable.
 
-## 1. Definition and objective
+The baseline contains 90 controls across 18 domains and five adoption tiers. T0 controls are hard production gates; every applicable T0 must be independently `VERIFIED`. T1 establishes ownership, scope, hygiene, visibility, response, and recovery foundations. T2 turns controls into scalable platform capabilities. T3 adds independently supportable higher assurance for sensitive, regulated, sovereign, dedicated, attested, or confidential-computing profiles where justified. T4 is reserved for guarded adaptive automation and continuous verification after authority, approval, stop, rollback, trace, and verifier controls have been proven.
 
-**NeoCloud Cyber Security is a unified cybersecurity control plane for AI-native organizations and specialized AI clouds. It treats identity as the root of trust, policy as the decision core, and agents plus workloads as first-class security subjects. It coordinates endpoint, cloud-native runtime, network and fabric, data, software/model supply chain, and security operations controls to close the loop from visibility to real-time enforcement and continuous assurance.**
+No score, compensating control, risk acceptance, or executive decision can turn a failed applicable T0 into a conformant result. An authorized executive may record a time-bounded emergency business-continuity decision, but the control remains failed and the service remains nonconformant under this baseline until the gate is independently verified.
 
-The objective is not to build one more security product. It is to establish a coherent set of trust decisions and verifiable outcomes across the complete service lifecycle:
+## 1. Objective and system boundary
 
-`design → source → build → provision → authenticate → schedule → execute → observe → respond → recover → delete → decommission`
+The objective is to preserve trustworthy decisions throughout the service lifecycle:
 
-A NeoCloud is secure only when these decisions remain consistent across layers. Strong API authentication cannot compensate for weak GPU reset. A hardened Kubernetes cluster cannot compensate for a shared InfiniBand partition. Signed images cannot compensate for a compromised signing key. An incident-response policy cannot compensate for absent control-plane logs. Security is therefore treated as a system property rather than a collection of disconnected tools.
+```text
+design → source → build/train → provision → authenticate/delegate
+→ schedule → execute → observe → respond → recover
+→ export/delete → sanitize → decommission
+```
 
-## 2. Why NeoCloud security is distinct
+Security is a system property across this chain. Strong API authentication cannot compensate for incorrect object/tenant authorization. A hardened Kubernetes cluster cannot prove Slurm, RDMA, storage, or GPU isolation. An artifact signature cannot prove safe source, build, review, key custody, policy, or runtime behavior. An available backup cannot prove identity, integrity, tenant isolation, or recoverability. A model-generated success statement cannot prove that an agent completed an authorized task safely.
 
-### 2.1 Shared accelerators create nontraditional tenant boundaries
-
-A GPU may be dedicated, partitioned through hardware mechanisms, virtualized, or shared through scheduler time slicing. These modes are not equivalent. Isolation claims must cover device memory, caches, DMA, driver state, error containment, reset behavior, telemetry, and placement topology—not merely process or container separation. Sensitive workloads must never be placed on a sharing mode whose isolation properties do not meet the declared service commitment.
-
-### 2.2 High-performance fabrics can bypass ordinary controls
-
-Training clusters use high-bandwidth, low-latency fabrics whose operational goal is to remove bottlenecks. Ethernet overlays, storage networks, InfiniBand P_Keys, RDMA, NVLink domains, DPUs, and out-of-band management may each form a distinct trust boundary. A correct VPC policy does not prove that an RDMA path, fabric manager, or DPU assignment is isolated. Security validation must exercise the actual data paths.
-
-### 2.3 Cloud and HPC control models coexist
-
-Kubernetes and Slurm express identity, tenancy, scheduling, quotas, and isolation differently. A single service may involve a public API, an internal provisioning system, Kubernetes operators, Slurm controllers, image factories, node agents, and vendor management components. Authorization must remain tenant-correct across every translation and reconciliation step.
-
-### 2.4 AI data and models are crown jewels and attack surfaces
-
-Training datasets, private prompts, model weights, checkpoints, adapters, embeddings, vector stores, inference inputs and outputs, agent memory, KV caches, and evaluation data may contain intellectual property, personal data, credentials, or operational secrets. Models and checkpoints may also contain malicious serialized objects or poisoned behavior. NeoCloud security must protect confidentiality, integrity, provenance, retention, deletion, and safe loading—not only storage encryption.
-
-### 2.5 The infrastructure supply chain is deep and privileged
-
-The trusted computing base includes firmware, BMCs, DPUs, NICs, GPU drivers, kernels, hypervisors, container runtimes, Kubernetes and Slurm components, device plugins, operators, images, packages, infrastructure code, model-serving frameworks, model formats, and build/signing systems. A provider must know what is running, where it came from, who approved it, and how compromise can be contained or rolled back.
-
-### 2.6 AI agents change the unit of authorization
-
-An agent can read data, call tools, execute code, modify infrastructure, communicate externally, and make decisions at machine speed. The traditional distinction between “application” and “administrator” becomes insufficient. Each agent requires an identity, declared goal, immutable scope, authorized tools, short-lived credentials, approval boundaries, budgets, deterministic stop conditions, complete action traces, and an independent verifier. External content must never silently alter its goal, permissions, hooks, skills, or policy.
-
-### 2.7 Scarce capacity invites abuse and availability attacks
-
-GPU capacity can be stolen, hoarded, resold, used for prohibited workloads, or exhausted through denial-of-wallet attacks. Queue manipulation, fraudulent accounts, credential resale, cryptomining, malicious model serving, DDoS, and dependency failures can harm both safety and economics. Abuse prevention, tenant trust, rate limits, quotas, egress controls, capacity engineering, and incident response therefore belong in the cyber baseline.
-
-## 3. Scope and service profiles
-
-The baseline applies to provider-operated and customer-facing components that materially affect confidentiality, integrity, availability, privacy, tenant isolation, safety, sovereignty, or recoverability.
+The project covers provider-operated and customer-facing components that materially affect confidentiality, integrity, availability, privacy, tenant isolation, abuse resistance, sovereignty, safety, recoverability, or customer assurance. A service may select multiple profiles:
 
 | Service profile | Typical boundary | Principal security emphasis |
 |---|---|---|
-| **GPU-IaaS** | Tenant VM/container on provider accelerator fleet | identity, API correctness, host/GPU/fabric isolation, image provenance, secure reset |
-| **Bare-Metal-GPU** | Tenant receives one or more physical hosts | provisioning, BMC isolation, firmware state, network/fabric segmentation, sanitization |
-| **Managed-Kubernetes** | Provider manages control plane and often nodes | tenant RBAC, admission, runtime security, secret handling, node/GPU isolation |
-| **Managed-Slurm-HPC** | Provider manages scheduler, partitions, nodes, accounting | controller security, user/job isolation, modules, shared storage, queue/fabric controls |
-| **Model-Training** | Managed data, jobs, checkpoints and experiment services | data/model lineage, poisoning resistance, workload identity, artifact integrity, privacy |
-| **Model-Serving** | Managed endpoints, routing, cache and model runtime | API abuse, model authorization, prompt/output handling, cache isolation, availability |
-| **Agent-Platform** | Managed agents, tools, memory, skills and connectors | delegated authority, prompt injection, tool policy, approval, audit, stop and verification |
-| **Sovereign-Regulated** | Jurisdiction-bounded people, data, keys and operations | residency, personnel, cryptographic control, support boundaries, evidence and assurance |
+| **GPU-IaaS** | Tenant VM/container on a provider accelerator fleet | API authorization, host/GPU/fabric/storage isolation, image provenance, allocation and reset |
+| **Bare-Metal-GPU** | Tenant receives one or more physical hosts | provisioning/deprovisioning, BMC/OOB, firmware, dedicated/shared boundaries, sanitization |
+| **Managed-Kubernetes** | Provider manages the control plane and often nodes | tenant RBAC, admission, plugins/operators, workload identity, node/GPU isolation, recovery |
+| **Managed-Slurm-HPC** | Provider manages scheduler, partitions, nodes, accounting | controller/authentication, account/job isolation, queue/fabric/storage, accounting and recovery |
+| **Model-Training** | Managed datasets, jobs, checkpoints, experiment services | rights/purpose, lineage, poisoning/integrity, safe formats, temporary data, export/deletion |
+| **Model-Serving** | Managed model endpoints, routing, cache and runtime | endpoint/model authorization, tenant routing/cache, extraction/abuse, quota and resilience |
+| **Agent-Platform** | Managed agents, tools, memory, skills and connectors | delegation, external-content boundaries, tool policy, approval, stop, trace and verification |
+| **Sovereign-Regulated** | Jurisdiction-bounded people, data, keys and operations | complete jurisdiction boundary, support, telemetry, suppliers, recovery and assurance |
 
-A service may select more than one profile. Applicability must be recorded explicitly; “not applicable” requires a rationale and reviewer.
+Customer-controlled systems outside the contracted boundary are out of direct provider scope, but may remain dependencies or shared responsibilities. Legal conclusions, model-quality evaluation unrelated to security, and claims of certification are also outside this document.
 
-Out of scope are customer-controlled systems beyond the contracted boundary, legal conclusions, model-quality assurance unrelated to security, and claims that a mapping alone establishes certification. These may still be dependencies or shared responsibilities.
+## 2. Why NeoCloud security is distinct
 
-## 4. Assets and crown jewels
+### 2.1 Accelerator sharing creates several different products
 
-A NeoCloud asset model must include logical, physical, human, and informational assets. At minimum:
+A GPU may be assigned as a full dedicated device, partitioned by supported hardware mechanisms, virtualized, or shared through scheduler time-slicing. These are not interchangeable security boundaries.
 
-- tenant accounts, organizations, quotas, billing state, support identities, and federation mappings;
-- human administrators, break-glass accounts, service accounts, workload identities, agent identities, API keys, certificates, and signing roots;
-- public APIs, administrative interfaces, provisioning systems, schedulers, controllers, operators, admission systems, policy engines, and CI/CD;
-- hosts, hypervisors, kernels, containers, BMCs, DPUs, NICs, GPUs, HBM, local disks, fabrics, racks, regions, and availability zones;
-- images, packages, firmware, drivers, operators, infrastructure code, SBOMs, provenance records, signatures, and transparency evidence;
-- customer datasets, prompts, outputs, models, adapters, checkpoints, embeddings, caches, experiment metadata, logs, snapshots, and backups;
-- security telemetry, incident evidence, detection content, vulnerability state, exception records, and assurance reports;
-- third-party SaaS, identity providers, package registries, source repositories, hardware suppliers, remote support paths, and critical utilities.
+- **Full-device dedication** can reduce co-residency, but still depends on host, reset, local storage, network/fabric, telemetry, support, and reassignment controls.
+- **Hardware partitioning**, such as supported MIG configurations, may provide dedicated compute and memory resources within a device; it is not the same as full-device or full-host dedication and remains dependent on the exact GPU, firmware, driver, virtualization, topology, scheduler, and operational workflow.
+- **Virtualization** depends on the specific mediated/passthrough architecture and its host, IOMMU, driver, management, and reset path.
+- **Time-slicing** shares a GPU through scheduling and does not provide memory or fault isolation between replicas; it must not be marketed or accepted as a hardware tenant-isolation boundary.
 
-Asset inventory is not a spreadsheet exercise. Each critical asset must have an owner, service relationship, tenant scope, identity, location, lifecycle state, data classification, dependency edges, expected configuration, telemetry source, and recovery or disposal method.
+Every commercial SKU must state and test host, GPU/HBM/cache, DMA, fault, reset, NVLink topology, network/RDMA, storage, telemetry, support, and cleanup properties. Sensitive workloads must use a mode justified by the threat model and customer commitment.
 
-## 5. Threat model
+### 2.2 High-performance paths can bypass ordinary assumptions
 
-NeoClouds must consider external attackers, malicious or compromised tenants, insiders, compromised provider identities, supply-chain actors, fraudulent customers, compromised workloads, models and agents, and jurisdictional or physical threats. The following failure classes are baseline design inputs.
+Training clusters optimize away overhead. Ethernet overlays, storage networks, InfiniBand P_Keys, RDMA, DPUs/NICs, NVLink domains, BMC/OOB, and vendor controllers may each form a trust boundary. A correct VPC or Kubernetes NetworkPolicy does not prove the RDMA, DPU, storage, or management path.
 
-| Threat class | Representative failure | Potential impact | First-line controls |
-|---|---|---|---|
-| Account and API compromise | stolen credential, broken object-level authorization, support impersonation | tenant takeover, cross-tenant access, fraudulent consumption | phishing-resistant MFA, federation, tenant-correct authorization, JIT access, immutable audit |
-| Control-plane takeover | exposed admin interface, vulnerable operator, leaked automation token | fleet-wide compromise and persistence | private management plane, workload identity, policy gates, hardened controllers, rapid revocation |
-| Compute escape | container/VM escape, privileged workload, host compromise | access to host, peer workloads, credentials or devices | hardened isolation, admission policy, patched runtime, EDR/runtime detection, placement controls |
-| Accelerator leakage | memory remanence, unsafe sharing, weak reset, side channel | model/data exposure across jobs or tenants | documented SKU isolation, dedicated/MIG-class options, reset verification, adversarial testing |
-| Fabric boundary failure | wrong VRF/VXLAN/P_Key/DPU assignment or RDMA bypass | direct cross-tenant network or storage reachability | default deny, plane separation, controller reconciliation, end-to-end path tests |
-| Data/model compromise | theft, poisoning, malicious format, unsafe deserialization | privacy/IP loss, model sabotage, code execution | classification, encryption, lineage, signed artifacts, safe loaders, access and integrity monitoring |
-| Supply-chain compromise | poisoned package/image/operator/driver/firmware/model | privileged code execution at scale | approved sources, SBOM, provenance, signatures, isolated builds, staged rollout and rollback |
-| Agent/tool abuse | prompt injection, confused deputy, excessive agency, poisoned skill/memory | unauthorized actions, exfiltration, destruction | agent identity, policy-mediated tools, schema validation, approvals, budgets, trace and verifier |
-| Abuse and denial of wallet | fraudulent tenant, quota bypass, capacity hoarding, prohibited use | financial loss, service degradation, legal/safety harm | tenant trust tiers, quotas, rate limits, egress policy, behavioral detection, response workflow |
-| Insider and support abuse | standing privilege, covert access, log tampering | high-confidence access to sensitive assets | separation of duties, JIT/JEA, session recording, dual control, evidence immutability |
-| Availability and destructive events | DDoS, ransomware, automation error, regional/fabric failure | prolonged outage, data loss, unsafe recovery | capacity controls, immutable backups, tested rebuild, regional strategy, kill switches and exercises |
-| Physical/firmware compromise | BMC takeover, rogue component, theft, malicious maintenance | persistent control below the OS | isolated OOB, measured state, supply controls, facility access, tamper and lifecycle evidence |
+P_Key membership is one relevant InfiniBand isolation control, but it relies on correctly governed fabric-management components, membership configuration, endpoint behavior, and actual enforcement. The provider must protect the subnet/fabric manager, reconcile intended and actual assignments, test prohibited paths, detect stale/partial state, and verify cleanup during tenant reallocation.
 
-Threat modeling must include positive and negative flows, trust-boundary crossings, failure of dependencies, unsafe defaults, operator error, malicious configuration, recovery behavior, and evidence integrity. Catastrophic cross-tenant and root-of-trust failures must not be averaged away by a low probability score.
+### 2.3 Cloud and HPC control models coexist
 
-## 6. Security principles
+A tenant request may cross an API gateway, identity and policy systems, provisioning databases, Kubernetes operators, Slurm controllers, image factories, node agents, network/fabric controllers, storage systems, and billing/quota services. Each translation creates risk of object, action, tenant, purpose, or state confusion. Stable request, tenant, workload, job, node, device, data, artifact, policy, and evidence identifiers are therefore core security controls.
 
-1. **Identity before location.** Authenticate and authorize people, tenants, workloads, devices, agents, and automation independently of network location.
-2. **Least privilege is dynamic.** Prefer short-lived, just-in-time, task-bound authority over standing roles or static secrets.
-3. **Tenant isolation is end to end.** Verify boundaries across API, identity, control plane, compute, GPU, storage, cache, telemetry, Ethernet, RDMA, and support operations.
-4. **Secure defaults are provider responsibilities.** MFA, audit, safe isolation modes, encryption, updates, and secure deletion cannot be optional premium features.
-5. **Policy and evidence are code.** Important decisions should be testable, versioned, reproducible, and attributable.
-6. **External content is untrusted data.** Prompts, models, packages, skills, documents, images, tickets, and web content never grant authority.
-7. **Assume compromise and constrain blast radius.** Design for rapid isolation, revocation, rebuild, and customer-safe evidence collection.
-8. **Recovery is continuously proven.** Backups, restores, failover, secure erase, key recovery, and tenant offboarding are exercised.
-9. **Automation earns autonomy.** Automated actions must be bounded, observable, reversible where possible, and independently verified.
-10. **Complexity must earn its cost.** Prefer general mechanisms—identity, isolation, policy, evidence, feedback, and verification—over brittle exceptions.
+### 2.4 Data, models, and intermediate state are both assets and attack surfaces
 
-## 7. Operating model
+Datasets, prompts, outputs, model weights, checkpoints, adapters, embeddings, vector stores, KV caches, agent memory, experiment metadata, logs, snapshots, and backups may contain intellectual property, personal data, credentials, or operational secrets. Models and checkpoints may also include unsafe serialization or poisoned behavior.
 
-### 7.1 Accountability
+Protection must address purpose and rights, tenant-correct access, encryption and key ownership, lineage and integrity, safe formats/loaders, temporary state, output/export, privacy, residency, retention, deletion, backup treatment, and offboarding—not only storage encryption.
 
-The governing body or executive risk owner sets risk appetite and approves material residual risk. A CISO or equivalent owns the security program. Every customer-facing service has a business owner, technical owner, security owner, data owner, and incident escalation path. Platform teams own reusable controls; service teams remain accountable for correct adoption.
+### 2.5 The trusted supply chain is deep and privileged
 
-### 7.2 Three complementary lines
+The trusted computing base can include firmware, BMCs, DPUs, NICs, GPU drivers, kernels, hypervisors, runtimes, Kubernetes/Slurm components, device plugins, operators, images, packages, infrastructure code, model-serving frameworks, model/checkpoint formats, prompts, policies, skills, build systems, registries, and signing roots.
 
-- **First line:** product, platform, infrastructure, SRE, network, data, and AI teams implement and operate controls.
-- **Second line:** security, privacy, risk, and compliance define policy, challenge design, monitor risk, and coordinate assurance.
-- **Third line:** independent audit or validation tests whether assertions and evidence are reliable.
+The operator must know what is running, where it came from, which identity produced and approved it, what evidence supports it, what can revoke it, and how to recall, quarantine, roll back, or rebuild it. A valid signature proves that a key signed bytes; it does not prove the source, review, key policy, runtime behavior, or safety of those bytes.
 
-Independence is about decision authority, not organizational size. A small NeoCloud may use cross-team review or a qualified external assessor, but the implementer must not be the only verifier.
+### 2.6 Agents change authorization and failure speed
 
-### 7.3 Security capability model
+Agents may read data, execute code, call infrastructure or business tools, change resources, communicate externally, and make repeated decisions at machine speed. Controls must scale with authority and impact rather than applying the same heavyweight mechanism to every AI feature.
 
-Security should be delivered as shared platform capabilities: identity and federation, workload identity, policy decision and enforcement, secrets and keys, trusted build and artifact verification, asset/dependency graph, vulnerability and exposure management, telemetry and evidence plane, incident command, tenant trust and abuse prevention, recovery and sanitization, and customer assurance.
+Every production AI system or agent requires an owner, identity, use case, model/prompt/RAG/memory/skill/tool inventory, data and tenant scope, delegated authority, impact assessment, monitoring, and incident path. Tool-using systems additionally require typed interfaces, policy mediation, least privilege, short-lived credentials where feasible, egress/data/cost controls, and revocation. High-impact, destructive, external, customer-affecting, expensive, or irreversible actions require deterministic approval and explicit stop/containment behavior. Adaptive or autonomous security workflows further require immutable goals/scope, protected replayable traces, budget/time/repetition/uncertainty stops, rollback or manual recovery, and an independent verifier that the agent cannot modify.
 
-Each capability needs an owner, service-level objective, supported tiers, consumers, dependencies, evidence outputs, on-call path, and roadmap state. The [security service catalog template](../../templates/security-service-catalog.csv) provides the minimum fields.
+External content—including prompts, documents, tickets, web pages, packages, models, RAG data, memory, and tool output—provides observations, not authority. It cannot expand identity, goal, scope, tools, credentials, policy, approval, budget, evidence, or verifier authority.
 
-### 7.4 Shared responsibility
+### 2.7 Scarce capacity attracts abuse and availability attacks
 
-The provider cannot transfer responsibility for infrastructure it exclusively controls. Customers cannot assume the provider will secure customer code, data classification, role assignments, or guest operating systems unless contracted. Every service must publish a responsibility matrix that covers normal operation, incident response, evidence, backup/restore, deletion, and end-of-service actions. Ambiguity is itself a control failure.
+Fraudulent onboarding, credential resale, cryptomining, prohibited workloads, quota bypass, queue manipulation, capacity hoarding, model extraction, denial of wallet, DDoS, dependency failure, and destructive automation can affect security, safety, customers, and economics simultaneously. Tenant trust, acceptable use, quotas/rates/cost/concurrency, egress, capacity engineering, fair enforcement, incident response, and appeal therefore belong in the baseline.
 
-## 8. Reference architecture
+## 3. Assets, roots of trust, and threat actors
 
-The security architecture has seven cooperating planes:
+A complete inventory must cover:
 
-1. **Governance and assurance plane:** service catalog, risk, obligations, exceptions, evidence, control status, customer assurance.
-2. **Identity and policy plane:** human/tenant/workload/agent identity, federation, PKI, authorization, JIT privilege, policy decision and approval.
-3. **Edge and control plane:** API gateway, management interfaces, provisioning, billing/quota, support tooling, orchestrator controllers.
-4. **Orchestration and runtime plane:** Kubernetes, Slurm, admission, scheduler, runtime, node agents, sandboxing, workload policy.
-5. **Compute, fabric and storage plane:** hosts, hypervisors, GPUs, DPUs, BMCs, Ethernet, InfiniBand/RDMA, NVLink, storage, snapshots and reset/sanitization.
-6. **Data, model and supply-chain plane:** source, build, registry, SBOM, provenance, signing, datasets, model registry, safe loading and release.
-7. **Telemetry, response and recovery plane:** logs, traces, detections, case management, evidence store, revocation, containment, backup, restore and rebuild.
+- tenant organizations, users, owners, federation, quotas, billing, support and emergency contacts;
+- human administrators, service/workload/device/agent identities, API keys, certificates, break-glass and signing/recovery roots;
+- APIs, controllers, schedulers, databases, operators, policy engines, CI/CD, support systems and evidence pipelines;
+- hosts, hypervisors, kernels, runtimes, BMCs, DPUs/NICs, GPUs/HBM, local media, networks/fabrics, racks, regions and utilities;
+- images, packages, firmware, drivers, operators, IaC, SBOMs, provenance, signatures, models, checkpoints, prompts, skills and policies;
+- customer data/model artifacts, caches, outputs, logs, snapshots, backups, deletion and sanitization state;
+- suppliers, SaaS, IdPs, registries, repositories, remote support and critical facilities.
 
-Policy enforcement must occur close to the resource being protected, while decisions and evidence remain correlated through stable identities and asset relationships. No single plane is trusted to attest to its own effectiveness. See the [Reference Architecture](REFERENCE_ARCHITECTURE.md) for trust zones, flows, components, and service-profile variants.
+Each critical object needs an accountable owner, service and tenant relationship, identity, location, lifecycle, expected state, classification, dependencies, telemetry, recovery, and disposal method. Unknown critical scope is a failed assertion, not an item to omit from the denominator.
 
-## 9. Security-domain model
+Threat actors include external attackers, malicious or compromised tenants, fraudulent customers, compromised workloads/models/agents, insiders, support personnel, compromised provider identities, supply-chain actors, malicious or failed automation, jurisdictional actors, and physical attackers. Baseline failure classes include:
 
-| Domain | Required outcome |
-|---|---|
-| Governance, risk, compliance and shared responsibility | accountable decisions, explicit obligations, controlled exceptions, customer-transparent responsibility |
-| Asset, service, dependency and data-flow inventory | authoritative knowledge of what exists, who owns it, how it connects, and what evidence is missing |
-| Human, tenant, workload and agent identity | strong, short-lived, scoped and reviewable identity for every acting subject |
-| Control-plane, API and administrative interfaces | tenant-correct authorization, private administration, abuse resistance, traceable change |
-| Network, fabric, RDMA/InfiniBand and DPU isolation | proven separation across every packet and direct-memory path |
-| Compute, hypervisor, bare metal, GPU and accelerator | declared isolation properties, hardened hosts, safe allocation, reset and attestation |
-| Kubernetes, containers, Slurm and scheduler | secure controllers, admission, jobs, quotas, runtime and recovery |
-| Data, dataset, model, artifact and privacy | controlled lifecycle, provenance, integrity, confidentiality, retention and deletion |
-| Secrets, keys, PKI, attestation and confidential computing | protected roots of trust, short-lived secrets, governed key release and cryptographic agility |
-| Software, model and infrastructure supply chain | known, approved, signed and reproducible inputs with rapid revocation and rollback |
-| Secure engineering, IaC, change and configuration | threat-informed design, reviewable change, safe defaults, policy gates and drift control |
-| Vulnerability, exposure, patch and firmware | continuous discovery, risk-based remediation and verified closure across all layers |
-| Telemetry, detection, intelligence and audit | complete, tenant-safe, tamper-resistant evidence and tested detections |
-| AI application, agent, tool, skill and prompt | constrained authority, protected memory/context, safe tool use, traceability and independent verification |
-| Abuse prevention, tenant trust, egress and acceptable use | proportional onboarding, resource controls, misuse detection, fair response and appeal |
-| Incident response, forensics, crisis and recovery | fast command, safe containment, evidence preservation, notification and verified reopening |
-| Resilience, availability, capacity, backup and DR | survivable control planes, tested restore/rebuild and resistance to capacity exhaustion |
-| Physical, facility, BMC, hardware lifecycle and media | controlled facilities and OOB systems, trustworthy hardware state and verifiable sanitization |
-
-The complete normative outcomes and evidence expectations are in the baseline and machine-readable control catalog.
-
-## 10. Adoption tiers and production gates
-
-| Tier | Meaning | Typical decision |
+| Failure class | Examples | Principal consequences |
 |---|---|---|
-| **T0 Guardrails** | non-negotiable conditions before tenant data or production capacity is exposed | release blocked until passed or an exceptional executive emergency process is invoked |
-| **T1 Foundation** | ownership, inventory, basic hygiene, visibility, response and recovery foundations | complete in the first 90 days or before material scale |
-| **T2 Production** | reusable, policy-enforced and measured controls for multi-tenant general availability | required for sustainable production operation |
-| **T3 Assured** | independent testing and higher-assurance isolation, sovereignty and resilience | required for high-impact, regulated or explicitly assured services |
-| **T4 Adaptive** | continuous verification, guarded automation, advanced attestation/confidentiality | adopted only where failure modes and rollback are understood |
+| Identity/API | stolen credential, federation error, broken object or tenant authorization | takeover, cross-tenant access, fraudulent consumption |
+| Provider control plane | public admin path, vulnerable controller/operator, leaked automation identity | fleet-wide compromise, persistence, destructive change |
+| Compute/runtime | VM/container escape, privileged job, host compromise | access to host, peers, credentials or devices |
+| Accelerator | memory remanence, unsafe sharing, reset/error failure, side channel | data/model exposure and cross-allocation impact |
+| Fabric/storage | incorrect VRF/VXLAN/P_Key/DPU/storage assignment, RDMA bypass | direct cross-tenant reachability or corruption |
+| Data/model | theft, poisoning, unsafe format/deserialization, deletion failure | IP/privacy loss, code execution, model compromise |
+| Supply chain | poisoned package/image/operator/driver/firmware/model/skill | privileged compromise at scale |
+| Agent/tool | prompt injection, confused deputy, excessive authority, false completion | exfiltration, unauthorized action, destruction |
+| Abuse/capacity | fraud, quota/cost bypass, hoarding, DDoS | financial loss, service degradation, legal/safety harm |
+| Insider/support | standing privilege, covert access, evidence tampering | high-confidence access and loss of assurance |
+| Recovery/availability | ransomware, regional/fabric failure, bad automation, unusable backup | prolonged outage, data loss, unsafe reopening |
+| Physical/firmware | BMC compromise, rogue component, malicious maintenance | persistent control below the OS |
 
-A production-readiness decision requires:
+Threat modeling must cover normal and prohibited flows, dependency and controller failure, stale or partial state, operator error, malicious configuration, recovery, and evidence integrity. Catastrophic cross-tenant, root-of-trust, destructive, or irrecoverable failures must not be averaged away by an aggregate risk score.
 
-- all applicable T0 controls independently `VERIFIED`;
-- no unowned critical asset, privileged identity, public administrative path, or unknown tenant-isolation mode;
-- a current threat model and shared-responsibility matrix;
-- tested credential revocation, incident escalation, restore/rebuild and tenant offboarding;
-- evidence that the deployed service—not a reference design—satisfies the claim;
-- explicit residual-risk acceptance for all unresolved high risks.
+## 4. Security principles
 
-## 11. Lifecycle integration
+1. **Identity and delegation before location.** Authenticate and authorize people, tenants, services, workloads, devices, agents, and automation independently of network location.
+2. **Least privilege is time-, task-, tenant-, purpose-, and resource-bound.** Prefer short-lived credentials, sessions, and delegated authority where technically feasible.
+3. **Tenant isolation is end to end.** Test API, control plane, scheduler, host, GPU, storage, cache, telemetry, Ethernet, RDMA, DPU, OOB, and support paths.
+4. **Sharing modes are explicit products.** Do not collapse full-device, hardware-partitioned, virtualized, and time-sliced services into one “isolated GPU” claim.
+5. **Provider-exclusive controls remain provider responsibilities.** A customer cannot secure infrastructure it cannot access or govern.
+6. **External content is untrusted data, not authority.** Authorization comes from identities, delegation, policy, and approved decisions.
+7. **Evidence belongs to the control.** A deployed mechanism is not effective until scope, failure behavior, negative tests, freshness, and independent verification support the claim.
+8. **Assume compromise and constrain blast radius.** Design rapid revocation, isolation, quarantine, rebuild, recall, and customer-safe evidence collection.
+9. **Recovery restores trust, not only availability.** Verify identity, artifacts, data, tenant isolation, monitoring, and objectives before reopening.
+10. **Automation earns authority.** Add autonomy only when approval, stop, rollback, trace, budget, and verifier behavior are demonstrated.
+11. **Complexity must earn its cost.** Prefer general mechanisms—identity, policy, isolation, provenance, evidence, recovery, feedback, and verification—over brittle exceptions.
+12. **State uncertainty precisely.** Avoid unsupported terms such as “complete,” “immutable,” “dedicated,” “confidential,” or “zero trust” without a scope and evidence contract.
 
-### Design and product definition
+## 5. Operating model and shared responsibility
 
-Define service profile, tenant boundary, data classes, jurisdictions, isolation SKU, responsibility split, abuse cases, SLO/RTO/RPO, evidence obligations, and decommission behavior before implementation. Security requirements are acceptance criteria, not post-launch findings.
+The executive risk owner sets risk appetite and makes exceptional business decisions. A CISO or equivalent owns the program. Each customer-facing service has accountable business, technical, security, data, and incident owners. Platform teams own reusable capabilities; service teams remain responsible for correct adoption and service claims.
 
-### Source, build and release
+Three functions must remain distinct even in a small organization:
 
-Use protected source control, reviewed infrastructure code, isolated builds, pinned dependencies, SBOMs, provenance, artifact signatures, trusted registries, policy verification, staged rollout, canaries, and tested rollback. Treat models, checkpoints, skills, prompts, policies, and firmware as governed artifacts.
+- **Implementation and operation:** product, platform, infrastructure, SRE, network, facilities, data and AI teams.
+- **Policy, risk, privacy and challenge:** security, privacy, legal/risk and compliance functions.
+- **Independent verification:** a separate person/team, observation path, test harness, or qualified assessor able to challenge the implementer.
 
-### Provision and operate
+The provider cannot transfer responsibility for BMC/OOB, fabric managers, host reset, provider control planes, signing roots, or other exclusively controlled infrastructure to customers. Customers remain responsible for their code, data classification, role assignment, guest/workload configuration, and use unless the contract assigns those duties to the provider. Every service must publish normal-operation and incident responsibilities for identity, workload, data/model, GPU/fabric, logging, support, backup/restore, export/deletion, evidence, and end of service.
 
-Issue short-lived identities, enforce policy at API/orchestrator/host/fabric/storage boundaries, record allocation topology, validate isolation, continuously reconcile desired and actual state, and route security telemetry to a protected evidence plane. Administrative support uses JIT access, approved purpose, session evidence, and tenant-safe handling.
+## 6. Reference architecture
 
-### Respond and recover
+The target security system consists of seven cooperating planes:
 
-Contain at the strongest reliable boundary; preserve evidence; rotate roots and delegated credentials as needed; communicate by tenant and jurisdiction; rebuild from known-good sources; independently verify isolation, integrity, and recovery before reopening.
+1. **Governance and assurance:** services, scope, obligations, responsibility, risks, decisions, exceptions, control state, evidence and assurance.
+2. **Identity and policy:** human/tenant/service/workload/device/agent identity, federation, PKI, JIT privilege, delegation, policy decisions and approval.
+3. **Edge and control plane:** public APIs, support and privileged access, provisioning, quota/billing, controllers and administrative interfaces.
+4. **Orchestration and runtime:** Kubernetes, Slurm, admission/job policy, scheduler, runtime, node agents, sandboxing and workload controls.
+5. **Compute, fabric, storage and physical roots:** hosts, hypervisors, accelerators, DPUs/NICs, Ethernet, InfiniBand/RDMA, NVLink topology, storage, BMC/OOB, facilities, reset and sanitization.
+6. **Data, model and supply chain:** source, build/train, registries, SBOM/provenance/signing, datasets, models, checkpoints, prompts, skills, policies, safe loading and release.
+7. **Telemetry, response and recovery:** required logs/traces, inventory and reconciliation, detections, cases, protected evidence, revocation, containment, backup, restore and known-good rebuild.
 
-### Delete and decommission
+Policy enforcement should remain close to the protected resource; a central decision or evidence service must not create a silent fail-open path. Stable identifiers correlate the subject, delegation, tenant, request, policy version, desired state, actual state, workload/job, host/GPU/fabric/storage assignment, data/model access, result, cleanup, and evidence.
 
-Delete logical data, snapshots, caches, model artifacts and backups according to policy; reset/sanitize accelerators, local disks and media; revoke identities and certificates; remove fabric and network assignments; retire BMC/DPU access; produce deletion and chain-of-custody evidence.
+No component is trusted to prove its own effectiveness solely through its own dashboard. Critical evidence should be exported to a boundary that ordinary source administrators cannot silently alter, while preserving tenant partitioning, minimization, privacy, retention, legal hold, time integrity, and access audit.
 
-## 12. Evidence and continuous assurance
+## 7. Security domains
 
-A control is not complete because a policy exists or a console shows a green state. Each assessment follows:
+The 18 domains cover:
 
-`PROPOSED → READY → IMPLEMENTED → CANDIDATE_DONE → VERIFIED`
+1. governance, risk, compliance and shared responsibility;
+2. asset, service, dependency and data-flow inventory;
+3. human, tenant, workload and agent identity;
+4. control plane, API and administrative interfaces;
+5. network, fabric, RDMA/InfiniBand and DPU isolation;
+6. compute, hypervisor, bare metal, GPU and accelerator isolation;
+7. Kubernetes, containers, Slurm and schedulers;
+8. data, datasets, models, artifacts and privacy;
+9. secrets, keys, PKI, attestation and confidential computing;
+10. software, model and infrastructure supply chain;
+11. secure engineering, IaC, change and configuration;
+12. vulnerability, exposure, patch and firmware management;
+13. telemetry, detection engineering, threat intelligence and audit;
+14. AI application, agent, tool, skill and prompt security;
+15. abuse prevention, tenant trust, egress and acceptable use;
+16. incident response, forensics, crisis management and recovery;
+17. resilience, availability, capacity, backup and disaster recovery;
+18. physical, facility, BMC, hardware lifecycle and media sanitization.
 
-Only an independent validator `PASS` may promote a control to `VERIFIED`. Evidence must identify the control, service, asset and tenant scope, collector, observation time, integrity protection, limitations, valid-until time, storage location, and verifier. Evidence freshness is part of the requirement.
+The [Security Baseline](SECURITY_BASELINE.md) defines the stable IDs and production gates. The machine-readable [control catalog](../../controls/neocloud-security-baseline.v1.json) supplies bilingual requirements, evidence and verification profiles, tier frequency, and metric associations.
 
-Continuous assurance combines:
+## 8. Tiers, verification, and exceptions
 
-- configuration and policy evaluation;
-- asset/identity/dependency reconciliation;
-- authorized isolation and negative-path tests;
-- restore, revocation, failover and sanitization exercises;
-- detection validation mapped to relevant ATT&CK and ATLAS behaviors;
-- sample-based human review of high-impact actions;
-- customer-facing assurance packages with clearly stated scope and exceptions.
+| Tier | Purpose | Default verification model |
+|---|---|---|
+| **T0 Guardrails** | hard production gates | continuous monitoring where feasible; independent verification at least quarterly and after material change |
+| **T1 Foundation** | ownership, scope, hygiene, visibility, response and recovery | at least quarterly and after material change |
+| **T2 Production** | reusable, enforced and measured controls | at least semi-annually and after material change |
+| **T3 Assured** | service-specific higher assurance | at least annually, independently, and after material change |
+| **T4 Adaptive** | guarded adaptive automation | continuous metrics plus quarterly adversarial and failure-mode review |
 
-The goal is not a dashboard score. It is the ability to answer, with current evidence: **What do we protect? Who or what can act? Which policy allowed it? What happened? Was the boundary preserved? Can we contain and recover? Who independently verified the claim?**
+The control lifecycle is:
 
-## 13. Development roadmap
+```text
+PROPOSED → READY → IMPLEMENTED → CANDIDATE_DONE → VERIFIED
+```
 
-A typical program proceeds through six gates:
+`IMPLEMENTED` establishes deployment, not effectiveness. Only an independent validator returning `PASS` for the exact service, version, region, asset/tenant scope, test, evidence and validity period may assign `VERIFIED`. `FAIL`, `INCONCLUSIVE`, `NOT_TESTED`, stale evidence, material change, or inability to reproduce the assertion invalidates the prior result.
 
-1. **0–30 days: establish command and stop critical exposure.** Name owners, freeze unsafe public administration, enforce MFA, protect roots, inventory critical services, define severity and incident command, identify sharing/isolation modes.
-2. **31–90 days: build the foundation.** Complete T0/T1 assessment, centralize identity/logging/secrets, document data flows, publish shared responsibility, test backup and revocation, create patch and vulnerability SLAs.
-3. **3–6 months: productize controls.** Introduce workload identity, policy-as-code, trusted build/provenance, fabric validation, admission/runtime controls, evidence collection, tenant trust and abuse workflows.
-4. **6–12 months: reach production maturity.** Close T2 gaps, establish detection engineering and purple-team cadence, validate GPU/fabric isolation, integrate customer assurance, conduct full incident and DR exercises.
-5. **12–18 months: add high assurance.** Independent testing, dedicated/regulated profiles, stronger attestation and key release, sovereign operations, advanced insider and supply-chain controls.
-6. **18–24 months: adopt guarded adaptivity.** Continuous controls monitoring, bounded security agents, automated evidence, safe containment and remediation with approval, rollback and verifier gates.
+An exception record may document operation outside a requirement, but it cannot change the requirement or result. An applicable T0 exception remains a failed/nonconformant gate. External assurance must state the scope, date, version, limitations, failed tests, exceptions, and verifier rather than presenting one blended score.
 
-Detailed dependencies, milestones, metrics, team model, and build/buy guidance appear in the [Roadmap](ROADMAP.md).
+## 9. Lifecycle integration
 
-## 14. Customer and ecosystem transparency
+### Design
 
-A trustworthy provider should make the following available under appropriate confidentiality:
+Define service profiles, tenant and trust boundaries, isolation SKU, data classes and purpose, jurisdiction, responsibility, abuse cases, SLO/RTO/RPO, evidence contract, failure behavior, recovery, deletion, and decommissioning before implementation. Security requirements are release acceptance criteria.
 
-- service boundary and current shared-responsibility matrix;
-- supported isolation modes and limitations for each SKU;
-- encryption, key ownership, data residency, retention and deletion behavior;
-- security event, vulnerability and customer-notification commitments;
-- independent assurance reports and material exceptions;
-- subprocessor and critical dependency information;
-- API, identity, logging, export, backup and offboarding capabilities;
-- secure development and artifact-provenance approach;
-- incident coordination and evidence-exchange process.
+### Source, build, train and release
 
-Security claims must be precise. “Dedicated” must identify which host, GPU, network, fabric, storage, support, and telemetry resources are dedicated. “Encrypted” must identify where plaintext exists and who controls keys. “Zero trust” must identify the identities, policies, enforcement points, and verification process.
+Protect source and build identities; review infrastructure and policy as code; isolate high-impact builds; inventory direct and transitive dependencies; produce appropriate BOM/provenance/signatures; govern datasets, models, prompts, skills, drivers and firmware; admit only artifacts meeting policy; stage deployments; observe declared signals; and test recall and rollback.
+
+### Provision, schedule and execute
+
+Authenticate subject and tenant; evaluate action, object, purpose, context, isolation and cost policy; issue an immutable request/correlation ID; assign network/fabric/storage/host/accelerator resources with tenant identity; compare desired and actual state; issue scoped short-lived workload credentials; revalidate artifact and placement at admission/node boundaries; correlate runtime events; and clean credentials, accelerator/local state and assignments on completion.
+
+### Observe and respond
+
+Collect defined security-relevant telemetry; monitor source coverage and freshness; preserve evidence; establish incident command; determine reliable scope; contain at the strongest trusted boundary; revoke identities/keys; quarantine artifacts, nodes, devices, paths, data or tenants; assess customer/regulatory impact; and record decisions.
+
+### Recover, delete and decommission
+
+Prefer revocation and known-good rebuild when a root cannot be trusted. Restore or rebuild against RTO/RPO while verifying identity, artifact integrity, tenant isolation, data correctness and monitoring. Execute authorized export/deletion, apply backup retention policy, sanitize media and accelerator/host state according to risk and device capability, remove network/fabric assignments and credentials, and preserve chain-of-custody evidence.
+
+## 10. Evidence and continuous assurance
+
+A useful evidence item identifies:
+
+- control and human-readable assertion;
+- service/profile, environment, region, version, tenant/asset/data scope;
+- collector identity, source system, method/query/test version and time;
+- result, limitations, sampling and blind spots;
+- integrity protection and protected location;
+- validity period and invalidation triggers;
+- validator, test result, findings and retest date.
+
+Evidence strength generally increases from statement, to screenshot/manual report, to reproducible query/export, to protected runtime event or verified attestation, to authorized negative/failure/recovery test, to independent reproduction through a separate observation path. The exact evidence must match the assertion; a numeric evidence score never replaces judgment or a hard gate.
+
+Continuous assurance combines inventory reconciliation, policy evaluation, exposure discovery, required-source health, isolation tests, revocation and restore exercises, detection replay, artifact recall, sanitization evidence, agent adversarial evaluation, exception expiry, and independent sampling. The system must detect failures of its own collectors, schemas, permissions, clocks, evidence store, tests and verifier.
+
+## 11. Development roadmap
+
+A typical program progresses through evidence gates rather than dates alone:
+
+1. **Days 0–7:** establish owners, incident command, critical inventory, change freezes and emergency revocation.
+2. **Days 8–30:** remove critical public/admin exposure; implement phishing-resistant privileged access, private management, explicit SKU isolation, root protection, required telemetry and core playbooks.
+3. **Days 31–90:** establish authoritative service/asset/identity/data/model/dependency inventories, shared responsibility, lifecycle processes, vulnerability/exposure management, backup dependencies and desired/actual reconciliation; independently verify every applicable T0.
+4. **Months 3–6:** productize workload identity, policy as code, trusted artifacts, reconciliation, node/runtime response, evidence automation, tenant trust and secure engineering.
+5. **Months 6–12:** close T2 gaps; perform cross-tenant, accelerator, fabric, recovery, detection, incident and customer-notification exercises.
+6. **Months 12–18:** add T3 controls justified by dedicated, sensitive, regulated, sovereign, attested or confidential-computing commitments; independently test roots, isolation, suppliers and recovery.
+7. **Months 18–24:** add T4 guarded adaptive automation only when precision, approval bypass, scope violation, false completion, rollback, kill switch and independent-verifier behavior are measurable.
+
+The [Roadmap](ROADMAP.md) defines workstreams, dependencies, exit gates and build/buy guidance. Calendar targets are references; production exposure must not wait for a future phase when a T0 fails today.
+
+## 12. Customer and ecosystem transparency
+
+A trustworthy provider should be able to supply, under appropriate confidentiality:
+
+- exact service boundary, profile, region and version;
+- current provider/customer/shared responsibility;
+- host, GPU/HBM/cache, NVLink, network/RDMA, storage, telemetry, BMC and support sharing/isolation statements;
+- data/model purpose, access, encryption/key ownership, residency, retention, export and deletion behavior;
+- support-access, vulnerability, incident, notification and evidence-exchange commitments;
+- artifact and firmware provenance approach;
+- backup, restore, rebuild, offboarding and sanitization behavior;
+- independent tests, evidence validity, material findings, exceptions and remediation dates;
+- suppliers, subprocessors and critical dependencies relevant to the claim.
+
+Claims must be precise. “Dedicated” must identify each dedicated and shared resource. “Encrypted” must identify where plaintext exists and who controls key release. “Confidential” must identify the threat model, hardware/software/attestation boundary, unsupported components, and key-release policy. “Zero trust” must identify subjects, policies, enforcement points, failure behavior and verification. “Compliant” must identify the exact obligation, scope, assessor, date and exceptions.
+
+## 13. Build, buy, and integrate
+
+Build or deeply integrate controls that encode NeoCloud-specific tenancy and topology: tenant-aware authorization; desired/actual reconciliation; GPU/NVLink/fabric/DPU/storage/scheduler placement evidence; reset/sanitization; model/checkpoint lifecycle and safe loading; agent delegation and tool mediation; service-specific containment and reopening.
+
+Mature components may be bought or adopted where interfaces and evidence are strong: IdP/MFA, PAM, KMS/HSM, secret management, PKI, vulnerability and attack-surface management, SIEM/data lake, runtime detection, case management, backup, DDoS/WAF/API gateway, signing and transparency infrastructure.
+
+A vendor dashboard does not prove coverage. Require exportable data and APIs, stable identities, tenant-safe behavior, secure update, HA and safe degraded mode, failure detection, incident notification, data handling, independent testing, migration/exit, and evidence that can be correlated to the service boundary.
+
+## 14. Limitations
+
+This baseline is broad by design and cannot encode every product, jurisdiction, service contract, hardware generation, driver/firmware combination, threat actor, or safety requirement. Some evidence targets are reference starting points rather than universal thresholds. Draft and vendor sources inform the project but are not automatically normative. A control mapping is not certification. A passed baseline does not eliminate risk, and a failed control should not be hidden behind false precision.
+
+Organizations must adapt the controls to a current service threat model, obtain qualified legal/privacy/safety/audit advice, test the actual deployed path, state uncertainty, and keep assurance time-bound.
 
 ## 15. Conclusion
 
-NeoCloud security is the discipline of preserving trustworthy decisions across AI infrastructure that is physically dense, highly shared, software defined, supply-chain dependent, and increasingly autonomous. The minimum viable program is not a certificate or a collection of appliances. It is an explicit service boundary, strong identities, end-to-end tenant isolation, secure artifacts, protected data and models, complete telemetry, tested response and recovery, controlled automation, and evidence that survives independent challenge.
+NeoCloud security is the discipline of preserving trustworthy, tenant-correct and recoverable decisions across physically dense, highly shared, software-defined, supply-chain-dependent and increasingly autonomous AI infrastructure.
 
-Organizations should begin with T0 production gates, build T1 visibility and ownership, convert T2 controls into shared platform services, apply T3 where the consequences justify higher assurance, and introduce T4 automation only when its authority and failure modes are constrained. This creates a security architecture that can scale with compute, models, agents, customers, and regulation without turning every new risk into another brittle exception.
+The minimum viable program is an explicit service boundary; accountable responsibility; strong identities and delegation; precise accelerator, fabric and storage isolation; protected data/models and artifacts; required telemetry; tested response, recovery and sanitization; risk-proportionate agent controls; and evidence that survives independent challenge.
+
+Start with T0 production gates. Build T1 ownership and visibility. Convert T2 into reusable platform services. Add T3 only where consequences or commitments justify higher assurance. Introduce T4 adaptive automation only after its authority and failure modes can be measured and constrained. This sequence lets security scale with compute, models, agents, customers and regulation without turning every new risk into another unverifiable exception.
 
 ## Disclaimer
 
-This white paper is an implementation-oriented industry baseline. It is not a certification, legal opinion, guarantee, or substitute for applicable law, regulation, contract, privacy assessment, safety assessment, or qualified independent audit. External-framework mappings are informative and must be validated for the organization, service, jurisdiction, and version in use.
+This project-authored white paper is an implementation-oriented draft. It is not a certification, formal standard, legal opinion, guarantee, or substitute for applicable law, regulation, contract, privacy assessment, safety assessment, product documentation, or qualified independent audit. External-framework mappings and source references are informative and must be validated for the organization, service, jurisdiction, version and assurance objective in use.
