@@ -31,7 +31,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate catalog, bilingual parity, versions, links, and templates
+      - name: Validate catalogs, bilingual parity, versions, links, templates, and public-findings profiles
         run: |
           python3 scripts/validate_repository.py
           python3 scripts/validate_accuracy_invariants.py
+          python3 scripts/validate_semianalysis_profile.py
