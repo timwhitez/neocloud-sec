@@ -13,9 +13,9 @@ Documentation disagreements, ordinary corrections, and non-sensitive gaps should
 
 ## Private reporting
 
-Do **not** open a public issue containing a credential, customer data, exploit details for a live system, private topology, or an uncoordinated third-party vulnerability.
+Do **not** open an issue containing a credential, customer data, exploit details for a live system, private topology, or an uncoordinated third-party vulnerability.
 
-Use GitHub private vulnerability reporting / **Report a vulnerability** when it is enabled for this repository. If it is not enabled, use an existing trusted private channel to the repository owner. This document intentionally does not invent an email address or response SLA.
+This repository is currently private. Use an existing trusted private channel to the repository owner or maintainers; this document intentionally does not invent an email address, contact mechanism, or response SLA. GitHub's researcher-facing **Private Vulnerability Reporting / Report a vulnerability** path should be enabled and documented if the repository is later made public and the feature is supported.
 
 Include only what is necessary:
 
@@ -29,8 +29,8 @@ Redact secrets and personal/customer data. Do not perform active testing against
 
 ## Response expectations
 
-The project may acknowledge, triage, correct documentation, revoke content, or coordinate disclosure depending on scope. No fixed response or remediation SLA is promised in this draft. A repository change or passing CI does not by itself prove that a production vulnerability is remediated.
+The project may acknowledge, triage, correct documentation, revoke content, or coordinate disclosure depending on scope. No fixed response or remediation SLA is promised in this draft. A repository change or passing structural validation does not by itself prove that a production vulnerability is remediated.
 
 ## 中文摘要
 
-禁止在 Public Issue 中提交真实 Credential、客户数据、生产拓扑、可直接利用细节或未协调披露的第三方漏洞。优先使用 GitHub Private Vulnerability Reporting；如果仓库未启用该能力，则使用已建立的可信私密渠道联系 Owner。报告应包含受影响 Path/Control/Version、影响、必要前提、安全复现和建议隔离，且必须脱敏。未经明确授权不得对真实系统做主动测试。
+禁止在 Issue 中提交真实 Credential、客户数据、生产拓扑、可直接利用细节或未协调披露的第三方漏洞。当前仓库是 Private，应通过已经建立的可信私密渠道联系 Owner 或 Maintainer；本文不会虚构 Email、联系方式或响应 SLA。仓库未来转为 Public 且功能受支持时，再启用并记录 GitHub Private Vulnerability Reporting / `Report a vulnerability` 路径。报告应包含受影响 Path/Control/Version、影响、必要前提、安全复现和建议隔离，且必须脱敏。未经明确授权不得对真实系统做主动测试。
