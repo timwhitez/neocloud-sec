@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: Security-sensitive report / 安全敏感报告
     url: https://github.com/timwhitez/neocloud-sec/blob/main/SECURITY.md
-    about: Do not disclose live secrets, customer data, exploitable production details, or uncoordinated vulnerabilities in a public issue.
+    about: Do not disclose live secrets, customer data, exploitable production details, private topology, or uncoordinated vulnerabilities in an issue.
