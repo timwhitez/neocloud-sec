@@ -29,6 +29,26 @@ jobs:
       - name: Apply asserted replacements
         run: python3 scripts/apply_accuracy_catalog_patch.py
 
+      - name: Preserve human-readable and machine state names
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('controls/neocloud-security-baseline.v1.json')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              'produces NO_GO_NONCONFORMANT; a business-risk decision':
+                  'produces NO-GO (NO_GO_NONCONFORMANT); a business-risk decision',
+              '均产生 NO_GO_NONCONFORMANT，业务风险决定':
+                  '均产生 NO-GO（NO_GO_NONCONFORMANT），业务风险决定',
+          }
+          for old, new in replacements.items():
+              if text.count(old) != 1:
+                  raise SystemExit(f'expected one occurrence, found {text.count(old)}: {old}')
+              text = text.replace(old, new)
+          path.write_text(text, encoding='utf-8')
+          PY
+
       - name: Validate patched repository
         run: python3 scripts/validate_repository.py
 
