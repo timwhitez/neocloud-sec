@@ -3,9 +3,10 @@
 
 This validator intentionally uses only the Python standard library so the same
 checks can run locally and in a minimal CI environment. It validates semantic
-invariants that JSON Schema alone cannot express: exact catalog cardinality,
-control-ID sets, cross-references, tier distribution, bilingual baseline parity,
-version consistency, required deliverables, and relative Markdown links.
+invariants that JSON Schema alone cannot express: project status and T0
+semantics, exact catalog cardinality, control-ID sets, cross-references, tier
+distribution, bilingual baseline and metric parity, version consistency,
+required deliverables, and relative Markdown links.
 """
 
 from __future__ import annotations
@@ -69,6 +70,13 @@ REQUIRED_FILES = (
     "GOVERNANCE.md",
     "REFERENCES.md",
     "VERSION",
+    "SECURITY.md",
+    ".github/CODEOWNERS",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/REPOSITORY_SETTINGS.md",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/control-change.yml",
+    ".github/ISSUE_TEMPLATE/factual-correction.yml",
     "docs/en/WHITEPAPER.md",
     "docs/zh-CN/WHITEPAPER.md",
     "docs/en/SECURITY_BASELINE.md",
@@ -102,6 +110,7 @@ VERSION_RE = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$")
 BASELINE_ROW_RE = re.compile(
     r"^\|\s*(NCS-[A-Z]+-[0-9]{2})\s*\|\s*(T[0-4])\s*\|\s*(.*?)\s*\|\s*$"
 )
+METRIC_ROW_RE = re.compile(r"^\|\s*(NCSM-[A-Z]+-[0-9]{2})\s*\|")
 MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
 MARKDOWN_IMAGE_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
 
@@ -162,6 +171,10 @@ def expected_control_ids() -> set[str]:
 
 def validate_catalog(catalog: dict, validation: Validation) -> tuple[set[str], Counter[str]]:
     validation.require(catalog.get("catalog_id") == "NCS-BASELINE", "catalog_id must be NCS-BASELINE")
+    validation.require(
+        catalog.get("status") == "implementation-oriented project draft",
+        "catalog status must be implementation-oriented project draft",
+    )
     version = catalog.get("version")
     validation.require(
         isinstance(version, str) and VERSION_RE.fullmatch(version) is not None,
@@ -276,7 +289,29 @@ def validate_catalog(catalog: dict, validation: Validation) -> tuple[set[str], C
     validation.require(isinstance(rules, dict), "normative_rules must be an object")
     if isinstance(rules, dict):
         t0_rule = str(rules.get("t0_gate", "")).upper()
-        validation.require("NO-GO" in t0_rule and "T0" in t0_rule and "VERIFIED" in t0_rule, "normative T0 rule must state VERIFIED and NO-GO behavior")
+        validation.require(
+            all(
+                token in t0_rule
+                for token in (
+                    "NO-GO",
+                    "NO_GO_NONCONFORMANT",
+                    "T0",
+                    "VERIFIED",
+                    "BUSINESS-RISK DECISION",
+                    "CANNOT CHANGE",
+                )
+            ),
+            "normative T0 rule must preserve NO-GO, machine state, verification, and business-decision semantics",
+        )
+        t0_rule_zh = str(rules.get("t0_gate_zh_CN", ""))
+        validation.require(
+            "NO-GO" in t0_rule_zh
+            and "NO_GO_NONCONFORMANT" in t0_rule_zh
+            and "VERIFIED" in t0_rule_zh
+            and "业务风险决定" in t0_rule_zh
+            and "不能改变" in t0_rule_zh,
+            "Chinese normative T0 rule must preserve the same decision semantics",
+        )
 
     return observed_id_set, tier_counts
 
@@ -324,6 +359,51 @@ def validate_baseline_parity(catalog: dict, catalog_ids: set[str], validation: V
             tier, title = zh_rows[control_id]
             validation.require(tier == control.get("tier"), f"{control_id}: Chinese baseline tier differs from catalog")
             validation.require(title == control.get("title", {}).get("zh-CN"), f"{control_id}: Chinese baseline title differs from catalog")
+
+
+def parse_metric_rows(path: Path, validation: Validation) -> dict[str, int]:
+    rows: dict[str, int] = {}
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except FileNotFoundError:
+        validation.error(f"missing metrics guide: {path.relative_to(ROOT)}")
+        return rows
+    for line_number, line in enumerate(lines, start=1):
+        match = METRIC_ROW_RE.match(line)
+        if not match:
+            continue
+        metric_id = match.group(1)
+        if metric_id in rows:
+            validation.error(
+                f"duplicate {metric_id} in {path.relative_to(ROOT)} at lines "
+                f"{rows[metric_id]} and {line_number}"
+            )
+        rows[metric_id] = line_number
+    return rows
+
+
+def validate_metric_docs(catalog: dict, validation: Validation) -> None:
+    en_path = ROOT / "docs" / "en" / "METRICS_AND_ASSURANCE.md"
+    zh_path = ROOT / "docs" / "zh-CN" / "METRICS_AND_ASSURANCE.md"
+    en_rows = parse_metric_rows(en_path, validation)
+    zh_rows = parse_metric_rows(zh_path, validation)
+    en_ids = set(en_rows)
+    zh_ids = set(zh_rows)
+    validation.require(en_ids == zh_ids, "English and Chinese metric-ID sets differ")
+
+    catalog_ids = set(catalog.get("metric_ids", []))
+    missing_en = sorted(catalog_ids - en_ids)
+    missing_zh = sorted(catalog_ids - zh_ids)
+    if missing_en:
+        validation.error(
+            "catalog-linked metric IDs missing from English metrics guide: "
+            + ", ".join(missing_en)
+        )
+    if missing_zh:
+        validation.error(
+            "catalog-linked metric IDs missing from Chinese metrics guide: "
+            + ", ".join(missing_zh)
+        )
 
 
 def validate_versions(catalog: dict, validation: Validation) -> None:
@@ -418,6 +498,7 @@ def main() -> int:
     if catalog:
         catalog_ids, tier_counts = validate_catalog(catalog, validation)
         validate_baseline_parity(catalog, catalog_ids, validation)
+        validate_metric_docs(catalog, validation)
         validate_versions(catalog, validation)
     validate_markdown_links(validation)
 
