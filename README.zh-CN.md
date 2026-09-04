@@ -21,9 +21,9 @@ NeoCloud Cyber Security 是一套面向 AI-first 云基础设施的开放、证�
 | 参考架构 | [参考架构](docs/zh-CN/REFERENCE_ARCHITECTURE.md) | [Reference Architecture](docs/en/REFERENCE_ARCHITECTURE.md) |
 | 发展路线图 | [发展路线图](docs/zh-CN/ROADMAP.md) | [Roadmap](docs/en/ROADMAP.md) |
 | 度量与持续证明 | [度量与持续证明](docs/zh-CN/METRICS_AND_ASSURANCE.md) | [Metrics & Assurance](docs/en/METRICS_AND_ASSURANCE.md) |
-| 机器可读控制目录 | [控制目录说明](controls/README.md) | [Control catalog](controls/neocloud-security-baseline.v1.json) |
+| 机器可读控制目录 | [控制目录说明](controls/README.md) | [控制目录](controls/neocloud-security-baseline.v1.json)与 [Schema](controls/schema.json) |
 | 评估模板 | [模板目录](templates/) | [Templates](templates/) |
-| 规范性参考 | [参考资料](REFERENCES.md) | [References](REFERENCES.md) |
+| 标准与研究资料 | [参考资料](REFERENCES.md) | [References](REFERENCES.md) |
 
 ## 18 个安全域
 
@@ -80,6 +80,27 @@ NeoCloud Cyber Security 是一套面向 AI-first 云基础设施的开放、证�
 4. 将 T2 控制建设为可复用平台能力和 Policy-as-Code。
 5. 对高风险服务和客户承诺增加 T3 高保证措施。
 6. 只有当自动化行为有边界、可回滚、可观测并可独立验证时，才进入 T4。
+
+## 仓库校验
+
+在仓库根目录运行不依赖第三方包的校验器：
+
+```bash
+python3 scripts/validate_repository.py
+```
+
+校验内容包括：
+
+- 安全域严格为 18 个，控制严格为 90 项；
+- 等级分布严格为 `T0=32`、`T1=31`、`T2=19`、`T3=7`、`T4=1`；
+- Control ID 完整、唯一、格式正确；
+- 中英文标题和规范要求完整；
+- Evidence、Verification、Tier 与 Metric 引用不存在悬空；
+- JSON 控制目录与中英文安全基线完全一致；
+- Release Version 和必需交付物一致；
+- 相对 Markdown Link 有效。
+
+GitHub Actions 会对 Pull Request 与 `main` 运行同一校验。查询方法和变更规则见[控制目录说明](controls/README.md)。
 
 ## 状态与边界
 
