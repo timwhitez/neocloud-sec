@@ -42,6 +42,7 @@ jobs:
           if old not in text:
               raise SystemExit("vGPU reference marker not found")
           text = text.replace(old, new, 1)
+
           lines = text.splitlines()
           filtered = []
           for line in lines:
@@ -52,7 +53,28 @@ jobs:
               if 'replace("REFERENCES.md", f"\\n{old}. ", f"\\n{new}. ")' in line:
                   continue
               filtered.append(line)
-          path.write_text("\n".join(filtered) + "\n", encoding="utf-8")
+          text = "\n".join(filtered) + "\n"
+
+          # The original supply-chain section ends at item 61. Append the new
+          # identity/sanitization references as 62-66 without renumbering the
+          # existing list; the vGPU source remains an unnumbered related item.
+          text = text.replace(
+              "62. NIST, *SP 800-204D: Strategies for the Integration of Software Supply Chain Security in DevSecOps CI/CD Pipelines*.",
+              "61. NIST, *SP 800-204D: Strategies for the Integration of Software Supply Chain Security in DevSecOps CI/CD Pipelines*.",
+          )
+          shifts = [
+              ("67. NIST, *SP 800-160 Vol. 1 Rev. 1", "66. NIST, *SP 800-160 Vol. 1 Rev. 1"),
+              ("66. NIST, *SP 800-193", "65. NIST, *SP 800-193"),
+              ("65. NIST, *SP 800-88 Rev. 2", "64. NIST, *SP 800-88 Rev. 2"),
+              ("64. NIST, *SP 800-63B-4", "63. NIST, *SP 800-63B-4"),
+              ("63. NIST, *SP 800-63-4", "62. NIST, *SP 800-63-4"),
+          ]
+          for source, target in shifts:
+              if source not in text:
+                  raise SystemExit(f"reference marker not found: {source}")
+              text = text.replace(source, target, 1)
+
+          path.write_text(text, encoding="utf-8")
           PY
 
       - name: Apply reviewed corrections
