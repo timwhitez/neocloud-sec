@@ -71,24 +71,24 @@
 53. NVIDIA Infra Controller, *Operational Principles*. https://docs.nvidia.com/infra-controller/documentation/overview/operational-principles
 54. NVIDIA, *Data Center GPU Manager (DCGM) Documentation*. https://docs.nvidia.com/datacenter/dcgm/latest/index.html
 55. NVIDIA, *DCGM Health and Diagnostics*. https://docs.nvidia.com/datacenter/dcgm/latest/user-guide/feature-overview.html
-- NVIDIA AI Enterprise, *vGPU for Compute Overview*; supported mediated vGPU modes have product- and configuration-specific memory, fault, and scheduling properties distinct from scheduler-level Kubernetes time-slicing. https://docs.nvidia.com/ai-enterprise/release-8/latest/infra-software/vgpu/overview.html
+56. NVIDIA AI Enterprise, *vGPU for Compute Overview*; supported mediated vGPU modes have product- and configuration-specific memory, fault, and scheduling properties distinct from scheduler-level Kubernetes time-slicing. https://docs.nvidia.com/ai-enterprise/release-8/latest/infra-software/vgpu/overview.html
 
 ## Threat modeling, software supply chain, and artifact trust
 
-56. MITRE, *ATT&CK Enterprise Matrix*, including Cloud, Containers, IaaS, Identity Provider, ESXi, Linux, Network Devices, and SaaS. https://attack.mitre.org/matrices/enterprise/
-57. SLSA, *SLSA Specification v1.2*. https://slsa.dev/spec/v1.2/
-58. Sigstore, *Documentation and Transparency Log*. https://docs.sigstore.dev/about/overview/
-59. OpenSSF, *Scorecard*. https://securityscorecards.dev/
-60. NIST, *SP 800-218 Secure Software Development Framework v1.1*. https://csrc.nist.gov/pubs/sp/800/218/final
-61. NIST, *SP 800-204D: Strategies for the Integration of Software Supply Chain Security in DevSecOps CI/CD Pipelines*. https://csrc.nist.gov/pubs/sp/800/204/d/final
+57. MITRE, *ATT&CK Enterprise Matrix*, including Cloud, Containers, IaaS, Identity Provider, ESXi, Linux, Network Devices, and SaaS. https://attack.mitre.org/matrices/enterprise/
+58. SLSA, *SLSA Specification v1.2*. https://slsa.dev/spec/v1.2/
+59. Sigstore, *Documentation and Transparency Log*. https://docs.sigstore.dev/about/overview/
+60. OpenSSF, *Scorecard*. https://securityscorecards.dev/
+61. NIST, *SP 800-218 Secure Software Development Framework v1.1*. https://csrc.nist.gov/pubs/sp/800/218/final
+62. NIST, *SP 800-204D: Strategies for the Integration of Software Supply Chain Security in DevSecOps CI/CD Pipelines*. https://csrc.nist.gov/pubs/sp/800/204/d/final
 
 ## Identity, platform integrity, and sanitization
 
-62. NIST, *SP 800-63-4: Digital Identity Guidelines*, final, 2025. https://pages.nist.gov/800-63-4/
-63. NIST, *SP 800-63B-4: Digital Identity Guidelines—Authentication and Authenticator Management*, final, 2025. At AAL2 verifiers must offer a phishing-resistant option; requirements for specific populations and assurance levels depend on applicability. https://pages.nist.gov/800-63-4/sp800-63b.html
-64. NIST, *SP 800-88 Rev. 2: Guidelines for Media Sanitization*, final, 2025; it supersedes Rev. 1 and emphasizes a risk-based sanitization program and validation. https://csrc.nist.gov/pubs/sp/800/88/r2/final
-65. NIST, *SP 800-193: Platform Firmware Resiliency Guidelines*, final, 2018. https://csrc.nist.gov/pubs/sp/800/193/final
-66. NIST, *SP 800-160 Vol. 1 Rev. 1: Engineering Trustworthy Secure Systems*, final, 2022. https://csrc.nist.gov/pubs/sp/800/160/v1/r1/final
+63. NIST, *SP 800-63-4: Digital Identity Guidelines*, final, 2025. https://pages.nist.gov/800-63-4/
+64. NIST, *SP 800-63B-4: Digital Identity Guidelines—Authentication and Authenticator Management*, final, 2025. At AAL2 verifiers must offer a phishing-resistant option; requirements for specific populations and assurance levels depend on applicability. https://pages.nist.gov/800-63-4/sp800-63b.html
+65. NIST, *SP 800-88 Rev. 2: Guidelines for Media Sanitization*, final, 2025; it supersedes Rev. 1 and emphasizes a risk-based sanitization program and validation. https://csrc.nist.gov/pubs/sp/800/88/r2/final
+66. NIST, *SP 800-193: Platform Firmware Resiliency Guidelines*, final, 2018. https://csrc.nist.gov/pubs/sp/800/193/final
+67. NIST, *SP 800-160 Vol. 1 Rev. 1: Engineering Trustworthy Secure Systems*, final, 2022. https://csrc.nist.gov/pubs/sp/800/160/v1/r1/final
 
 ## How to use these references / 使用方法
 
