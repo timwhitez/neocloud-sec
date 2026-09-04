@@ -3,29 +3,25 @@
 **Audit snapshot:** 2026-09-04  
 **Repository:** `timwhitez/neocloud-sec`
 
-This file records the intended public-facing metadata and repository safeguards. It is documentation only: GitHub's **About**, visibility, topics, rulesets, security settings, and license status must be configured in repository settings or by an authorized repository-administration API.
+This file records reviewed metadata and repository safeguards. It is documentation only: GitHub **About**, visibility, topics, rulesets, security settings, merge settings, and license status must be configured by an authorized repository administrator.
 
-本文件记录建议的项目展示信息与仓库防护。它本身不会自动修改 GitHub 的 **About**、可见性、Topics、Ruleset、安全设置或 License；这些内容需要由具备仓库管理权限的人员在 Settings 中配置。
+本文件记录经审阅的项目元数据与仓库防护建议。它不会自动修改 GitHub **About**、可见性、Topics、Ruleset、安全设置、Merge 设置或 License；这些项目必须由有权限的仓库管理员应用。
 
 ## 1. About description / 项目描述
 
-Recommended primary description:
+Recommended description:
 
-> Vendor-neutral NeoCloud/GPU-cloud security baseline, reference architecture, roadmap, and implementation guide for multi-tenant accelerators, Kubernetes/Slurm, RDMA/InfiniBand, AI models and agents, supply chain, resilience, and continuous assurance. English / 简体中文.
+> Vendor-neutral bilingual security baseline and implementation guide for NeoCloud/GPU clouds: GPU/RDMA isolation, Kubernetes/Slurm, AI agents, and continuous assurance.
 
-More compact alternative:
+The wording is intentionally compact and describes a baseline and implementation guide—not a deployed product, adopted standard, certification, or guarantee.
 
-> Vendor-neutral security baseline, reference architecture, roadmap, and practice guide for NeoCloud/GPU-cloud infrastructure, AI models, and agents. English / 简体中文.
+建议中文释义：
 
-The description deliberately calls the repository a **baseline and reference framework**, not a deployable “security control plane.”
-
-建议主描述：
-
-> 面向 NeoCloud/GPU 云的厂商中立安全基线、参考架构、路线图与实践指南，覆盖多租户加速器、Kubernetes/Slurm、RDMA/InfiniBand、AI 模型与 Agent、供应链、韧性和持续证明。中英双语。
+> 面向 NeoCloud/GPU 云的厂商中立中英双语安全基线与实施指南，覆盖 GPU/RDMA 隔离、Kubernetes/Slurm、AI Agent 与持续证明。
 
 ## 2. Topics / Topics 建议
 
-Use a focused set rather than the maximum number of tags:
+Use a focused set:
 
 ```text
 neocloud
@@ -34,6 +30,7 @@ cloud-security
 ai-security
 agent-security
 hpc-security
+gpu-security
 kubernetes-security
 slurm
 rdma
@@ -47,38 +44,41 @@ continuous-assurance
 bilingual
 ```
 
-Avoid product-vendor topics unless the repository becomes implementation-specific. Avoid `compliance`, `certification`, or `standard` as standalone claims while this remains a project-authored draft.
+GitHub permits at most 20 topics. **Topic names are always public, even when attached to a private repository.** Apply this taxonomy only after confirming it is safe to disclose. Avoid product-vendor topics unless the project becomes implementation-specific, and avoid standalone `compliance`, `certification`, or `standard` claims while this remains a project-authored draft.
+
+GitHub 最多允许 20 个 Topics。**即使仓库是 Private，Topic 名称仍始终公开。** 因此只有在确认该分类信息可披露后才应应用。
 
 ## 3. Homepage and social preview / 主页与社交预览
 
-- Leave **Homepage** empty until a maintained documentation site or release page exists; do not point it at an unrelated personal site.
-- After the repository is public, consider a small static documentation site generated from the bilingual Markdown.
-- Add a restrained social-preview image only after the project name, license, and publication status are final. It should say “Security baseline and reference architecture,” not “certified” or “complete protection.”
+- Leave **Homepage** empty until a maintained documentation site or versioned release page exists.
+- Do not point it at an unrelated personal site.
+- Consider a restrained social preview only after the project name, license, and publication status are final; use “security baseline and implementation guide,” not “certified” or “complete protection.”
 
-## 4. Visibility and publication status / 可见性与发布状态
+## 4. Visibility and publication / 可见性与发布
 
-At the audit snapshot, the repository is private while earlier content described itself as a “public draft.” The documents now use **implementation-oriented draft** so the statement remains true regardless of visibility.
-
-Before changing visibility to public:
+At the audit snapshot the repository is private. Before making it public:
 
 1. choose and add an explicit license;
-2. remove any private evidence, credentials, customer names, internal topology, or non-redistributable source material;
-3. enable private vulnerability reporting where available;
-4. verify README, security policy, contribution policy, references, and release status;
-5. run `python3 scripts/validate_repository.py` on the exact publication commit;
-6. create a signed or otherwise attributable release/tag and retain the review result.
+2. remove private evidence, credentials, customer names, internal topology, and non-redistributable material;
+3. verify README, scope, security policy, contribution policy, references, and release status;
+4. run `python3 scripts/validate_repository.py` on the exact publication commit;
+5. obtain independent review of material normative changes;
+6. create an attributable release/tag and retain its review result;
+7. after public release, enable GitHub Private Vulnerability Reporting if supported and document the resulting `Report a vulnerability` path.
+
+Researcher-facing GitHub Private Vulnerability Reporting is not a substitute for a reporting path while this repository is private. Until public release, use an already established trusted private maintainer channel and do not invent an email address or SLA.
 
 ## 5. License decision / License 决策
 
-No open-source license is currently granted. Until a `LICENSE` file is added, external users do not receive normal open-source reuse rights merely because they can read the repository.
+No open-source license is currently granted. A readable or public repository does not itself grant ordinary open-source reuse rights.
 
-Recommended options for an explicit owner decision:
+Options requiring an explicit owner/legal decision include:
 
-- **Simple:** Apache License 2.0 for the entire repository.
-- **Dual license:** Apache License 2.0 for scripts, schemas, structured catalogs, and templates; Creative Commons Attribution 4.0 for prose documentation and diagrams.
-- **Restricted draft:** keep all rights reserved while the repository remains private, then make a release-time license decision.
+- **Single license:** Apache License 2.0 for the repository, after confirming it is appropriate for both code and documentation.
+- **Dual license:** Apache License 2.0 for scripts, schemas, structured catalogs, and templates; Creative Commons Attribution 4.0 for prose and diagrams, with precise file-scope notices.
+- **Restricted draft:** retain all rights while private and decide at publication time.
 
-Dual licensing is often clearer for mixed code/documentation repositories, but it requires precise file-scope notices. The repository owner should make this legal decision; contributors and automation must not infer a license.
+This document does not select a license. Third-party quotation, trademarks, contribution terms, and mixed code/documentation scope must be reviewed before publication.
 
 ## 6. Default-branch protection / 默认分支保护
 
@@ -86,49 +86,73 @@ Recommended ruleset for `main`:
 
 - require a pull request before merge;
 - require at least one approving review for normative or executable changes;
-- require conversation resolution;
+- require review-conversation resolution;
 - require the `Repository contract` status check;
-- require the branch to be up to date before merge where practical;
+- require the branch to be current before merge where practical;
 - block force pushes and branch deletion;
-- restrict bypass to an explicit emergency role and audit every bypass;
-- use squash merge for ordinary changes and delete merged head branches;
-- require signed commits only if the contributor workflow can support it without encouraging unsafe workarounds.
+- restrict and audit bypass;
+- prefer squash merge and delete merged head branches;
+- require signed commits only when the contributor workflow can support it without unsafe workarounds.
 
-For a single-maintainer repository, independent review may be supplied by a named external reviewer or a documented, separate review pass; branch protection should not be weakened silently to make a release appear reviewed.
+For a single-maintainer project, independent review may be supplied by a named external reviewer or a documented separate review pass. Do not weaken protection merely to make a release appear reviewed.
 
 ## 7. Repository features / 仓库功能
 
-Recommended state:
-
 | Feature | Recommendation | Reason |
 |---|---|---|
-| Issues | Enabled | factual corrections, control proposals, and implementation feedback |
-| Pull requests | Enabled | reviewable, attributable changes |
-| Discussions | Optional after public release | longer design debate that should not block concrete fixes |
-| Wiki | Disabled unless actively maintained | avoid two competing sources of truth |
-| Projects | Enable only when used | avoid empty process surfaces |
-| Private vulnerability reporting | Enable before public release | confidential intake for repository vulnerabilities or leaked secrets |
-| Dependabot/security updates | Enable if executable dependencies are added | current validator is standard-library only |
+| Issues | Enabled | factual corrections, control proposals, implementation feedback |
+| Pull requests | Enabled | attributable and reviewable change |
+| Projects | Enable only when actively used | avoid empty process surfaces |
+| Discussions | Optional after public release | longer design discussions with a moderation owner |
+| Wiki | Disabled unless actively maintained | preserve one source of truth |
+| Private vulnerability reporting | Enable after public release if supported | confidential researcher intake on a public repository |
+| Dependabot/security updates | Enable if executable dependencies are added | the current validator uses only the Python standard library |
 | Auto-delete head branches | Enabled | reduce stale branches after squash merge |
 
-## 8. Pull-request and issue governance / PR 与 Issue 治理
+## 8. Apply metadata / 应用元数据
 
-The repository includes:
+Run only after reviewing the values and confirming that public topic names are acceptable:
 
-- [`PULL_REQUEST_TEMPLATE.md`](PULL_REQUEST_TEMPLATE.md) for normative, bilingual, evidence-aware review;
-- issue forms for factual corrections and control changes;
-- [`CODEOWNERS`](CODEOWNERS) for explicit default ownership;
-- [`../SECURITY.md`](../SECURITY.md) for confidential reporting;
-- [`../GOVERNANCE.md`](../GOVERNANCE.md) for control state, evidence, exceptions, and release decisions.
+```bash
+gh repo edit timwhitez/neocloud-sec \
+  --description 'Vendor-neutral bilingual security baseline and implementation guide for NeoCloud/GPU clouds: GPU/RDMA isolation, Kubernetes/Slurm, AI agents, and continuous assurance.'
+
+gh api --method PUT repos/timwhitez/neocloud-sec/topics --input - <<'JSON'
+{
+  "names": [
+    "neocloud",
+    "gpu-cloud",
+    "cloud-security",
+    "ai-security",
+    "agent-security",
+    "hpc-security",
+    "gpu-security",
+    "kubernetes-security",
+    "slurm",
+    "rdma",
+    "infiniband",
+    "zero-trust",
+    "confidential-computing",
+    "software-supply-chain",
+    "security-baseline",
+    "reference-architecture",
+    "continuous-assurance",
+    "bilingual"
+  ]
+}
+JSON
+```
+
+The topics call replaces the complete topic set. Keep `homepage` unset until a maintained documentation URL exists.
 
 ## 9. Release checklist / 发布检查
 
 A release is ready only when:
 
 - the exact catalog and both baseline documents pass repository validation;
-- current references distinguish final, draft, public-review, and superseded sources;
-- every externally stated count, version, status, and guarantee is reproducible;
-- the release does not call itself a deployable product, formal standard, certification, community consensus, or public artifact unless that claim is actually true;
+- source status distinguishes final, draft, public-review, living-project, vendor, and research material;
+- externally stated counts, versions, dates, and guarantees are reproducible;
+- the release does not claim deployed-product, formal-standard, certification, community-consensus, open-license, or public status unless true;
 - material normative changes received independent review;
-- the release notes state limitations and any unresolved factual uncertainty;
-- GitHub About, topics, visibility, license, and branch protection match the release documentation.
+- limitations and unresolved uncertainty are explicit;
+- actual GitHub About, topics, visibility, license, security reporting, merge settings, and branch protection match the release documentation.
