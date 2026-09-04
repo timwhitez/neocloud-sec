@@ -2,8 +2,9 @@
   "schema_version": 1,
   "metadata_sync": "manual",
   "repository": "timwhitez/neocloud-sec",
-  "description": "Vendor-neutral bilingual cybersecurity baseline and implementation guide for NeoCloud and GPU cloud platforms, covering GPU/RDMA isolation, Kubernetes/Slurm, AI agents, evidence, assurance, and a 0–24 month roadmap.",
+  "description": "Vendor-neutral bilingual security baseline and implementation guide for NeoCloud/GPU clouds: GPU/RDMA isolation, Kubernetes/Slurm, AI agents, and continuous assurance.",
   "homepage": null,
+  "topics_are_public": true,
   "topics": [
     "neocloud",
     "gpu-cloud",
@@ -39,7 +40,8 @@
       "block force pushes",
       "require resolved review conversations"
     ],
-    "private_vulnerability_reporting": true,
+    "security_reporting_while_private": "existing-trusted-private-channel",
+    "private_vulnerability_reporting": "enable-after-public-release-if-supported",
     "discussions": false,
     "wiki": false
   }
