@@ -9,15 +9,19 @@ The canonical intended metadata is [`.github/repository-metadata.json`](.github/
 
 ## Recommended description / 推荐描述
 
-> Vendor-neutral bilingual cybersecurity baseline and implementation guide for NeoCloud and GPU cloud platforms, covering GPU/RDMA isolation, Kubernetes/Slurm, AI agents, evidence, assurance, and a 0–24 month roadmap.
+> Vendor-neutral bilingual security baseline and implementation guide for NeoCloud/GPU clouds: GPU/RDMA isolation, Kubernetes/Slurm, AI agents, and continuous assurance.
 
-This wording deliberately describes a bilingual baseline and guide, not a deployed product, adopted standard, or certification.
+This wording is deliberately short enough for the GitHub About area and describes a bilingual baseline and guide—not a deployed product, adopted standard, or certification.
 
 ## Recommended topics / 推荐 Topics
 
 ```text
 neocloud, gpu-cloud, cloud-security, cybersecurity, ai-security, agent-security, kubernetes-security, slurm, hpc-security, gpu-security, rdma, infiniband, zero-trust, security-baseline, security-architecture, supply-chain-security, incident-response, threat-modeling, continuous-assurance, devsecops
 ```
+
+The list uses GitHub's maximum of 20 topics. Topic names are always public, including topics attached to a private repository. Apply them only after confirming that this taxonomy itself is safe to disclose.
+
+该列表使用 GitHub 允许的最多 20 个 Topics。Topic 名称即使添加到 Private Repository 也始终公开，因此只有在确认这组分类本身可以披露后才应应用。
 
 ## Homepage / 主页
 
@@ -36,37 +40,45 @@ The repository is currently private and no license has been selected. Do not des
 - Keep `main` protected; require Pull Request and repository validation.
 - Require review-conversation resolution and block force pushes.
 - Prefer squash merge; delete branches after merge.
-- Enable private vulnerability reporting or another documented private channel.
-- Keep Wiki and Discussions disabled until there is a clear moderation/maintenance owner.
+- While the repository is private, use an existing trusted private maintainer channel for sensitive reports.
+- When the repository becomes public, enable GitHub Private Vulnerability Reporting if supported and document the resulting `Report a vulnerability` path.
+- Keep Wiki and Discussions disabled until there is a clear moderation and maintenance owner.
 - Do not enable Pages until the generated site has versioning, link validation, and release ownership.
 
-## Apply with GitHub CLI / 使用 GitHub CLI 应用
+## Apply with GitHub CLI/API / 使用 GitHub CLI/API 应用
 
-Run only after reviewing the intended values:
+Run only after reviewing the intended values and confirming that the public topic taxonomy is acceptable:
 
 ```bash
 gh repo edit timwhitez/neocloud-sec \
-  --description 'Vendor-neutral bilingual cybersecurity baseline and implementation guide for NeoCloud and GPU cloud platforms, covering GPU/RDMA isolation, Kubernetes/Slurm, AI agents, evidence, assurance, and a 0–24 month roadmap.' \
-  --add-topic neocloud \
-  --add-topic gpu-cloud \
-  --add-topic cloud-security \
-  --add-topic cybersecurity \
-  --add-topic ai-security \
-  --add-topic agent-security \
-  --add-topic kubernetes-security \
-  --add-topic slurm \
-  --add-topic hpc-security \
-  --add-topic gpu-security \
-  --add-topic rdma \
-  --add-topic infiniband \
-  --add-topic zero-trust \
-  --add-topic security-baseline \
-  --add-topic security-architecture \
-  --add-topic supply-chain-security \
-  --add-topic incident-response \
-  --add-topic threat-modeling \
-  --add-topic continuous-assurance \
-  --add-topic devsecops
+  --description 'Vendor-neutral bilingual security baseline and implementation guide for NeoCloud/GPU clouds: GPU/RDMA isolation, Kubernetes/Slurm, AI agents, and continuous assurance.'
+
+gh api --method PUT repos/timwhitez/neocloud-sec/topics --input - <<'JSON'
+{
+  "names": [
+    "neocloud",
+    "gpu-cloud",
+    "cloud-security",
+    "cybersecurity",
+    "ai-security",
+    "agent-security",
+    "kubernetes-security",
+    "slurm",
+    "hpc-security",
+    "gpu-security",
+    "rdma",
+    "infiniband",
+    "zero-trust",
+    "security-baseline",
+    "security-architecture",
+    "supply-chain-security",
+    "incident-response",
+    "threat-modeling",
+    "continuous-assurance",
+    "devsecops"
+  ]
+}
+JSON
 ```
 
-Keep `homepage` unset until a documentation URL is ready. A metadata file does not prove that the GitHub sidebar settings were applied; compare them during each release.
+The topics call replaces the complete topic set rather than only appending values. Keep `homepage` unset until a documentation URL is ready. A metadata file does not prove that the GitHub sidebar settings were applied; compare actual repository metadata during each release.
