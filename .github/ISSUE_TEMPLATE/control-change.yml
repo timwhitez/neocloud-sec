@@ -1,0 +1,75 @@
+name: Control or assurance model change
+description: Propose a normative control, evidence, verification, metric, service-profile, or tier change.
+title: "[Control change] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Normative changes need an explicit threat or operating problem, bilingual text, evidence and verification requirements, compatibility analysis, and authoritative sources. Do not include sensitive information; follow `SECURITY.md` for confidential reports.
+  - type: input
+    id: controls
+    attributes:
+      label: Affected control IDs, domains, or catalog fields
+      placeholder: NCS-CMP-02, CMP, evidence_profiles.EP-ISOLATION-RUNTIME
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Threat, failure mode, or operating problem
+      description: State the unsafe outcome, affected service profiles, assumptions, and why current controls are insufficient or inaccurate.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal_en
+    attributes:
+      label: Proposed normative wording — English
+      description: Use MUST, SHOULD, or MAY deliberately and keep the requirement testable.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal_zh
+    attributes:
+      label: 建议的规范文本 — 简体中文
+      description: 保持规范含义一致，而不是机械直译。
+    validations:
+      required: true
+  - type: textarea
+    id: applicability
+    attributes:
+      label: Applicability and responsibility
+      description: Identify service profiles, provider/customer/shared owners, exclusions, and customer-impact implications.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Minimum evidence, verification, and freshness
+      description: Define the deployed-path assertion, prohibited path or failure test, independent validator, validity period, and revalidation triggers.
+    validations:
+      required: true
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility, migration, and versioning
+      description: Explain whether IDs, tiers, schemas, templates, metrics, implementations, or published assurance claims would break.
+    validations:
+      required: true
+  - type: textarea
+    id: sources
+    attributes:
+      label: Primary or authoritative sources
+      description: Include titles, publishers, versions/dates, URLs, source status, and known limitations.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I checked the current catalog, both language baselines, governance rules, metrics, and roadmap for conflicts.
+          required: true
+        - label: I understand that risk acceptance cannot turn a failed applicable T0 into `VERIFIED` or conformant status.
+          required: true
+        - label: This proposal contains no live credentials, customer data, private evidence, or unauthorized test results.
+          required: true
