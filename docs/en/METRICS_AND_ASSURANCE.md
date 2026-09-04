@@ -1,10 +1,10 @@
 # NeoCloud Cyber Security Metrics and Continuous Assurance Guide
 
-**Version:** 1.0.0-draft.1  
+**Version:** 1.0.0-draft.2  
 **Baseline date:** 2026-09-04  
 **Purpose:** measure whether security outcomes are true for the deployed NeoCloud service, not whether security activity occurred
 
-This guide defines the measurement, evidence, verification, and reporting model for the [Security Baseline](SECURITY_BASELINE.md). It should be used with the machine-readable [control catalog](../../controls/neocloud-security-baseline.v1.json), the [Practice Guide](PRACTICE_GUIDE.md), and the repository templates.
+This guide defines the measurement, evidence, verification, and reporting model for the [Security Baseline](SECURITY_BASELINE.md). It should be used with the machine-readable [control catalog](../../controls/neocloud-security-baseline.v1.json), the [Practice Guide](PRACTICE_GUIDE.md), the [Scope and Limitations](SCOPE_AND_LIMITATIONS.md), and the repository templates.
 
 ## 1. Assurance principles
 
@@ -119,11 +119,11 @@ verification:
   findings: [...]
 ```
 
-Critical evidence should be exported to a protected boundary and linked to stable service, tenant, subject, workload, host, GPU, fabric, data/model, artifact, request, and policy identifiers.
+Critical evidence should be exported to a protected boundary with administrative and observational separation appropriate to risk and linked to stable service, tenant, subject, workload, host, GPU, fabric, data/model, artifact, request, and policy identifiers. Physical separation is not universally required.
 
 ## 6. Core metric catalog
 
-Targets below are reference starting points. Each organization must set targets based on service commitments and risk, while preserving all T0 hard gates.
+Targets below are project-defined reference starting points, not externally validated industry benchmarks. Each organization must set targets based on service commitments, deployed technology, threat model, and risk, while preserving all applicable T0 hard gates.
 
 ### 6.1 Governance, ownership, and assurance
 

@@ -121,7 +121,7 @@ jq -r '.controls | group_by(.tier)[] | "\(.[0].tier)\t\(length)"' \
   controls/neocloud-security-baseline.v1.json
 ```
 
-Expected distribution for `1.0.0-draft.1`:
+Expected distribution for `1.0.0-draft.2`:
 
 ```text
 T0  32

@@ -2,14 +2,16 @@
 
 [简体中文](README.zh-CN.md) | English
 
-**Version:** `1.0.0-draft.1`  
+**Version:** `1.0.0-draft.2`  
 **Baseline date:** 2026-09-04
 
-NeoCloud Cyber Security is an open, evidence-driven security architecture and operating model for AI-first cloud infrastructure.
+NeoCloud Cyber Security is a vendor-neutral, bilingual, evidence-oriented reference baseline and implementation guide for AI-first cloud infrastructure.
 
-> **NeoCloud Cyber Security is a unified cybersecurity control plane for AI-native organizations and specialized AI clouds. It treats identity as the root of trust, policy as the decision core, and agents plus workloads as first-class security subjects. It coordinates endpoint, cloud-native runtime, network and fabric, data, software/model supply chain, and security operations controls to close the loop from visibility to real-time enforcement and continuous assurance.**
+> **This repository defines a security reference model, control catalog, assurance method, and implementation roadmap. It is not a deployed security product or a claim that one universal “control plane” can secure every NeoCloud. The model coordinates identity and authorization, platform and workload integrity, cryptographic roots, policy enforcement, tenant isolation, and independently protected evidence across the service lifecycle.**
 
 The project covers the full NeoCloud trust surface: people, tenants, AI agents, workload identities, APIs, control planes, Kubernetes and Slurm, bare-metal hosts, hypervisors, GPUs and accelerators, Ethernet and InfiniBand/RDMA fabrics, datasets, models, checkpoints, secrets, firmware, BMCs, facilities, and third-party dependencies.
+
+“NeoCloud” is used here as an operational term for specialized AI/GPU cloud services, not as a formally standardized industry category. See [Scope and Limitations](docs/en/SCOPE_AND_LIMITATIONS.md) before adopting or citing the baseline.
 
 ## What this repository delivers
 
@@ -24,6 +26,10 @@ The project covers the full NeoCloud trust surface: people, tenants, AI agents, 
 | Machine-readable controls | [Control catalog](controls/neocloud-security-baseline.v1.json) and [schema](controls/schema.json) | [控制目录说明](controls/README.md) |
 | Assessment templates | [Templates](templates/) | [模板](templates/) |
 | Standards and research | [References](REFERENCES.md) | [参考资料](REFERENCES.md) |
+| Scope and limitations | [Scope & Limitations](docs/en/SCOPE_AND_LIMITATIONS.md) | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) |
+| Accuracy review | [Accuracy Review](ACCURACY_REVIEW.md) | [准确性审计](ACCURACY_REVIEW.md) |
+| Repository metadata | [Project Metadata](PROJECT_METADATA.md) | [项目元数据](PROJECT_METADATA.md) |
+| Security reporting | [Security Policy](SECURITY.md) | [安全报告](SECURITY.md) |
 
 ## Security model
 
@@ -53,8 +59,8 @@ Controls are prioritized through five adoption tiers:
 - **T0 — Guardrails:** non-negotiable conditions before a service processes tenant data or exposes production capacity.
 - **T1 — Foundation:** essential cyber hygiene and complete visibility, normally targeted in the first 90 days.
 - **T2 — Production:** scalable, policy-enforced controls for a generally available multi-tenant service.
-- **T3 — Assured:** higher-assurance controls for sensitive, regulated, sovereign, or dedicated environments.
-- **T4 — Adaptive:** continuous verification, high-confidence automation, confidential computing, and guarded AI-assisted defense.
+- **T3 — Assured:** higher-assurance controls for sensitive, regulated, sovereign, or dedicated environments, including independently tested and threat-model-justified attestation or confidential-computing patterns.
+- **T4 — Adaptive:** continuous verification and guarded AI-assisted security automation whose authority, rollback, and independent verification are proven.
 
 A numeric score never compensates for a failed T0 control. Production readiness is gate-based and evidence-based.
 
@@ -66,7 +72,7 @@ A numeric score never compensates for a failed T0 control. Production readiness 
 - **Evidence is part of the control.** A control is not complete until its implementation, coverage, freshness, owner, exceptions, and independent verification are recorded.
 - **Agents are privileged software subjects.** Agent actions are mediated by policy, least privilege, approval boundaries, immutable audit, and deterministic stop conditions.
 - **Recovery is a security capability.** Backups, rebuilds, tenant offboarding, secure erasure, and crisis communications are tested rather than assumed.
-- **Secure by design, not by tenant expertise.** Safe defaults, MFA, logging, isolation, and update mechanisms are provider responsibilities, not paid add-ons.
+- **Secure by design and accurately scoped.** Provider-controlled baseline safeguards should be secure by default; customer-controlled duties and higher-assurance offerings must be explicit and must not conceal the limitations of baseline service tiers.
 
 ## Intended users
 
@@ -104,8 +110,14 @@ It verifies the repository contract, including:
 
 The same check runs in GitHub Actions for pull requests and `main`. See the [control-catalog documentation](controls/README.md) for queries and change rules.
 
+## Accuracy and scope
+
+The baseline distinguishes scheduler-level GPU oversubscription from mediated vGPU and hardware-partitioned modes; treats InfiniBand P_Keys and Slurm labels as partial mechanisms rather than complete isolation proofs; and makes attestation, confidential computing, sanitization, and public control-plane claims product-, version-, configuration-, and threat-model specific.
+
+See the [accuracy review](ACCURACY_REVIEW.md), [scope and limitations](docs/en/SCOPE_AND_LIMITATIONS.md), and [source register](REFERENCES.md). Project-defined targets are planning defaults, not externally validated industry benchmarks.
+
 ## Status and scope
 
-This is an implementation-oriented community baseline, not a certification, legal opinion, or substitute for jurisdiction-specific obligations. Mappings to external frameworks are informative. Organizations remain responsible for determining applicability and obtaining qualified legal, privacy, safety, and audit advice.
+This is a project-defined implementation draft and reference baseline—not an adopted industry standard, deployed product, certification, legal opinion, or substitute for jurisdiction-specific obligations. External-framework mappings are informative. Organizations remain responsible for applicability decisions and qualified legal, privacy, safety, engineering, and audit review.
 
 See [GOVERNANCE.md](GOVERNANCE.md) for change control and [CONTRIBUTING.md](CONTRIBUTING.md) for contribution rules.

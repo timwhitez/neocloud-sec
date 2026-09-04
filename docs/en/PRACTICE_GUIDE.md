@@ -1,10 +1,10 @@
 # NeoCloud Cyber Security Practice Guide
 
-**Version:** 1.0.0-draft.1  
+**Version:** 1.0.0-draft.2  
 **Baseline date:** 2026-09-04  
 **Audience:** NeoCloud executives, security, platform engineering, SRE, network/fabric, Kubernetes, Slurm/HPC, data/AI, facilities, support, trust and safety, privacy, and assurance teams
 
-This guide turns the [White Paper](WHITEPAPER.md), [Security Baseline](SECURITY_BASELINE.md), [Reference Architecture](REFERENCE_ARCHITECTURE.md), and [Roadmap](ROADMAP.md) into an executable operating model. It is vendor-neutral. Product names are examples, not requirements.
+This guide turns the [White Paper](WHITEPAPER.md), [Security Baseline](SECURITY_BASELINE.md), [Reference Architecture](REFERENCE_ARCHITECTURE.md), and [Roadmap](ROADMAP.md) into an executable operating model. It is vendor-neutral. Product names are examples, not requirements. Apply the [Scope and Limitations](SCOPE_AND_LIMITATIONS.md) to every implementation claim.
 
 ## 1. Start with a service, not a tool
 
@@ -38,7 +38,7 @@ Small organizations may combine roles, but not accountability.
 
 | Role | Accountable decisions | Minimum recurring duty |
 |---|---|---|
-| Executive risk owner | risk appetite, production exception, crisis priorities | monthly critical-risk review |
+| Executive risk owner | risk appetite, nonconformant emergency deviation, crisis priorities | monthly critical-risk review |
 | CISO/security lead | control model, security roadmap, independent challenge | weekly T0/T1 review |
 | Service owner | service boundary, customer commitment, residual risk | release and quarterly review |
 | Platform owners | reusable identity, policy, compute, fabric, storage, orchestration controls | SLO and incident ownership |
@@ -67,7 +67,7 @@ Exit only when the provider can convene incident command, revoke privileged acce
 
 Prioritize:
 
-- phishing-resistant MFA for provider privilege and tenant owners;
+- phishing-resistant MFA for provider privilege and high-impact tenant administrative roles according to service risk;
 - private provider administration and isolated BMC/OOB paths;
 - highest-risk object/action/tenant authorization tests;
 - declared isolation for every commercial compute SKU;
@@ -167,7 +167,7 @@ Revalidate after material changes, incidents, failed controls, new service/SKU/r
 | VEM | asset-linked discovery, exploitability/exposure priority, patch SLA, firmware coverage | emergency patch/canary and deployed-version verification | finding-to-asset-to-remediation-to-rescan chain |
 | TEL | protected correlated telemetry, coverage inventory, detection-as-code, tenant-safe retention | log-source failure, tamper attempt, ATT&CK/ATLAS behavior replay | event samples, coverage/freshness, test results, alert quality |
 | AIR | inventory, impact assessment, immutable scope, typed tools, approval, budget, stop, verifier | prompt injection, confused deputy, tool abuse, memory/skill poisoning | signed configuration, full trace, policy decision, verifier result |
-| ABU | tenant trust tiers, AUP, quota/rate/cost/capacity, egress, cases and appeal | quota bypass, cryptomining, denial-of-wallet, prohibited egress | onboarding decision, enforcement reason, case and restoration |
+| ABU | tenant trust tiers, AUP, quota/rate/cost/capacity, egress, cases and appeal | quota bypass, unauthorized cryptomining or other policy-prohibited workload, denial-of-wallet, prohibited egress | onboarding decision, enforcement reason, case and restoration |
 | IRR | command, playbooks, forensic readiness, notification, reopening gate | cross-tenant/root/agent/availability exercise | timeline, evidence chain, decisions, recovery and independent closure |
 | RES | dependency/SLO/RTO/RPO, immutable backup, safe degradation, rebuild/failover | restore with unavailable primary identity/key service and region/fabric failure | objective result, integrity/isolation checks, reopening approval |
 | PHY | facility controls, isolated BMC/OOB, firmware/hardware inventory, sanitization and custody | unauthorized OOB path and tenant reassignment sanitation | access logs, config, firmware state, sanitation and destruction records |
@@ -202,7 +202,7 @@ Add:
 
 Verify:
 
-- private API server and etcd; strong administrator and workload identity;
+- provider-only controllers and etcd are private; a customer-facing API endpoint is private by default or explicitly approved, strongly authenticated, source/rate restricted, DDoS-protected, and audited; strong administrator and workload identity;
 - restricted Pod Security Standards and default-deny admission;
 - RBAC isolation, tenant namespaces/accounts, quotas, network policy, and secret boundaries;
 - CNI, CSI, GPU device plugin, operator, webhook, and node privilege review;
@@ -219,6 +219,7 @@ Verify:
 - queue and priority abuse protections;
 - node/GPU/fabric placement and cleanup linked to job and tenant identity;
 - controller/database backup, accounting integrity, failover, and recovery.
+- Slurm accounts, associations, partitions, QOS, and MCS labels support scheduling and information controls but are not a complete tenant-isolation boundary without OS/runtime, storage, network/fabric, and credential enforcement.
 
 ### 7.5 Model training
 
@@ -266,11 +267,11 @@ Use immutable tenant and request identifiers at every API object, message, contr
 
 ### 8.2 Choose accelerator sharing deliberately
 
-Treat dedication, hardware partitioning, virtualization, and time slicing as different products. Document memory, cache, DMA, fault, reset, telemetry, and topology properties. Do not use time slicing as a substitute for a hardware security boundary. Sensitive workloads use an isolation mode justified by the threat model and tested on the deployed hardware/driver/firmware stack.
+Treat dedication, hardware partitioning, mediated virtualization, and scheduler-level sharing as different products. Scheduler-level Kubernetes GPU time-slicing/oversubscription does not by itself provide memory or fault isolation; a supported hypervisor-mediated vGPU mode can have different properties. Never infer isolation from the phrase ‘time-sliced.’ Document and test memory, cache, DMA/IOMMU, fault, reset, telemetry, topology, performance-interference, hardware, hypervisor, driver, firmware, and configuration properties against the service threat model.
 
 ### 8.3 Validate InfiniBand/RDMA and DPU boundaries
 
-A VPC or Kubernetes NetworkPolicy does not prove the high-performance data path. Test P_Key membership and enforcement, RDMA reachability, fabric-manager authority, DPU assignment, storage access, stale-controller state, and reallocation cleanup. Protect fabric and DPU controllers as provider roots.
+A VPC or Kubernetes NetworkPolicy does not prove the high-performance data path. InfiniBand P_Key membership is one partitioning mechanism—not evidence of complete tenant isolation by itself. Test membership type and enforcement, default-partition policy, RDMA reachability, fabric-manager authority, DPU assignment, storage access, stale-controller state, and reallocation cleanup on the deployed topology. Protect fabric and DPU controllers as provider roots.
 
 ### 8.4 Eliminate static workload credentials
 
@@ -282,7 +283,7 @@ For images, packages, models, checkpoints, drivers, firmware, operators, IaC, an
 
 ### 8.6 Separate evidence from the evaluated system
 
-Critical logs and evidence must be exported to a boundary that ordinary source administrators cannot silently alter. Preserve stable IDs, time synchronization, integrity, tenant partitioning, access audit, redaction, retention, and legal hold. Monitor missing evidence as a control failure.
+Critical logs and evidence must be exported to a boundary with administrative and observational separation sufficient to prevent ordinary source administrators from silently altering the record; this does not universally require a separate physical system. Preserve stable IDs, time synchronization, integrity, tenant partitioning, access audit, redaction, retention, and legal hold. Monitor missing evidence as a control failure.
 
 ### 8.7 Use safe recovery, not optimistic cleanup
 
@@ -315,7 +316,7 @@ Required NeoCloud scenarios:
 6. malicious model/checkpoint/image/package/driver/operator/skill;
 7. destructive or exfiltrating agent/tool workflow;
 8. ransomware, region/fabric/storage outage, capacity exhaustion, or backup failure;
-9. tenant fraud, cryptomining, prohibited workload, quota bypass, or denial of wallet;
+9. tenant fraud, unauthorized cryptomining or another policy-prohibited workload, quota bypass, or denial of wallet;
 10. data/model deletion failure, residency breach, or unsupported customer notification.
 
 A playbook is not ready until at least one technical exercise proves that the required isolation, revocation, and evidence paths work.
@@ -385,7 +386,7 @@ Reject these patterns:
 - one aggregate compliance score that hides failed T0 controls;
 - “dedicated,” “zero trust,” “encrypted,” or “confidential” claims without exact boundaries;
 - Kubernetes namespace or VPC isolation asserted as proof of RDMA/GPU/storage isolation;
-- time-sliced GPUs marketed as hardware-separated tenants;
+- scheduler-level shared GPU replicas—or any sharing mode lacking deployment-specific evidence—marketed as hardware-separated tenants;
 - shared provider service identities or broad metadata credentials exposed to workloads;
 - standing admin privilege and unrecorded support sessions;
 - signed artifacts accepted without source/build/key-policy context;

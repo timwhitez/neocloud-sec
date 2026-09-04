@@ -1,6 +1,6 @@
 # NeoCloud Cyber Security 安全基线
 
-**版本：** 1.0.0-draft.1  
+**版本：** 1.0.0-draft.2  
 **基线日期：** 2026-09-04  
 **规范性机器可读目录：** [`controls/neocloud-security-baseline.v1.json`](../../controls/neocloud-security-baseline.v1.json)
 
@@ -13,7 +13,7 @@
 - **可以**表示可选实现。
 - 外部框架映射仅供参考，不构成认证、合规或精确等价声明。
 
-本基线包含 **18 个域、90 项控制**。JSON 目录是中英文要求、最小证据、验证频率、指标、等级和 Control ID 的权威记录；本文解释如何评估和应用。
+本基线包含 **18 个域、90 项控制**。JSON 目录是中英文要求、最小证据、验证频率、指标、等级和 Control ID 的权威记录；本文解释如何评估和应用。等级、硬门、数量和目标值是本仓库定义的规范规则，并不代表普遍行业共识；详见[范围与局限](SCOPE_AND_LIMITATIONS.md)。
 
 ## 2. 评估生命周期
 
@@ -41,7 +41,7 @@ Screenshot 或制度文档通常不能单独作为充分证据。优先使用 AP
 | **T3—可信级** | 面向敏感、受监管、主权或专属服务的独立和高保证控制 | 服务作出相应保证承诺时必须采用 |
 | **T4—自适应级** | 持续验证和受控自动化 | 只有在权限、失败模式、回滚和 Verifier 均已证明后采用 |
 
-任何分数都不能抵消 T0 失败。T0 例外只能用于紧急情况，必须由高管与安全 Owner 批准、限时、评估客户/法律影响、具备补偿控制，并绑定整改截止时间。
+任何分数都不能抵消 T0 失败。可追责高管和安全 Owner 可以批准限时紧急偏离以维持服务，但失败或未知 T0 在符合性判定上仍然是 `NO-GO`：不得标记为 `PASS` 或 `VERIFIED`，不得对外声称符合本基线，并必须明确客户/法律影响、补偿控制、回滚条件和整改截止时间。
 
 ## 4. 生产硬门槛
 
@@ -53,10 +53,10 @@ Screenshot 或制度文档通常不能单独作为充分证据。优先使用 AP
 4. **高权限身份：** 服务商高权限与租户 Owner 使用批准的强 MFA；禁止共享 Admin；紧急 Revocation 和 Break-glass 已测试。
 5. **API 正确性：** 每个关键公网/内部 API 认证调用者，并由服务端验证 Object/Action/Tenant Authorization。
 6. **私有管理：** Provider Control Plane、Orchestrator DB/Controller、Fabric Management、BMC/OOB、Debug 和 Support Path 不得直接暴露给公网或 Tenant Data Plane。
-7. **端到端隔离：** Tenant Identity 贯穿 API、Scheduler、Host、GPU、Storage、Ethernet、InfiniBand/RDMA、DPU、Telemetry 和 Support。
+7. **端到端隔离：** Tenant/Authorization Context 在控制面对象转换中保持，并通过权威绑定在 Scheduler、Host、GPU、Storage、Ethernet、InfiniBand/RDMA、DPU、Telemetry 和 Support 边界执行。
 8. **计算 SKU 声明：** 每种 SKU 的 Host、GPU/HBM/Cache、NVLink、Fabric、Storage、Telemetry 和 Support 隔离性质/限制已记录并测试。
 9. **加速器安全：** 敏感工作负载不使用缺乏所需 Memory/Fault Isolation 的共享模式；Reset、Error、Quarantine 和 Tenant 间 Cleanup 已验证。
-10. **编排安全：** Kubernetes/Slurm Control Plane 私有、补丁及时、强认证、与租户分离、可备份和恢复。
+10. **编排安全：** 服务商专用 Kubernetes/Slurm Controller 与 Database 私有、补丁及时、强认证、与租户分离、可备份和恢复。任何面向客户的管理 API 默认私有，或经过显式批准并实施加固、来源/权限限制、抗滥用保护和完整审计。
 11. **数据/模型保护：** Crown-jewel Data/Model 有 Owner 和 Classification，并按策略实施租户授权、加密、保留、导出、删除和清除。
 12. **信任根/Secret：** 关键 Key 集中治理，静态 Secret 最小化，Signing/Root 使用受限、审计且可恢复。
 13. **制品已知：** 生产 Image、Driver、Firmware、Operator、IaC Bundle、Model、Checkpoint 和 Skill 均来自批准且已盘点的来源。
@@ -103,7 +103,7 @@ Screenshot 或制度文档通常不能单独作为充分证据。优先使用 AP
 |---|---:|---|
 | NCS-IAM-01 | T0 | 集中联邦与抗钓鱼 MFA |
 | NCS-IAM-02 | T0 | 最小权限、JIT 管理与 Break-glass |
-| NCS-IAM-03 | T2 | 经过证明的工作负载与服务身份 |
+| NCS-IAM-03 | T2 | 短期工作负载与服务身份 |
 | NCS-IAM-04 | T1 | 租户、服务账户与访问生命周期 |
 | NCS-IAM-05 | T2 | Agent 身份、委托与动作范围 |
 
@@ -149,7 +149,7 @@ Screenshot 或制度文档通常不能单独作为充分证据。优先使用 AP
 
 | ID | 等级 | 控制 |
 |---|---:|---|
-| NCS-ORC-01 | T0 | 加固且私有的编排控制面 |
+| NCS-ORC-01 | T0 | 加固且访问受限的编排控制面 |
 | NCS-ORC-02 | T1 | RBAC、准入、作业与特权工作负载控制 |
 | NCS-ORC-03 | T1 | 租户调度、配额与放置边界 |
 | NCS-ORC-04 | T2 | 运行时、节点、Secret 与插件安全 |
@@ -302,7 +302,7 @@ Screenshot 或制度文档通常不能单独作为充分证据。优先使用 AP
 
 证据超过要求频率或发生影响声明的重大变化即为过期。触发重验证的变化包括 Service SKU/Sharing、New Region/Fabric、Orchestrator/Controller Upgrade、Identity/Key Hierarchy、Data Flow/Supplier、Model/Agent/Tool Capability Expansion、Control Failure、Incident、Restore/Rebuild 或 Verifier 无法复现。
 
-T0/T1 至少每季度及重大变更后 Review；T2/T3 至少每半年，技术可行时持续监控；T4 自动化需要持续指标和每季度对抗/失败模式 Review。
+默认最低重验证频率为：T0 在可行时持续监控、至少每季度独立验证并在重大变更后复验；T1 至少每季度及重大变更后；T2 至少每半年及重大变更后；T3 至少每半年由 Control Owner 复核、至少每年独立评估，并在重大变更后复验；T4 持续度量、每季度对抗/失败模式复核，并在重大变更后复验。服务威胁模型、合同、事件或监管要求可以缩短周期。
 
 ## 8. 生产决策算法
 

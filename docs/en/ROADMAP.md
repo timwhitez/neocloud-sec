@@ -5,7 +5,7 @@
 
 ## 1. How to use this roadmap
 
-This roadmap is a reference sequence, not a calendar promise. A young provider with public APIs and multi-tenant GPUs may need to complete T0 guardrails in days. A dedicated internal cluster may legitimately mark some controls not applicable. Progress is measured by independently verified outcomes and reduced exposure, not documents produced or tools purchased.
+This roadmap is a reference sequence, not a calendar promise. A young provider with public APIs and multi-tenant GPUs may need to complete T0 guardrails in days. A dedicated internal cluster may legitimately mark some controls not applicable. Progress is measured by independently verified outcomes and reduced exposure, not documents produced or tools purchased. Dates, percentages, and phase targets are project-defined planning defaults—not externally validated industry benchmarks—and must be adapted using [Scope and Limitations](SCOPE_AND_LIMITATIONS.md).
 
 Start by selecting service profiles, defining the production boundary, identifying accountable owners, and assessing every T0/T1 control. Use the risk register for service-specific threats, but do not let a numeric score override a failed cross-tenant, root-key, public-admin, secure-erase, logging, response or recovery guardrail.
 
@@ -16,7 +16,7 @@ Each phase below has an **exit gate**. Work may overlap across phases, but the p
 A mature NeoCloud security program should be able to demonstrate:
 
 - one authoritative graph linking services, tenants, identities, workloads, nodes, GPUs, fabrics, data/models, artifacts, controls, risks and evidence;
-- phishing-resistant and just-in-time human access plus attested, short-lived workload/agent identity;
+- phishing-resistant and just-in-time human access plus short-lived workload/agent identity, bound to attestation where supported and justified;
 - tenant-correct policy enforced at API, controller, scheduler, host, GPU, fabric, storage, registry, KMS and tool boundaries;
 - declared and continuously validated isolation properties for every commercial SKU;
 - trusted software/model/firmware supply chains with inventory, provenance, signatures, staged rollout and recall;
@@ -134,7 +134,7 @@ A mature NeoCloud security program should be able to demonstrate:
 
 ### Major initiatives
 
-1. **Workload identity:** issue short-lived, attested identities to services, jobs, nodes and agents; remove embedded cloud/API credentials.
+1. **Workload identity:** issue short-lived identities to services, jobs, nodes and agents; bind them to attested state where supported and justified; remove embedded cloud/API credentials.
 2. **Policy-as-code:** define reusable policies for tenant authorization, isolation SKU, region, data class, artifact admission, egress, tool use and approvals.
 3. **Trusted artifact pipeline:** protected source, isolated build, SBOM, provenance, signature, registry policy and admission verification for high-impact components.
 4. **Desired/actual reconciliation:** continuously compare API intent with Kubernetes/Slurm, host, GPU, storage, network, DPU and P_Key state.
@@ -146,7 +146,7 @@ A mature NeoCloud security program should be able to demonstrate:
 ### Exit gate
 
 - New tier-1 services use standard identity, logging, secrets, policy, artifact and incident capabilities.
-- At least 80% of production workloads use short-lived or brokered credentials.
+- An organization-defined target for production workloads using short-lived or brokered credentials is met; 80% by month six is an illustrative planning target, not an industry benchmark.
 - High-impact artifacts are inventoried; critical build paths produce SBOM and provenance.
 - Tenant/fabric/GPU assignment reconciliation detects and pages on material mismatch.
 - Security evidence for priority controls is generated automatically and reviewed for correctness.
@@ -295,7 +295,7 @@ Within the first month, leadership should explicitly decide:
 - which isolation modes may carry which data classes;
 - whether any provider administration may be public;
 - who owns root/signing/KMS/BMC/fabric authority;
-- T0 exception authority and maximum lifetime;
+- authority, maximum lifetime, rollback criteria, and explicitly nonconformant status for any T0 emergency deviation;
 - notification commitments and decision makers;
 - support-access model and customer visibility;
 - default tenant identity, MFA, egress and quota posture;

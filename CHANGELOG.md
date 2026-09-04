@@ -2,6 +2,22 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## 1.0.0-draft.2 — 2026-09-04
+
+### Corrected
+
+- Reframed the repository as a project-defined, vendor-neutral reference baseline rather than an open project, deployed product, adopted industry standard, or universal security control plane.
+- Reconciled T0 emergency handling with the hard `NO-GO` algorithm: a time-bounded emergency deviation remains explicitly nonconformant and cannot become `PASS` or `VERIFIED`.
+- Reconciled T3 cadence as semi-annual control-owner review plus annual independent verification and material-change review.
+- Distinguished scheduler-level Kubernetes GPU time-slicing from mediated vGPU, hardware partitioning, and full-GPU dedication; made isolation and cleanup claims deployment specific.
+- Clarified that InfiniBand P_Keys, Slurm scheduling constructs, Kubernetes namespaces, attestation, confidential computing, and signatures are partial mechanisms rather than complete proof.
+- Replaced universally private customer API wording with a provider-private/customer-endpoint risk model.
+- Corrected `CONTRIBUTING.md` to describe the actual local and GitHub Actions validation workflow.
+
+### Added
+
+- Bilingual scope and limitations documents, a source-backed accuracy review, intended GitHub metadata, and a security-reporting policy.
+
 ## 1.0.0-draft.1 — 2026-09-04
 
 ### Added

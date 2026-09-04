@@ -11,12 +11,13 @@ NeoCloud Cyber Security 以可验证结果为核心。任何变更都必须改�
 When requirements conflict, use the following order:
 
 1. Applicable law, regulator, contract, or customer commitment.
-2. Explicit organizational risk decisions approved by accountable owners.
-3. T0 production guardrails in this baseline.
+2. Explicit service boundary and applicability decisions approved by accountable owners.
+3. T0 production guardrails for the in-scope service.
 4. Service-specific threat models and shared-responsibility decisions.
-5. T1–T4 controls and informative framework mappings.
+5. Explicit residual-risk decisions for T1–T4 and explicitly nonconformant emergency deviations.
+6. Informative framework mappings.
 
-A mapping to an external framework never proves compliance by itself.
+A risk decision may authorize a time-bounded operational deviation, but it cannot relabel a failed or unknown T0 as `PASS`, `VERIFIED`, or baseline-conformant. A mapping to an external framework never proves compliance by itself.
 
 ## 3. Change process
 
@@ -61,15 +62,15 @@ Screenshots alone are weak evidence. Prefer API exports, signed attestations, im
 
 ## 6. Risk acceptance and exceptions
 
-T0 exceptions are prohibited unless an accountable executive and security owner approve a time-bounded emergency exception with compensating controls, customer/legal impact analysis, and a rollback or remediation deadline. Exceptions must never silently become permanent architecture.
+A T0 failure or unknown state cannot receive a conforming exception. An accountable executive and security owner may approve a time-bounded **emergency deviation** with compensating controls, customer/legal impact analysis, explicit nonconformant status, rollback conditions, and a remediation deadline. The affected control remains failed or unverified until an independent validator returns `PASS`.
 
-All exceptions require an owner, reason, affected assets/tenants, residual risk, compensating controls, approval, expiration date, and verification after closure.
+All deviations and other exceptions require an owner, reason, affected assets/tenants, residual risk, compensating controls, approval, expiration date, customer-facing claim treatment, and verification after closure. They must never silently become permanent architecture.
 
 ## 7. Agent and automation safety
 
 AI or automated security actions must satisfy all of the following:
 
-- a declared goal, immutable scope, and authorized tool set;
+- a declared goal, a policy-controlled authorization envelope that the agent or untrusted content cannot expand, and an authorized tool set;
 - least privilege and short-lived credentials;
 - policy gates for destructive, external, customer-impacting, or irreversible actions;
 - complete action/observation/evidence audit trails;
@@ -81,9 +82,11 @@ Active security testing requires explicit authorization, least privilege, an app
 
 ## 8. Review cadence
 
-- T0/T1: at least quarterly and after material architecture or threat changes.
-- T2/T3: at least semi-annually, with continuous monitoring where technically feasible.
-- T4 automation: continuous telemetry plus quarterly adversarial and failure-mode review.
+- T0: continuous monitoring where feasible, independent verification at least quarterly, and review after material architecture or threat change.
+- T1: at least quarterly and after material change.
+- T2: at least semi-annually and after material change.
+- T3: control-owner review at least semi-annually, independent assessment at least annually, and review after material change.
+- T4 automation: continuous telemetry plus quarterly adversarial/failure-mode review and review after material change.
 - Full baseline: annual version review or earlier when a major standard, platform, accelerator, isolation mechanism, or threat class changes.
 
 ## 9. Maintainer principles

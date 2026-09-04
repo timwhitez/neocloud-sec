@@ -32,7 +32,7 @@
 20. NIST, *AI 600-1: Artificial Intelligence Risk Management Framework—Generative AI Profile*, 2024. https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence
 21. NIST, *SP 800-218A: Secure Software Development Practices for Generative AI and Dual-Use Foundation Models*, 2024. https://csrc.nist.gov/pubs/sp/800/218/a/final
 22. NIST, *IR 8596: Cybersecurity Framework Profile for Artificial Intelligence*, initial preliminary draft, 2025-12-16. https://csrc.nist.gov/pubs/ir/8596/iprd
-23. NIST NCCoE, *Accelerating the Adoption of Software and AI Agent Identity and Authorization*, concept paper, 2026-02-05. https://www.nccoe.nist.gov/publications/other/accelerating-adoption-software-and-ai-agent-identity-and-authorization-concept
+23. NIST NCCoE, *Accelerating the Adoption of Software and AI Agent Identity and Authorization*, concept paper, 2026-02-05; project status was ‘Reviewing Comments’ at the baseline date and this is not a final standard. https://www.nccoe.nist.gov/publications/other/accelerating-adoption-software-and-ai-agent-identity-and-authorization-concept
 24. Cloud Security Alliance, *AI Controls Matrix v1.1*, released 2026-06-22; 247 controls across 18 domains. https://cloudsecurityalliance.org/artifacts/ai-controls-matrix-v1-1
 25. Cloud Security Alliance, *AI Consensus Assessments Initiative Questionnaire (AI-CAIQ) v1.1*, released 2026-06-23. https://cloudsecurityalliance.org/artifacts/ai-consensus-assessments-initiative-questionnaire-ai-caiq-v1-1
 26. Cloud Security Alliance, *AI Security Maturity Model (AISMM)*, released 2026-05-19. https://cloudsecurityalliance.org/artifacts/ai-security-maturity-model
@@ -64,13 +64,14 @@
 ## GPU, accelerator, confidential computing, and fabric isolation
 
 48. NVIDIA, *Multi-Instance GPU (MIG)*. https://www.nvidia.com/en-us/technologies/multi-instance-gpu/
-49. NVIDIA GPU Operator, *Time-Slicing GPUs in Kubernetes*. https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-sharing.html
+49. NVIDIA GPU Operator, *Time-Slicing GPUs in Kubernetes*; the documented scheduler-level replicas do not provide memory or fault isolation from each other. https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-sharing.html
 50. NVIDIA, *Confidential Containers Reference Architecture*. https://docs.nvidia.com/datacenter/cloud-native/confidential-containers/latest/
 51. NVIDIA Infra Controller, *Network Isolation*. https://docs.nvidia.com/infra-controller/documentation/operations-day-2/network-isolation
 52. NVIDIA Infra Controller, *InfiniBand Partitioning*. https://docs.nvidia.com/infra-controller/documentation/configuration-day-1/infini-band/infini-band-partitioning
 53. NVIDIA Infra Controller, *Operational Principles*. https://docs.nvidia.com/infra-controller/documentation/overview/operational-principles
 54. NVIDIA, *Data Center GPU Manager (DCGM) Documentation*. https://docs.nvidia.com/datacenter/dcgm/latest/index.html
 55. NVIDIA, *DCGM Health and Diagnostics*. https://docs.nvidia.com/datacenter/dcgm/latest/user-guide/feature-overview.html
+- NVIDIA AI Enterprise, *vGPU for Compute Overview*; supported mediated vGPU modes have product- and configuration-specific memory, fault, and scheduling properties distinct from scheduler-level Kubernetes time-slicing. https://docs.nvidia.com/ai-enterprise/release-8/latest/infra-software/vgpu/overview.html
 
 ## Threat modeling, software supply chain, and artifact trust
 
@@ -81,6 +82,14 @@
 60. NIST, *SP 800-218 Secure Software Development Framework v1.1*. https://csrc.nist.gov/pubs/sp/800/218/final
 61. NIST, *SP 800-204D: Strategies for the Integration of Software Supply Chain Security in DevSecOps CI/CD Pipelines*. https://csrc.nist.gov/pubs/sp/800/204/d/final
 
+## Identity, platform integrity, and sanitization
+
+62. NIST, *SP 800-63-4: Digital Identity Guidelines*, final, 2025. https://pages.nist.gov/800-63-4/
+63. NIST, *SP 800-63B-4: Digital Identity Guidelines—Authentication and Authenticator Management*, final, 2025. At AAL2 verifiers must offer a phishing-resistant option; requirements for specific populations and assurance levels depend on applicability. https://pages.nist.gov/800-63-4/sp800-63b.html
+64. NIST, *SP 800-88 Rev. 2: Guidelines for Media Sanitization*, final, 2025; it supersedes Rev. 1 and emphasizes a risk-based sanitization program and validation. https://csrc.nist.gov/pubs/sp/800/88/r2/final
+65. NIST, *SP 800-193: Platform Firmware Resiliency Guidelines*, final, 2018. https://csrc.nist.gov/pubs/sp/800/193/final
+66. NIST, *SP 800-160 Vol. 1 Rev. 1: Engineering Trustworthy Secure Systems*, final, 2022. https://csrc.nist.gov/pubs/sp/800/160/v1/r1/final
+
 ## How to use these references / 使用方法
 
 - Use NIST CSF 2.0 as the top-level outcome and governance vocabulary.
@@ -89,7 +98,10 @@
 - Use NIST SP 800-228 and SP 800-209 Rev. 1 to deepen API and storage implementation decisions; treat draft content as non-final.
 - Use NIST AI RMF, NIST SP 800-218A, CSA AICM/AISMM, ISO/IEC 42001/42005, OWASP GenAI, and MITRE ATLAS for AI, model, and agent lifecycle risk.
 - Use the NIST NCCoE agent-identity concept paper and OWASP ACS as emerging inputs for agent identity, delegation, authorization, audit, and runtime-control design; verify their maturity and version before adoption.
-- Use Kubernetes, SPIFFE/SPIRE, Slurm, NVIDIA, and deployed platform documentation for implementation-specific safeguards and negative-test design.
+- Use NIST SP 800-63-4/-63B-4 to scope identity-assurance and authenticator decisions; do not generalize federal or AAL-specific requirements to every private service.
+- Use Kubernetes, SPIFFE/SPIRE, Slurm, NVIDIA, and deployed platform documentation for implementation-specific safeguards and negative-test design. Distinguish scheduler-level GPU sharing from mediated vGPU and hardware partitioning.
+- Use NIST SP 800-88 Rev. 2 for media-sanitization program and validation; use vendor/device evidence and the service threat model for volatile accelerator state that is not conventional storage media.
+- Use NIST SP 800-193 and SP 800-160 Vol. 1 Rev. 1 for firmware resilience and trustworthy-system engineering.
 - Use MITRE ATT&CK/ATLAS to derive detections, threat-hunting hypotheses, incident scenarios, and validation exercises.
 - Use SLSA, Sigstore, SSDF, SBOM/VEX, reproducible-build evidence, and admission policy for software, model, container, firmware, agent-skill, and infrastructure supply chains.
 

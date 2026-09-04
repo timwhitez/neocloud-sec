@@ -1,11 +1,11 @@
 # NeoCloud Cyber Security Reference Architecture
 
-**Version:** 1.0.0-draft.1  
+**Version:** 1.0.0-draft.2  
 **Audience:** security architecture, platform engineering, network, SRE, identity, data/AI, infrastructure, and assurance teams
 
 ## 1. Architectural intent
 
-This reference architecture translates the white-paper principles into separable capabilities, trust zones, decision points, enforcement points, evidence flows, and recovery boundaries. It is vendor neutral. A NeoCloud may implement components differently, but it must preserve the security invariants and evidence outcomes.
+This reference architecture translates the white-paper principles into separable capabilities, trust zones, decision points, enforcement points, evidence flows, and recovery boundaries. It is vendor neutral. A NeoCloud may implement components differently, but it must preserve the security invariants and evidence outcomes. Read [Scope and Limitations](SCOPE_AND_LIMITATIONS.md) before treating a logical component as a product or a hardware-specific guarantee.
 
 The architecture assumes that:
 
@@ -14,7 +14,7 @@ The architecture assumes that:
 - infrastructure, workload, data/model, and agent identities must remain correlated;
 - tenant isolation is a property of the complete path, not an individual VLAN, namespace or GPU setting;
 - administrative and automated actions can be as dangerous as hostile workload traffic;
-- the evidence plane must be protected independently from the systems being evaluated.
+- the evidence plane needs administrative and observational independence appropriate to risk; this is a logical trust requirement and does not always require separate physical infrastructure.
 
 ## 2. Logical architecture
 
@@ -161,7 +161,7 @@ Minimum capabilities:
 
 - enterprise and customer federation, phishing-resistant MFA and lifecycle automation;
 - privileged access management, JIT/JEA and break-glass;
-- workload identity using attested, short-lived credentials rather than embedded secrets;
+- short-lived workload identity rather than embedded secrets, with attestation binding where supported and justified by the threat model;
 - device/node/BMC/DPU identity where technically possible;
 - dedicated agent identity and explicit delegation chains;
 - centralized policy authoring and decision with distributed enforcement;
@@ -200,7 +200,7 @@ For Kubernetes, this includes API server, etcd, controller manager, scheduler, a
 
 Minimum capabilities:
 
-- hardened and privately reachable control planes;
+- provider-only controllers and databases kept private; customer-facing API endpoints private by default or explicitly approved, strongly authenticated, restricted, abuse-protected, and audited;
 - separate provider and tenant authority;
 - default-deny admission for privileged, host, device and network access;
 - immutable or tightly managed node images;
@@ -220,7 +220,7 @@ Fabric capabilities include explicit separation of public, tenant, storage, clus
 
 Storage capabilities include per-tenant authorization, encryption, key separation, snapshot/clone controls, lifecycle and retention, deletion verification, immutable backup, restore testing and tenant-safe metadata/logging.
 
-BMC/OOB must be isolated from tenant and ordinary corporate networks, strongly authenticated, patched, monitored, and reachable only through privileged access workflows. A compromised BMC or fabric controller is a root-level incident.
+BMC/OOB must be isolated from tenant and ordinary corporate networks, strongly authenticated, patched, monitored, and reachable only through privileged access workflows. A compromised BMC or fabric controller is a provider-root or fleet-impacting incident whose scope depends on the deployed authority and topology.
 
 ### 3.6 Data, model and supply-chain plane
 
@@ -275,13 +275,13 @@ A production design should explicitly model at least these zones:
 10. **Security evidence and recovery:** logs, evidence, backups, incident systems and known-good rebuild sources.
 11. **External dependencies:** identity/SaaS providers, suppliers, packages, model/data sources and support services.
 
-Traffic between zones is not automatically trusted. Every crossing requires an authenticated identity, an allowed purpose, an explicit policy, protected transport where appropriate, logging, and a tested failure behavior.
+Traffic between zones is not automatically trusted. Every crossing requires an authenticated endpoint identity or an authoritative identity-to-resource binding where the protocol permits, an allowed purpose, explicit policy, protected transport where appropriate, logging, and tested failure behavior. Low-level physical or L2 paths must not be assumed to carry an application tenant identifier.
 
 ## 5. Architectural invariants
 
 The following invariants are mandatory design review questions:
 
-1. A tenant identifier is carried and validated at every object, message, controller and storage boundary.
+1. Tenant and authorization context is carried and validated at every control-plane object/message boundary and enforced through an authoritative binding at storage, compute, accelerator, and fabric resources.
 2. No provider administrative interface is reachable from the public or tenant data plane without a governed privileged-access path.
 3. A customer workload cannot obtain provider control-plane, node, BMC, DPU, fabric-manager or signing credentials.
 4. Each service SKU declares its compute/GPU/fabric/storage isolation properties and limitations.
@@ -292,7 +292,7 @@ The following invariants are mandatory design review questions:
 9. Critical evidence cannot be altered by the ordinary administrator of the source system without detection.
 10. Identity, key and policy revocation can be executed without waiting for a normal release cycle.
 11. Recovery uses known-good sources and verifies tenant isolation and integrity before traffic returns.
-12. AI agents and security automation cannot expand their own goal, scope, tools, credentials, approval authority or verifier.
+12. AI agents and security automation cannot expand their own authorization envelope, tools, credentials, approval authority or verifier; goal or task changes require a separately authorized transition.
 
 ## 6. Core security flows
 
@@ -369,7 +369,7 @@ Policy must have unit tests, negative tests, change review, staged rollout, roll
 
 ### GPU IaaS
 
-Use strong VM/container isolation; declare full-GPU, hardware partition or other sharing mode; isolate device management; validate reset and memory clearing; provide tenant network/storage controls; preserve allocation topology and host/GPU lineage.
+Use strong VM/container isolation; distinguish full-GPU dedication, hardware partitioning, hypervisor-mediated vGPU, and scheduler-level sharing; isolate device management; validate the product/version/configuration-specific memory, fault, reset, performance-interference, and cleanup properties; provide tenant network/storage controls; preserve allocation topology and host/GPU lineage.
 
 ### Bare metal GPU
 
@@ -381,7 +381,7 @@ Separate provider control authority from tenant namespaces; apply restricted-by-
 
 ### Managed Slurm/HPC
 
-Protect controller/database/REST/authentication; enforce accounts, partitions, QOS and associations; secure prolog/epilog and modules; isolate shared storage and fabric; prevent users from modifying controller state; collect job/accounting and privileged activity evidence.
+Protect controller/database/REST/authentication; govern accounts, partitions, QOS, associations, and MCS where used; secure prolog/epilog and modules; isolate shared storage and fabric; prevent users from modifying controller state; collect job/accounting and privileged activity evidence. Slurm scheduling labels and MCS controls do not replace OS/runtime, credential, storage, and network/fabric isolation.
 
 ### Model training and serving
 

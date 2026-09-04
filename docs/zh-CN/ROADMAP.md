@@ -5,7 +5,7 @@
 
 ## 1. 如何使用路线图
 
-这是一份参考推进顺序，而不是日历承诺。已经开放公网 API 和多租户 GPU 的初创服务商可能需要在数天内补齐 T0；完全专属的内部集群也可能合理地判定部分控制不适用。进展应以独立验证的安全结果和真实暴露下降衡量，而不是文档数量或采购工具数量。
+这是一份参考推进顺序，而不是日历承诺。已经开放公网 API 和多租户 GPU 的初创服务商可能需要在数天内补齐 T0；完全专属的内部集群也可能合理地判定部分控制不适用。进展应以独立验证的安全结果和真实暴露下降衡量，而不是文档数量或采购工具数量。日期、百分比和阶段目标是本项目定义的规划默认值，不是经外部验证的行业 Benchmark，必须结合[范围与局限](SCOPE_AND_LIMITATIONS.md)调整。
 
 先选择服务画像，定义生产边界与责任人，再评估全部 T0/T1。服务特有威胁可以进入风险台账，但任何数字评分都不能覆盖跨租户、Root Key、公网管理面、安全清除、日志、响应或恢复硬门槛失败。
 
@@ -16,7 +16,7 @@
 成熟 NeoCloud 应能够证明：
 
 - 一个权威关系图连接 Service、Tenant、Identity、Workload、Node、GPU、Fabric、Data/Model、Artifact、Control、Risk 与 Evidence；
-- 人员使用抗钓鱼/JIT 权限，Workload/Agent 使用经过证明的短期身份；
+- 人员使用抗钓鱼/JIT 权限，Workload/Agent 使用短期身份，并在产品支持且威胁模型证明必要时绑定 Attestation；
 - 租户正确策略在 API、Controller、Scheduler、Host、GPU、Fabric、Storage、Registry、KMS 和 Tool 边界执行；
 - 每种商业 SKU 都有明确且持续验证的隔离性质；
 - 软件/模型/固件供应链有清单、Provenance、签名、分阶段发布与召回；
@@ -124,7 +124,7 @@
 
 ### 核心项目
 
-1. **Workload Identity：** 为 Service、Job、Node、Agent 颁发短期、经过证明的 Identity，逐步消除嵌入 Credential。
+1. **Workload Identity：** 为 Service、Job、Node、Agent 颁发短期 Identity，在产品支持且威胁模型证明必要时绑定 Attested State，逐步消除嵌入 Credential。
 2. **Policy-as-Code：** 建立 Tenant Authorization、Isolation SKU、Region、Data Class、Artifact Admission、Egress、Tool Use 和 Approval 通用策略。
 3. **Trusted Artifact Pipeline：** 保护 Source、隔离 Build、SBOM、Provenance、Signature、Registry Policy 和 Admission Verification。
 4. **Desired/Actual Reconciliation：** 持续对比 API Intent 与 Kubernetes/Slurm、Host、GPU、Storage、Network、DPU 和 P_Key。
@@ -136,7 +136,7 @@
 ### 退出门槛
 
 - 新 Tier-1 服务统一接入 Identity、Logging、Secret、Policy、Artifact 和 Incident 能力；
-- 至少 80% 生产 Workload 使用短期或 Brokered Credential；
+- 达到组织自定的生产 Workload 短期/Brokered Credential 目标；‘第六个月 80%’仅为示例规划值，不是行业 Benchmark；
 - 高影响 Artifact 有 Inventory，关键 Build 产生 SBOM/Provenance；
 - Tenant/Fabric/GPU Assignment 错配可以检测并 Paging；
 - 优先控制证据自动生成且经过正确性 Review。
@@ -275,6 +275,6 @@
 
 ## 14. 首月高管决策
 
-领导层需要明确决定：生产 Service/Region 范围；何种 Isolation Mode 可承载何种 Data Class；是否允许 Provider Admin 公网暴露；Root/Signing/KMS/BMC/Fabric Owner；T0 Exception Authority/Maximum Lifetime；Notification Commitment；Support Access 与 Customer Visibility；默认 Tenant Identity/MFA/Egress/Quota；Evidence Retention 与 Assurance；RTO/RPO 和 Known-good Rebuild；禁止 Agent 自主执行的行为类别；首 90 天 Owner 与资源。
+领导层需要明确决定：生产 Service/Region 范围；何种 Isolation Mode 可承载何种 Data Class；是否允许 Provider Admin 公网暴露；Root/Signing/KMS/BMC/Fabric Owner；T0 紧急偏离的 Authority、Maximum Lifetime、Rollback Criteria 和明确‘不符合’状态；Notification Commitment；Support Access 与 Customer Visibility；默认 Tenant Identity/MFA/Egress/Quota；Evidence Retention 与 Assurance；RTO/RPO 和 Known-good Rebuild；禁止 Agent 自主执行的行为类别；首 90 天 Owner 与资源。
 
 没有这些决策，技术团队无法可靠落地控制，因为信任边界和可接受失败尚未定义。

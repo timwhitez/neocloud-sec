@@ -1,11 +1,11 @@
 # NeoCloud Cyber Security 参考架构
 
-**版本：** 1.0.0-draft.1  
+**版本：** 1.0.0-draft.2  
 **读者：** 安全架构、平台工程、网络、SRE、身份、数据/AI、基础设施和保证团队
 
 ## 1. 架构目标
 
-本参考架构把白皮书原则转换为可分解的安全能力、信任区、决策点、执行点、证据流和恢复边界。它不绑定特定厂商；不同 NeoCloud 可以采用不同组件，但必须保持同样的安全不变量和可证明结果。
+本参考架构把白皮书原则转换为可分解的安全能力、信任区、决策点、执行点、证据流和恢复边界。它不绑定特定厂商；不同 NeoCloud 可以采用不同组件，但必须保持同样的安全不变量和可证明结果。将逻辑组件解释为具体产品或硬件保证前，应先阅读[范围与局限](SCOPE_AND_LIMITATIONS.md)。
 
 架构基于以下现实：
 
@@ -14,7 +14,7 @@
 - 基础设施、工作负载、数据/模型和 Agent 身份必须始终可以关联；
 - 租户隔离是完整路径属性，而不是单个 VLAN、Namespace 或 GPU 配置属性；
 - 管理员和自动化行为可能与恶意工作负载流量同样危险；
-- 证据平面必须独立于被评估系统进行保护。
+- 证据平面需要具备与风险相匹配的管理和观察独立性；这是逻辑信任要求，并不总是要求单独物理基础设施。
 
 ## 2. 逻辑架构
 
@@ -152,7 +152,7 @@ flowchart TB
 
 - 企业与客户联邦、抗钓鱼 MFA 和生命周期自动化；
 - PAM、JIT/JEA 与 Break-glass；
-- 基于证明的短期工作负载身份，替代嵌入式 Secret；
+- 使用短期工作负载身份替代嵌入式 Secret，并在产品支持且威胁模型证明必要时绑定 Attestation；
 - 在技术可行时为 Node/BMC/DPU 建立设备身份；
 - 独立 Agent 身份和明确委托链；
 - 集中策略编写/决策和分布式执行；
@@ -180,7 +180,7 @@ flowchart TB
 
 Kubernetes 范围包括 API Server、etcd、Controller Manager、Scheduler、Admission、RBAC、Namespace、Network Policy、Pod Security Standards、Runtime、CNI/CSI、Device Plugin 和 Operator。Slurm 范围包括 Controller、Database、REST API、Authentication、Partition、Account、QOS、Prolog/Epilog、Module、Shared Storage、Compute Daemon 和 Job Accounting。
 
-最低能力：私有并加固的控制面；分离服务商与租户权限；默认拒绝特权、Host、Device 和 Network 访问；不可变或严格管理的节点镜像；签名且通过策略的工作负载制品；Namespace/Queue/Account 配额和放置约束；运行时检测与快速 Node 隔离；可靠清理、凭据吊销和制品处理；控制面备份、恢复和已知可信重建。
+最低能力：服务商专用 Controller/Database 保持私有；面向客户的 API Endpoint 默认私有，或经过显式批准并实施强认证、访问限制、抗滥用和完整审计；分离服务商与租户权限；默认拒绝特权、Host、Device 和 Network 访问；不可变或严格管理的节点镜像；签名且通过策略的工作负载制品；Namespace/Queue/Account 配额和放置约束；运行时检测与快速 Node 隔离；可靠清理、凭据吊销和制品处理；控制面备份、恢复和已知可信重建。
 
 ### 3.5 计算、互联与存储平面
 
@@ -192,7 +192,7 @@ Kubernetes 范围包括 API Server、etcd、Controller Manager、Scheduler、Adm
 
 存储能力包括租户级授权、加密和密钥分离、Snapshot/Clone 控制、生命周期/保留、删除验证、不可变备份、恢复测试和租户安全的元数据/日志。
 
-BMC/OOB 必须与租户网络和普通办公网隔离，实施强认证、补丁和监控，只能通过特权流程访问。BMC 或 Fabric Controller 失陷属于信任根级事件。
+BMC/OOB 必须与租户网络和普通办公网隔离，实施强认证、补丁和监控，只能通过特权流程访问。BMC 或 Fabric Controller 失陷属于服务商信任根或全局影响事件，具体范围取决于实际权限与拓扑。
 
 ### 3.6 数据、模型与供应链平面
 
@@ -226,13 +226,13 @@ BMC/OOB 必须与租户网络和普通办公网隔离，实施强认证、补丁
 10. **安全证据与恢复区：** Log、Evidence、Backup、Incident System 和已知可信重建源。
 11. **外部依赖区：** IdP/SaaS、Supplier、Package、Model/Data Source 和 Support Service。
 
-区域间流量永不自动可信。每次跨区都要求已认证身份、允许的目的、显式策略、适当的传输保护、日志和经过测试的失败行为。
+区域间流量永不自动可信。每次跨区都要求已认证 Endpoint Identity，或在协议允许时使用权威 Identity-to-Resource Binding，并具备允许目的、显式策略、适当的传输保护、日志和经过测试的失败行为。底层物理或 L2 路径不能被假定会携带应用层 Tenant ID。
 
 ## 5. 架构不变量
 
 设计评审必须逐项回答：
 
-1. 每个 Object、Message、Controller 和 Storage Boundary 都携带并验证 Tenant ID。
+1. 每个控制面 Object/Message Boundary 都携带并验证 Tenant/Authorization Context，并通过权威绑定在 Storage、Compute、Accelerator 与 Fabric Resource 上执行。
 2. 服务商管理接口不能从公网或租户 Data Plane 直接到达，必须经过治理后的特权路径。
 3. 客户工作负载无法获得控制面、Node、BMC、DPU、Fabric Manager 或 Signing Credential。
 4. 每种 SKU 明确声明 Compute/GPU/Fabric/Storage 隔离性质与局限。
@@ -243,7 +243,7 @@ BMC/OOB 必须与租户网络和普通办公网隔离，实施强认证、补丁
 9. Source System 普通管理员无法在不被发现的情况下修改关键证据。
 10. Identity、Key 和 Policy 可在不等待正常发布周期的情况下吊销。
 11. 恢复使用已知可信源，并在流量恢复前验证租户隔离和完整性。
-12. AI Agent/安全自动化不能自行扩大 Goal、Scope、Tool、Credential、Approval Authority 或 Verifier。
+12. AI Agent/安全自动化不能自行扩大 Authorization Envelope、Tool、Credential、Approval Authority 或 Verifier；Goal/Task 变化必须经过独立授权的状态转换。
 
 ## 6. 核心安全流程
 
@@ -289,7 +289,7 @@ Agent 具有明确 Goal、不可静默修改的 Scope、身份和 Delegation Cha
 
 ### GPU IaaS
 
-实施强 VM/Container 隔离；声明 Full GPU、Hardware Partition 或其他 Sharing；隔离设备管理；验证 Reset/Memory Clear；提供 Tenant Network/Storage Control；保留 Allocation Topology 和 Host/GPU Lineage。
+实施强 VM/Container 隔离；区分 Full-GPU Dedication、Hardware Partition、Hypervisor-mediated vGPU 与 Scheduler-level Sharing；隔离设备管理；针对具体 Product/Version/Configuration 验证 Memory、Fault、Reset、Performance Interference 与 Cleanup；提供 Tenant Network/Storage Control；保留 Allocation Topology 和 Host/GPU Lineage。
 
 ### 裸金属 GPU
 
@@ -301,7 +301,7 @@ Agent 具有明确 Goal、不可静默修改的 Scope、身份和 Delegation Cha
 
 ### 托管 Slurm/HPC
 
-保护 Controller/Database/REST/Auth；执行 Account、Partition、QOS 和 Association；保护 Prolog/Epilog 与 Module；隔离 Shared Storage/Fabric；阻止普通用户改变 Controller State；收集 Job/Accounting 和高权限证据。
+保护 Controller/Database/REST/Auth；治理 Account、Partition、QOS、Association 以及采用时的 MCS；保护 Prolog/Epilog 与 Module；隔离 Shared Storage/Fabric；阻止普通用户改变 Controller State；收集 Job/Accounting 和高权限证据。Slurm Scheduling Label 与 MCS 不能替代 OS/Runtime、Credential、Storage 和 Network/Fabric Isolation。
 
 ### 模型训练与服务
 

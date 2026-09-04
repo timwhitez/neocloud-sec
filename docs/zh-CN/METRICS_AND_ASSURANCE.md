@@ -1,10 +1,10 @@
 # NeoCloud 网络安全度量与持续证明指南
 
-**版本：** 1.0.0-draft.1  
+**版本：** 1.0.0-draft.2  
 **基线日期：** 2026-09-04  
 **目标：** 度量安全结果在真实部署的 NeoCloud 服务中是否成立，而不是只度量安全活动是否发生
 
-本指南定义[安全基线](SECURITY_BASELINE.md)的度量、证据、验证和报告模型，应与机器可读[控制目录](../../controls/neocloud-security-baseline.v1.json)、[实践指南](PRACTICE_GUIDE.md)及仓库模板共同使用。
+本指南定义[安全基线](SECURITY_BASELINE.md)的度量、证据、验证和报告模型，应与机器可读[控制目录](../../controls/neocloud-security-baseline.v1.json)、[实践指南](PRACTICE_GUIDE.md)、[范围与局限](SCOPE_AND_LIMITATIONS.md)及仓库模板共同使用。
 
 ## 1. 持续证明原则
 
@@ -119,11 +119,11 @@ verification:
   findings: [...]
 ```
 
-关键证据应导出到受保护边界，并使用稳定标识关联 Service、Tenant、Subject、Workload、Host、GPU、Fabric、Data/Model、Artifact、Request 和 Policy。
+关键证据应导出到具有与风险相匹配的管理和观察分离的受保护边界，并使用稳定标识关联 Service、Tenant、Subject、Workload、Host、GPU、Fabric、Data/Model、Artifact、Request 和 Policy；这并不普遍要求物理隔离。
 
 ## 6. 核心指标目录
 
-下列目标是参考起点。组织应根据服务承诺和风险调整目标，但不得削弱 T0 硬门槛。
+下列目标是本项目定义的参考起点，不是经外部验证的行业 Benchmark。组织应根据服务承诺、实际技术栈、威胁模型和风险调整目标，但不得削弱适用的 T0 硬门槛。
 
 ### 6.1 治理、Owner 与保证
 

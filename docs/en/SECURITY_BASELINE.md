@@ -1,6 +1,6 @@
 # NeoCloud Cyber Security Baseline
 
-**Version:** 1.0.0-draft.1  
+**Version:** 1.0.0-draft.2  
 **Baseline date:** 2026-09-04  
 **Normative machine-readable catalog:** [`controls/neocloud-security-baseline.v1.json`](../../controls/neocloud-security-baseline.v1.json)
 
@@ -13,7 +13,7 @@ This baseline defines minimum cybersecurity outcomes for GPU IaaS, bare-metal GP
 - **May** identifies an implementation option.
 - External-framework alignments are informative. They do not establish certification, compliance, or exact control equivalence.
 
-The baseline contains **90 controls across 18 domains**. The JSON catalog is the authoritative record for bilingual requirements, minimum evidence, verification frequency, metrics, tiers, and control IDs. This document explains how to assess and apply it.
+The baseline contains **90 controls across 18 domains**. The JSON catalog is the authoritative record for bilingual requirements, minimum evidence, verification frequency, metrics, tiers, and control IDs. This document explains how to assess and apply it. The tiers, gates, counts, and targets are project-defined normative rules for this repository, not claims of universal industry consensus; see [Scope and Limitations](SCOPE_AND_LIMITATIONS.md).
 
 ## 2. Assessment lifecycle
 
@@ -41,7 +41,7 @@ A screenshot or policy document alone is normally insufficient. Prefer API expor
 | **T3 — Assured** | Independent and higher-assurance controls for sensitive, regulated, sovereign, or dedicated services | Required when the service makes a corresponding assurance commitment |
 | **T4 — Adaptive** | Continuous verification and guarded automation | Adopt only after authority, failure modes, rollback, and verifier controls are proven |
 
-A score never compensates for a failed T0. T0 exceptions are emergency-only, executive and security approved, time-bounded, customer/legal-impact assessed, protected by compensating controls, and tied to a remediation deadline.
+A score never compensates for a failed T0. An accountable executive and security owner may authorize a time-bounded emergency deviation to continue a service, but the failed or unknown T0 remains `NO-GO` for conformity: it cannot be marked `PASS` or `VERIFIED`, cannot be represented as baseline-compliant, and must retain explicit customer/legal impact, compensating controls, rollback conditions, and a remediation deadline.
 
 ## 4. Production hard gates
 
@@ -53,10 +53,10 @@ A service must not enter or remain in general production when any applicable con
 4. **Privileged identity:** provider privilege and tenant owners use approved strong MFA; shared admin accounts are prohibited; emergency revocation and break-glass are tested.
 5. **API correctness:** every critical public and internal API authenticates the caller and verifies object/action/tenant authorization server-side.
 6. **Private administration:** provider control planes, orchestrator databases/controllers, fabric management, BMC/OOB, debug, and support paths are not directly exposed to public or tenant data planes.
-7. **End-to-end isolation:** tenant identity is preserved across API, scheduler, host, GPU, storage, Ethernet, InfiniBand/RDMA, DPU, telemetry, and support operations.
+7. **End-to-end isolation:** tenant and authorization context is preserved across control-plane translations and enforced through authoritative bindings at scheduler, host, GPU, storage, Ethernet, InfiniBand/RDMA, DPU, telemetry, and support boundaries.
 8. **Declared compute SKU:** host, GPU/HBM/cache, NVLink, fabric, storage, telemetry, and support isolation properties and limitations are documented and tested.
 9. **Safe accelerator handling:** sensitive workloads do not use a sharing mode lacking required memory/fault isolation; reset, error, quarantine, and inter-tenant cleanup are verified.
-10. **Secure orchestration:** Kubernetes/Slurm control planes are private, patched, strongly authenticated, separated from tenants, backed up, and recoverable.
+10. **Secure orchestration:** provider-only Kubernetes/Slurm controllers and databases are private, patched, strongly authenticated, separated from tenants, backed up, and recoverable. Any customer-facing management API is private by default or explicitly approved, hardened, restricted, protected from abuse, and fully audited.
 11. **Protected data/models:** crown-jewel data and models are owned, classified, tenant-authorized, encrypted, retained, exported, deleted, and sanitized according to policy.
 12. **Protected roots and secrets:** critical keys are centrally governed; static secrets are minimized; signing/root use is restricted, audited, and recoverable.
 13. **Known artifacts:** production images, drivers, firmware, operators, infrastructure bundles, models, checkpoints, and skills come from approved and inventoried sources.
@@ -103,7 +103,7 @@ A service must not enter or remain in general production when any applicable con
 |---|---:|---|
 | NCS-IAM-01 | T0 | Central federation and phishing-resistant MFA |
 | NCS-IAM-02 | T0 | Least privilege, JIT administration, and break-glass |
-| NCS-IAM-03 | T2 | Attested workload and service identity |
+| NCS-IAM-03 | T2 | Short-lived workload and service identity |
 | NCS-IAM-04 | T1 | Tenant, service-account, and access lifecycle |
 | NCS-IAM-05 | T2 | Agent identity, delegation, and action scope |
 
@@ -149,7 +149,7 @@ A service must not enter or remain in general production when any applicable con
 
 | ID | Tier | Control |
 |---|---:|---|
-| NCS-ORC-01 | T0 | Hardened and private orchestrator control planes |
+| NCS-ORC-01 | T0 | Hardened and access-restricted orchestrator control planes |
 | NCS-ORC-02 | T1 | RBAC, admission, job, and privileged-workload controls |
 | NCS-ORC-03 | T1 | Tenant scheduling, quotas, and placement boundaries |
 | NCS-ORC-04 | T2 | Runtime, node, secret, and plugin security |
@@ -302,7 +302,7 @@ A service must not enter or remain in general production when any applicable con
 
 Evidence is stale when it exceeds its required frequency or when a material change affects the assertion. Revalidation triggers include service-SKU or sharing changes, new region/fabric, orchestrator or controller upgrade, identity/key hierarchy change, data flow or supplier change, model/agent/tool capability expansion, control failure, incident, restore/rebuild, or verifier inability to reproduce the result.
 
-T0/T1 controls should be reviewed at least quarterly and after material change. T2/T3 should be reviewed at least semi-annually with continuous monitoring where feasible. T4 automation requires continuous metrics and quarterly adversarial/failure-mode review.
+Default minimum revalidation is: T0—continuous monitoring where feasible plus independent verification at least quarterly and after material change; T1—at least quarterly and after material change; T2—at least semi-annually and after material change; T3—control-owner review at least semi-annually, independent assessment at least annually, and review after material change; T4—continuous metrics plus quarterly adversarial/failure-mode review and review after material change. A service-specific threat model, contract, incident, or regulator may require a shorter interval.
 
 ## 8. Production decision algorithm
 

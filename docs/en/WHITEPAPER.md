@@ -1,28 +1,28 @@
 # NeoCloud Cyber Security White Paper
 
-**Version:** 1.0.0-draft.1  
+**Version:** 1.0.0-draft.2  
 **Baseline date:** 2026-09-04  
-**Status:** Implementation-oriented public draft
+**Status:** Project-defined implementation draft
 
 ## Executive summary
 
 NeoClouds are specialized, AI-first cloud platforms optimized for accelerator-heavy training, inference, high-performance computing, and agentic workloads. They combine cloud APIs with physical GPU fleets, bare metal, Kubernetes, Slurm, high-throughput storage, Ethernet, InfiniBand/RDMA, NVLink domains, DPUs, firmware, model registries, data services, and increasingly autonomous AI systems. This concentration of expensive capacity and high-value data creates a security problem that is materially different from conventional enterprise IT and cannot be solved by adding a generic cloud checklist to a GPU platform.
 
-NeoCloud Cyber Security defines a unified cybersecurity control plane for this environment. Identity is the root of trust; policy is the decision core; people, tenants, workloads, devices, and AI agents are first-class security subjects. Controls span endpoint and administrative access, control planes, cloud-native runtime, GPU and fabric isolation, data and model protection, software and model supply chains, security operations, resilience, and physical infrastructure. The desired outcome is a closed loop from visibility, to policy decision, to preventive or responsive enforcement, to durable evidence and independent verification.
+NeoCloud Cyber Security proposes a unified security reference model and operating architecture for this environment. Identity and authorization, platform and workload integrity, cryptographic roots, policy enforcement, tenant isolation, and independently protected evidence are complementary trust inputs; no single input is sufficient. Controls span endpoint and administrative access, control planes, cloud-native runtime, GPU and fabric isolation, data and model protection, software and model supply chains, security operations, resilience, and physical infrastructure. The desired outcome is a closed loop from visibility, to policy decision, to preventive or responsive enforcement, to durable evidence and independent verification.
 
 The baseline is designed around five adoption tiers and eighteen security domains. T0 controls are hard production guardrails. T1 establishes complete ownership and minimum viable visibility. T2 turns controls into scalable platform capabilities. T3 provides higher assurance for regulated, sovereign, sensitive, or dedicated services. T4 introduces continuous verification, confidential-computing patterns, and guarded automation. No aggregate score may compensate for a failed T0 control.
 
-This document is intentionally implementation oriented. It defines the security problem, architecture, operating model, threat model, baseline, roadmap, evidence model, and provider/customer responsibilities. The companion [Security Baseline](SECURITY_BASELINE.md), [Practice Guide](PRACTICE_GUIDE.md), [Reference Architecture](REFERENCE_ARCHITECTURE.md), [Roadmap](ROADMAP.md), and [Metrics and Assurance Guide](METRICS_AND_ASSURANCE.md) convert the model into deployable work.
+This document is intentionally implementation oriented. It defines the security problem, architecture, operating model, threat model, baseline, roadmap, evidence model, and provider/customer responsibilities. The companion [Security Baseline](SECURITY_BASELINE.md), [Practice Guide](PRACTICE_GUIDE.md), [Reference Architecture](REFERENCE_ARCHITECTURE.md), [Roadmap](ROADMAP.md), and [Metrics and Assurance Guide](METRICS_AND_ASSURANCE.md) convert the model into deployable work. [Scope and Limitations](SCOPE_AND_LIMITATIONS.md) defines what this project does not claim.
 
 ## 1. Definition and objective
 
-**NeoCloud Cyber Security is a unified cybersecurity control plane for AI-native organizations and specialized AI clouds. It treats identity as the root of trust, policy as the decision core, and agents plus workloads as first-class security subjects. It coordinates endpoint, cloud-native runtime, network and fabric, data, software/model supply chain, and security operations controls to close the loop from visibility to real-time enforcement and continuous assurance.**
+**NeoCloud Cyber Security is a project-defined security reference model and control baseline for AI-native organizations and specialized AI/GPU clouds. It coordinates identity and authorization, platform and workload integrity, cryptographic roots, policy enforcement, compute/fabric/data isolation, security operations, and independent evidence. It is an architecture and assurance model—not a claim that one product or one universal control plane can secure every deployment.**
 
 The objective is not to build one more security product. It is to establish a coherent set of trust decisions and verifiable outcomes across the complete service lifecycle:
 
 `design → source → build → provision → authenticate → schedule → execute → observe → respond → recover → delete → decommission`
 
-A NeoCloud is secure only when these decisions remain consistent across layers. Strong API authentication cannot compensate for weak GPU reset. A hardened Kubernetes cluster cannot compensate for a shared InfiniBand partition. Signed images cannot compensate for a compromised signing key. An incident-response policy cannot compensate for absent control-plane logs. Security is therefore treated as a system property rather than a collection of disconnected tools.
+A NeoCloud is secure only when these decisions remain consistent across layers. Strong API authentication cannot compensate for weak GPU reset. A hardened Kubernetes cluster cannot compensate for an inadequately isolated or misconfigured high-performance fabric. Signed images cannot compensate for a compromised signing key. An incident-response policy cannot compensate for absent control-plane logs. Security is therefore treated as a system property rather than a collection of disconnected tools.
 
 ## 2. Why NeoCloud security is distinct
 
@@ -97,7 +97,7 @@ NeoClouds must consider external attackers, malicious or compromised tenants, in
 | Account and API compromise | stolen credential, broken object-level authorization, support impersonation | tenant takeover, cross-tenant access, fraudulent consumption | phishing-resistant MFA, federation, tenant-correct authorization, JIT access, immutable audit |
 | Control-plane takeover | exposed admin interface, vulnerable operator, leaked automation token | fleet-wide compromise and persistence | private management plane, workload identity, policy gates, hardened controllers, rapid revocation |
 | Compute escape | container/VM escape, privileged workload, host compromise | access to host, peer workloads, credentials or devices | hardened isolation, admission policy, patched runtime, EDR/runtime detection, placement controls |
-| Accelerator leakage | memory remanence, unsafe sharing, weak reset, side channel | model/data exposure across jobs or tenants | documented SKU isolation, dedicated/MIG-class options, reset verification, adversarial testing |
+| Accelerator leakage | memory remanence, unsafe sharing, weak reset, side channel | model/data exposure across jobs or tenants | documented SKU isolation; dedicated, hardware-partitioned, or mediated-virtualization options validated for the deployed stack; reset verification; adversarial testing |
 | Fabric boundary failure | wrong VRF/VXLAN/P_Key/DPU assignment or RDMA bypass | direct cross-tenant network or storage reachability | default deny, plane separation, controller reconciliation, end-to-end path tests |
 | Data/model compromise | theft, poisoning, malicious format, unsafe deserialization | privacy/IP loss, model sabotage, code execution | classification, encryption, lineage, signed artifacts, safe loaders, access and integrity monitoring |
 | Supply-chain compromise | poisoned package/image/operator/driver/firmware/model | privileged code execution at scale | approved sources, SBOM, provenance, signatures, isolated builds, staged rollout and rollback |
@@ -114,7 +114,7 @@ Threat modeling must include positive and negative flows, trust-boundary crossin
 1. **Identity before location.** Authenticate and authorize people, tenants, workloads, devices, agents, and automation independently of network location.
 2. **Least privilege is dynamic.** Prefer short-lived, just-in-time, task-bound authority over standing roles or static secrets.
 3. **Tenant isolation is end to end.** Verify boundaries across API, identity, control plane, compute, GPU, storage, cache, telemetry, Ethernet, RDMA, and support operations.
-4. **Secure defaults are provider responsibilities.** MFA, audit, safe isolation modes, encryption, updates, and secure deletion cannot be optional premium features.
+4. **Provider-controlled safeguards are secure by default and accurately scoped.** Customer-controlled duties and higher-assurance service options must be explicit; they must not be used to obscure weaker baseline properties or ambiguous responsibility.
 5. **Policy and evidence are code.** Important decisions should be testable, versioned, reproducible, and attributable.
 6. **External content is untrusted data.** Prompts, models, packages, skills, documents, images, tickets, and web content never grant authority.
 7. **Assume compromise and constrain blast radius.** Design for rapid isolation, revocation, rebuild, and customer-safe evidence collection.
@@ -189,11 +189,11 @@ The complete normative outcomes and evidence expectations are in the baseline an
 
 | Tier | Meaning | Typical decision |
 |---|---|---|
-| **T0 Guardrails** | non-negotiable conditions before tenant data or production capacity is exposed | release blocked until passed or an exceptional executive emergency process is invoked |
+| **T0 Guardrails** | non-negotiable conditions before tenant data or production capacity is exposed | release blocked while the service remains in scope; an emergency deviation remains explicitly nonconformant and time-bounded |
 | **T1 Foundation** | ownership, inventory, basic hygiene, visibility, response and recovery foundations | complete in the first 90 days or before material scale |
 | **T2 Production** | reusable, policy-enforced and measured controls for multi-tenant general availability | required for sustainable production operation |
 | **T3 Assured** | independent testing and higher-assurance isolation, sovereignty and resilience | required for high-impact, regulated or explicitly assured services |
-| **T4 Adaptive** | continuous verification, guarded automation, advanced attestation/confidentiality | adopted only where failure modes and rollback are understood |
+| **T4 Adaptive** | continuous verification and guarded security automation | adopted only where authority, failure modes, rollback and independent verification are understood |
 
 A production-readiness decision requires:
 
@@ -281,6 +281,10 @@ NeoCloud security is the discipline of preserving trustworthy decisions across A
 
 Organizations should begin with T0 production gates, build T1 visibility and ownership, convert T2 controls into shared platform services, apply T3 where the consequences justify higher assurance, and introduce T4 automation only when its authority and failure modes are constrained. This creates a security architecture that can scale with compute, models, agents, customers, and regulation without turning every new risk into another brittle exception.
 
+## Source basis and limitations
+
+The control set is a project-defined synthesis informed by authoritative and primary sources in [`REFERENCES.md`](../../REFERENCES.md); it is not a normative transcription or formally validated crosswalk. Hardware and platform claims must be revalidated against the exact GPU, virtualization mode, driver, firmware, hypervisor, fabric controller, Slurm/Kubernetes configuration, and service contract in use. See [Scope and Limitations](SCOPE_AND_LIMITATIONS.md) and the repository [Accuracy Review](../../ACCURACY_REVIEW.md).
+
 ## Disclaimer
 
-This white paper is an implementation-oriented industry baseline. It is not a certification, legal opinion, guarantee, or substitute for applicable law, regulation, contract, privacy assessment, safety assessment, or qualified independent audit. External-framework mappings are informative and must be validated for the organization, service, jurisdiction, and version in use.
+This white paper is a project-defined implementation draft and reference baseline. It is not an adopted industry standard or deployed product. It is not a certification, legal opinion, guarantee, or substitute for applicable law, regulation, contract, privacy assessment, safety assessment, or qualified independent audit. External-framework mappings are informative and must be validated for the organization, service, jurisdiction, and version in use.

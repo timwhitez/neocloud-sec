@@ -1,10 +1,10 @@
 # NeoCloud 网络安全实践指南
 
-**版本：** 1.0.0-draft.1  
+**版本：** 1.0.0-draft.2  
 **基线日期：** 2026-09-04  
 **适用读者：** NeoCloud 管理层、安全、平台工程、SRE、网络与 Fabric、Kubernetes、Slurm/HPC、数据与 AI、机房、支持、Trust & Safety、隐私、风险与审计团队
 
-本指南将[白皮书](WHITEPAPER.md)、[安全基线](SECURITY_BASELINE.md)、[参考架构](REFERENCE_ARCHITECTURE.md)和[发展路线图](ROADMAP.md)转化为可执行的建设与运营方法。本文保持厂商中立；出现的产品类别仅作能力示例，不构成采购建议。
+本指南将[白皮书](WHITEPAPER.md)、[安全基线](SECURITY_BASELINE.md)、[参考架构](REFERENCE_ARCHITECTURE.md)和[发展路线图](ROADMAP.md)转化为可执行的建设与运营方法。本文保持厂商中立；出现的产品类别仅作能力示例，不构成采购建议。所有实施声明都应同时应用[范围与局限](SCOPE_AND_LIMITATIONS.md)。
 
 ## 1. 从服务与信任决策出发，而不是从工具出发
 
@@ -38,7 +38,7 @@
 
 | 角色 | 可追责决策 | 最低固定职责 |
 |---|---|---|
-| 高管风险 Owner | 风险偏好、生产例外、危机优先级 | 每月审阅关键风险 |
+| 高管风险 Owner | 风险偏好、不符合基线的紧急偏离、危机优先级 | 每月审阅关键风险 |
 | CISO/安全负责人 | 控制模型、安全路线图、独立挑战 | 每周审阅 T0/T1 |
 | 服务 Owner | 服务边界、客户承诺、残余风险 | 发布前和季度复核 |
 | 平台能力 Owner | 身份、策略、计算、Fabric、存储、编排等共享控制 | SLO、变更和事件责任 |
@@ -67,7 +67,7 @@
 
 优先完成：
 
-- 服务商特权身份及租户 Owner 使用抗钓鱼 MFA；
+- 服务商特权身份及按服务风险判定的高影响租户管理角色使用抗钓鱼 MFA；
 - 服务商管理面私有化，BMC/OOB 走独立受控路径；
 - 对最高风险 API 执行对象、动作和租户授权测试；
 - 为每种对外销售的计算 SKU 声明精确隔离属性；
@@ -165,7 +165,7 @@
 | VEM | 资产关联发现、按可利用性/暴露优先、补丁 SLA、固件覆盖 | 紧急补丁/Canary 与部署版本复核 | Finding→Asset→Remediation→Rescan 链路 |
 | TEL | 受保护关联遥测、覆盖清单、Detection-as-Code、租户安全保留 | 日志源失效、篡改尝试、ATT&CK/ATLAS 行为重放 | 事件样本、覆盖/新鲜度、测试结果、告警质量 |
 | AIR | 清单、影响评估、不可变范围、Typed Tool、审批、预算、Stop、Verifier | Prompt Injection、Confused Deputy、Tool Abuse、Memory/Skill Poisoning | 签名配置、完整 Trace、策略判定和验证结果 |
-| ABU | 租户信任分级、AUP、配额/速率/成本/容量、出网、Case 与申诉 | 配额绕过、挖矿、Denial-of-wallet、禁止出网 | 准入判定、执行原因、Case 和恢复记录 |
+| ABU | 租户信任分级、AUP、配额/速率/成本/容量、出网、Case 与申诉 | 配额绕过、未经授权的挖矿或其他 Policy 禁止工作负载、Denial-of-wallet、禁止出网 | 准入判定、执行原因、Case 和恢复记录 |
 | IRR | 指挥、Playbook、取证就绪、通知、开服门 | 跨租户/Root/Agent/可用性演练 | Timeline、证据链、决策、恢复与独立关闭 |
 | RES | 依赖/SLO/RTO/RPO、不可变备份、安全降级、重建/切换 | 主身份/密钥服务不可用时恢复，以及 Region/Fabric 故障 | 目标结果、完整性/隔离检查与开服审批 |
 | PHY | 机房控制、BMC/OOB 隔离、固件/硬件清单、清除与保管链 | 未授权 OOB 路径和租户重分配清除 | 门禁、配置、固件状态、清除与销毁记录 |
@@ -200,7 +200,7 @@
 
 验证：
 
-- 私有 API Server 和 etcd，强管理员及工作负载身份；
+- 服务商专用 Controller 与 etcd 私有；面向客户的 API Endpoint 默认私有，或经过显式批准并实施强认证、来源/速率限制、DDoS 防护与完整审计；使用强管理员及工作负载身份；
 - Restricted Pod Security Standards 与默认拒绝准入；
 - RBAC 隔离、租户 Namespace/Account、Quota、Network Policy 与 Secret 边界；
 - CNI、CSI、GPU Device Plugin、Operator、Webhook 与 Node 权限；
@@ -217,6 +217,7 @@
 - Queue/Priority 滥用防护；
 - Node/GPU/Fabric 放置与清理能关联到 Job 和 Tenant Identity；
 - Controller/Database Backup、Accounting Integrity、Failover 与 Recovery。
+- Slurm Account、Association、Partition、QOS 和 MCS Label 可约束调度和信息可见性，但如果缺少 OS/Runtime、Storage、Network/Fabric 与 Credential Enforcement，就不是完整租户隔离边界。
 
 ### 7.5 模型训练平台
 
@@ -264,11 +265,11 @@
 
 ### 8.2 有意识地选择加速器共享方式
 
-将专属、硬件分区、虚拟化与 Time-slicing 视为不同产品。分别声明显存、Cache、DMA、Fault、Reset、Telemetry 和 Topology 属性。Time-slicing 不能替代硬件安全边界；敏感工作负载只能使用经威胁模型证明且在真实 Hardware/Driver/Firmware Stack 上通过测试的隔离模式。
+将专属、硬件分区、受 Hypervisor 仲裁的虚拟化和调度器级共享视为不同产品。Kubernetes GPU 调度器级 Time-slicing/超卖本身不提供显存或故障隔离；受支持的 vGPU 模式可能具有不同属性。绝不能仅根据 ‘Time-sliced’ 名称推断隔离。应针对服务威胁模型，逐项声明并测试显存、Cache、DMA/IOMMU、Fault、Reset、Telemetry、Topology、性能干扰、Hardware、Hypervisor、Driver、Firmware 与 Configuration。
 
 ### 8.3 独立验证 InfiniBand/RDMA 与 DPU 边界
 
-VPC 或 Kubernetes NetworkPolicy 不能证明高性能数据路径已经隔离。必须测试 P_Key Membership/Enforcement、RDMA Reachability、Fabric Manager Authority、DPU Assignment、Storage Access、Controller Stale State 和重新分配清理。Fabric 和 DPU Controller 应按服务商 Root 保护。
+VPC 或 Kubernetes NetworkPolicy 不能证明高性能数据路径已经隔离。InfiniBand P_Key Membership 只是分区机制之一，不能单独证明完整租户隔离。必须在真实拓扑上测试 Membership Type/Enforcement、Default Partition Policy、RDMA Reachability、Fabric Manager Authority、DPU Assignment、Storage Access、Controller Stale State 和重新分配清理。Fabric 和 DPU Controller 应按服务商 Root 保护。
 
 ### 8.4 消除静态工作负载凭据
 
@@ -280,7 +281,7 @@ VPC 或 Kubernetes NetworkPolicy 不能证明高性能数据路径已经隔离�
 
 ### 8.6 将证据与被评估系统隔离
 
-关键日志与证据必须导出到普通源系统管理员无法静默修改的边界。保留稳定 ID、时间同步、完整性、租户分区、访问审计、脱敏、保留和 Legal Hold。证据缺失本身应触发控制失败。
+关键日志与证据必须导出到具有足够管理与观察分离的边界，使普通源系统管理员无法静默修改记录；这并不普遍要求单独的物理系统。保留稳定 ID、时间同步、完整性、租户分区、访问审计、脱敏、保留和 Legal Hold。证据缺失本身应触发控制失败。
 
 ### 8.7 使用可信重建，而不是乐观清理
 
@@ -313,7 +314,7 @@ NeoCloud 至少需要覆盖：
 6. 恶意 Model/Checkpoint/Image/Package/Driver/Operator/Skill；
 7. 破坏性或外传型 Agent/Tool 工作流；
 8. Ransomware、Region/Fabric/Storage 故障、容量耗尽或备份失败；
-9. 租户欺诈、挖矿、禁止工作负载、配额绕过或 Denial-of-wallet；
+9. 租户欺诈、未经授权的挖矿或其他 Policy 禁止工作负载、配额绕过或 Denial-of-wallet；
 10. 数据/模型删除失败、Residency 违约或客户通知失效。
 
 只有技术演练证明隔离、撤销与留证路径真正可用后，Playbook 才能标记为 Ready。
@@ -381,7 +382,7 @@ NeoCloud 至少需要覆盖：
 - 用一个综合合规分数隐藏失败的 T0；
 - 使用“Dedicated”“Zero Trust”“Encrypted”“Confidential”等词却不说明精确边界；
 - 将 Kubernetes Namespace 或 VPC 隔离作为 RDMA/GPU/Storage 隔离证明；
-- 将 Time-sliced GPU 宣传为硬件级租户隔离；
+- 将调度器级共享 GPU Replica，或任何缺乏部署特定证据的 Sharing Mode，宣传为硬件级租户隔离；
 - 向工作负载暴露共享服务商身份或宽权限 Metadata Credential；
 - 长期 Standing Admin Privilege 和无记录 Support Session；
 - 只因签名有效就接受制品，而不验证 Source/Build/Key Policy；

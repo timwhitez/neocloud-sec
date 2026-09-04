@@ -2,14 +2,16 @@
 
 简体中文 | [English](README.md)
 
-**版本：** `1.0.0-draft.1`  
+**版本：** `1.0.0-draft.2`  
 **基线日期：** 2026-09-04
 
-NeoCloud Cyber Security 是一套面向 AI-first 云基础设施的开放、证据驱动的安全架构与运营模型。
+NeoCloud Cyber Security 是一套面向 AI-first 云基础设施、保持厂商中立的中英文证据导向参考基线与实施指南。
 
-> **NeoCloud Cyber Security 是 NeoCloud 面向 AI-native 组织和专业 AI 云构建的统一网络安全控制平面：以身份为信任根、以策略为决策核心、以 Agent 与工作负载为重点保护对象，通过端点、云原生运行时、网络与高性能互联、数据、软件/模型供应链和安全运营协同，实现从“看见风险”到“实时阻断”和“持续证明”的闭环。**
+> **本仓库定义安全参考模型、控制目录、持续证明方法和建设路线图；它不是已经部署的软件产品，也不主张一个通用“控制平面”可以覆盖所有 NeoCloud。该模型在完整服务生命周期中协同身份与授权、平台/工作负载完整性、密码信任根、策略执行、租户隔离以及独立保护的证据。**
 
 本项目覆盖完整的 NeoCloud 信任面：人员、租户、AI Agent、工作负载身份、API、控制面、Kubernetes、Slurm、裸金属、虚拟化、GPU/加速器、以太网、InfiniBand/RDMA、数据集、模型、Checkpoint、密钥、固件、BMC、机房以及第三方依赖。
+
+本文将 “NeoCloud” 作为专业 AI/GPU 云服务的操作性术语使用，并不声称它是已经标准化的行业类别。采用或引用前请先阅读[范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md)。
 
 ## 仓库交付物
 
@@ -24,6 +26,10 @@ NeoCloud Cyber Security 是一套面向 AI-first 云基础设施的开放、证�
 | 机器可读控制目录 | [控制目录说明](controls/README.md) | [控制目录](controls/neocloud-security-baseline.v1.json)与 [Schema](controls/schema.json) |
 | 评估模板 | [模板目录](templates/) | [Templates](templates/) |
 | 标准与研究资料 | [参考资料](REFERENCES.md) | [References](REFERENCES.md) |
+| 范围与局限 | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) | [Scope & Limitations](docs/en/SCOPE_AND_LIMITATIONS.md) |
+| 准确性审计 | [准确性审计](ACCURACY_REVIEW.md) | [Accuracy Review](ACCURACY_REVIEW.md) |
+| GitHub 项目元数据 | [项目元数据](PROJECT_METADATA.md) | [Project Metadata](PROJECT_METADATA.md) |
+| 安全问题报告 | [安全报告规则](SECURITY.md) | [Security Policy](SECURITY.md) |
 
 ## 18 个安全域
 
@@ -51,8 +57,8 @@ NeoCloud Cyber Security 是一套面向 AI-first 云基础设施的开放、证�
 - **T0—硬门槛：** 服务处理租户数据或开放生产算力前必须满足的不可妥协条件。
 - **T1—基础级：** 完整可见性与必要安全卫生，通常在前 90 天完成。
 - **T2—生产级：** 支撑规模化、多租户正式商用的策略化和平台化控制。
-- **T3—可信级：** 面向敏感、受监管、主权或专属环境的高保证控制。
-- **T4—自适应级：** 持续验证、可控自动化、机密计算和带护栏的 AI 辅助防御。
+- **T3—可信级：** 面向敏感、受监管、主权或专属环境的高保证控制，包括经过独立测试、由威胁模型证明必要的证明或机密计算模式。
+- **T4—自适应级：** 持续验证，以及权限、回滚和独立验证均已证明的受控 AI 辅助安全自动化。
 
 任何综合分数都不能抵消 T0 失败；生产准入必须采用硬门槛和证据判定。
 
@@ -64,7 +70,7 @@ NeoCloud Cyber Security 是一套面向 AI-first 云基础设施的开放、证�
 - **证据属于控制本身。** 没有实现范围、覆盖率、时效、责任人、例外和独立验证证据，就不能宣称控制完成。
 - **Agent 是高权限软件主体。** Agent 行为必须经过策略、最小权限、审批边界、不可抵赖审计和确定性停止条件约束。
 - **恢复本身是安全能力。** 备份、重建、租户退租、数据清除和危机沟通必须通过演练证明。
-- **安全默认，而非依赖客户专家能力。** MFA、日志、隔离、安全更新和安全默认配置应由服务提供方内建，而不是收费选件。
+- **安全默认且声明精确。** 服务商控制的基础安全措施应默认安全；客户控制的责任和更高保证服务必须明确，不能用高阶付费能力掩盖基础 SKU 的限制。
 
 ## 适用对象与服务类型
 
@@ -102,8 +108,14 @@ python3 scripts/validate_repository.py
 
 GitHub Actions 会对 Pull Request 与 `main` 运行同一校验。查询方法和变更规则见[控制目录说明](controls/README.md)。
 
+## 准确性与适用范围
+
+本基线区分调度器级 GPU 超卖、受 Hypervisor 仲裁的 vGPU 与硬件分区；不把 InfiniBand P_Key 或 Slurm Label 当成完整隔离证明；并要求 Attestation、Confidential Computing、Sanitization 及公网控制面声明绑定具体产品、版本、配置与威胁模型。
+
+详见[准确性审计](ACCURACY_REVIEW.md)、[范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md)和[参考资料](REFERENCES.md)。本文给出的目标值是项目定义的规划默认值，不是经外部验证的行业 Benchmark。
+
 ## 状态与边界
 
-本项目是面向实施的行业基线，不是认证、法律意见，也不能替代特定司法辖区的强制要求。外部框架映射仅供参考；组织仍需自行判断适用性，并获得合格的法律、隐私、安全和审计意见。
+本项目是项目自定义的实施草案与参考基线，不是已被行业采纳的正式标准、已部署产品、认证或法律意见，也不能替代特定司法辖区的强制要求。外部框架映射仅供参考；组织仍需自行判断适用性，并获得合格的法律、隐私、安全工程和审计意见。
 
 变更规则见 [GOVERNANCE.md](GOVERNANCE.md)，贡献方式见 [CONTRIBUTING.md](CONTRIBUTING.md)。
