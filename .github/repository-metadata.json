@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "metadata_sync": "manual",
+  "repository": "timwhitez/neocloud-sec",
+  "description": "Vendor-neutral bilingual cybersecurity baseline and implementation guide for NeoCloud and GPU cloud platforms, covering GPU/RDMA isolation, Kubernetes/Slurm, AI agents, evidence, assurance, and a 0–24 month roadmap.",
+  "homepage": null,
+  "topics": [
+    "neocloud",
+    "gpu-cloud",
+    "cloud-security",
+    "cybersecurity",
+    "ai-security",
+    "agent-security",
+    "kubernetes-security",
+    "slurm",
+    "hpc-security",
+    "gpu-security",
+    "rdma",
+    "infiniband",
+    "zero-trust",
+    "security-baseline",
+    "security-architecture",
+    "supply-chain-security",
+    "incident-response",
+    "threat-modeling",
+    "continuous-assurance",
+    "devsecops"
+  ],
+  "license_status": "undecided",
+  "public_release_blocker": true,
+  "recommended_settings": {
+    "visibility": "private-until-license-and-disclosure-review",
+    "default_branch": "main",
+    "squash_merge": true,
+    "delete_branch_on_merge": true,
+    "branch_protection": [
+      "require repository validation",
+      "require pull request",
+      "block force pushes",
+      "require resolved review conversations"
+    ],
+    "private_vulnerability_reporting": true,
+    "discussions": false,
+    "wiki": false
+  }
+}
