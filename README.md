@@ -21,6 +21,8 @@ This is a documentation and validation project, not a deployable security contro
 | Plan phased delivery | [Roadmap](docs/en/ROADMAP.md) | [路线图](docs/zh-CN/ROADMAP.md) |
 | Define evidence, metrics and verification | [Assurance](docs/en/METRICS_AND_ASSURANCE.md) | [度量与持续证明](docs/zh-CN/METRICS_AND_ASSURANCE.md) |
 | Review public findings and run authorized priority drills | [SemiAnalysis coverage](docs/en/SEMIANALYSIS_COVERAGE.md) | [覆盖审计与验证指南](docs/zh-CN/SEMIANALYSIS_COVERAGE.md) |
+| Execute ten operational validation plans | [Validation runbooks](docs/en/VALIDATION_RUNBOOKS.md) | [十类验证手册](docs/zh-CN/VALIDATION_RUNBOOKS.md) |
+| Check evidence-record consistency and expiry | [Evidence validator](docs/EVIDENCE_VALIDATION.md) | [证据记录校验](docs/EVIDENCE_VALIDATION.md) |
 | Understand limits | [Scope](docs/en/SCOPE_AND_LIMITATIONS.md) | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) |
 
 ## What is included
@@ -51,6 +53,14 @@ python3 scripts/check_local.py
 ```
 
 The runner executes all three repository validators and the unit/negative tests locally. Missing dependencies or files cause failure, not a skipped green result. No infrastructure is probed. For an offline machine, pre-stage the required packages through your approved package process.
+
+While Actions quota is constrained, the workflow is manual-dispatch only; this follow-up does not dispatch it. The new record checker needs only the standard library:
+
+```bash
+python3 scripts/validate_evidence_records.py templates/evidence-record.example.csv
+```
+
+Its successful exit means consistent metadata, not verified evidence or a secure provider. See the [follow-up review](reviews/2026-09-05-evidence-followup.md) for the 18 newly executed tests and the distinction from previously recorded upstream results.
 
 Generate a derived, errata-applied catalog bundle without modifying source files:
 

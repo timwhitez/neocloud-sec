@@ -1,0 +1,2 @@
+evidence_id,control_id,service,service_profile,environment,region_scope,asset_scope,tenant_scope,version_scope,assertion,test_id,collector,verifier,independence_basis,storage_uri,integrity_hash,invalidation_triggers,state,verification_result,observed_at,verified_at,valid_until
+SYNTHETIC-EXAMPLE,NCS-CMP-02,example-only,,test,,,,,,,,,,,,,PROPOSED,NOT_TESTED,,,
