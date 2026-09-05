@@ -2,6 +2,17 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — 2026-09-05 validation and source correction
+
+- Fix a reproduced count contradiction: the 40 stored prior classifications are 21 explicit / 12 partial / 7 gaps, not 17/17/6. Derive summary counts instead of forcing rows to match a headline.
+- Advance only the public-findings profile to 1.0.1. Preserve the base version, all 90 core IDs, tiers, 40 finding IDs and 20 public snapshot IDs.
+- Actually evaluate JSON Schema with explicit date checks; reject duplicate JSON keys, non-finite numbers, external schema references, malformed CSV rows, mapping/severity/title drift and fabricated assessed template states.
+- Correct source URLs, attach source IDs to findings, distinguish C_Key from CC_Key, add PM_Key/N2N_Key to the existing key group and preserve actual ISO/IEC 27001 certificate wording.
+- Add a non-mutating errata compiler, local all-check runner, explicit validation dependencies and offline negative regression tests. The strict check is no longer dependency-free; existing stdlib checks remain separate.
+- Replace broad coverage claims with scoped mapping claims and bilingual authorized drill procedures for fabric, DPU, shared Kubernetes, observability, GPU sharing and agent authority.
+- Restore template guidance required by the legacy accuracy check. Record test scope, source retrieval limitations and the absence of live infrastructure assessment in reviews/2026-09-05-validation-audit.md.
+- Keep remote CI skipped for this change. Do not change repository visibility, license or branch protections.
+
 ## Unreleased — SemiAnalysis / ClusterMAX public-findings coverage
 
 ### Added

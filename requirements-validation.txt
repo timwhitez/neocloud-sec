@@ -1,0 +1,4 @@
+# Strict repository validation only; not deployed service dependencies.
+# jsonschema 4.26.0 supports Python >=3.10 and Draft 2020-12.
+jsonschema==4.26.0
+referencing==0.37.0
