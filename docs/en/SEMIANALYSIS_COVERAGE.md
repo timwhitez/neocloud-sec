@@ -1,133 +1,99 @@
-# SemiAnalysis / ClusterMAX Public Security Coverage
+# SemiAnalysis / ClusterMAX coverage and validation guide
 
-**Profile version:** 1.0.0  
+**Profile version:** 1.0.1  
 **Review date:** 2026-09-05  
-**Base NeoCloud catalog:** 1.0.0-draft.1  
-**Status:** project-authored public-findings interoperability overlay
+**Base catalog:** 1.0.0-draft.1
 
-## 1. Answer
+## 1. What the counts mean
 
-The original 90-control NeoCloud catalog covered the main categories raised in the publicly accessible SemiAnalysis NeoCloud security material—tenant escape, weak shared control planes, vulnerable container/GPU software, BMC/OOB and DPU paths, InfiniBand/RDMA isolation, patching, monitoring and assurance—but several requirements were only implicit.
+The profile contains **40/40 project-authored mappings** and **20/20 mappings of the dated public Security-page snapshot**. These are records in this project, not executed infrastructure tests, a ClusterMAX score, an endorsement, or proof of complete access to SemiAnalysis's methodology.
 
-This update makes the publicly observable coverage explicit:
+The prior-coverage classification actually stored in the 40 records is **21 explicit, 12 partial, 7 gaps**. The previous 17/17/6 summary contradicted those records. Version 1.0.1 corrects the arithmetic rather than relabelling findings to fit a preferred total. These historical labels are project judgments, not independently measured industry statistics. Five article-level patterns and our five grouping labels are not a claim that every grouping reproduces the author's taxonomy exactly.
 
-- **5** high-level public article patterns are decomposed by this project into **40 atomic, test-oriented patterns**.
-- Before this update, the audit classified **17 as explicit, 17 as partial and 6 as material gaps**.
-- After this update, all **40/40 are mapped** to stable NeoCloud controls, evidence expectations and three assurance views.
-- The **20/20 requirements currently enumerable on the canonical public ClusterMAX Security page** are mapped to the same stable controls and an assessment template.
+The earlier alternate-host count of 21 is retained as an unresolved historical observation, **not 21/21 coverage** or a newly verified total. The live public page can change. Scope every comparison to a retrieval date and exact URL; do not manufacture an extra requirement to reconcile counts.
 
-“Mapped” does **not** mean implemented, passed, certified or endorsed. A real provider must still scope each row to a concrete service, region, cluster, SKU, hardware, firmware, driver, orchestrator and date, then produce current evidence and an independent result.
+## 2. Source and interpretation boundary
 
-## 2. What was already strong
+The article locator is [Most Neoclouds Suck At Security](https://newsletter.semianalysis.com/p/most-neoclouds-suck-at-security). This review used publicly indexed excerpts; it did not retrieve the complete paid article. The Security requirements were checked at the [canonical criteria page](https://www.clustermax.ai/criteria/security), not the previously recorded `/security` path. The [public site](https://www.clustermax.ai/) identifies 2.1 as the current published rating and advertises 3.0 as coming soon at this review date.
 
-The base catalog already addressed:
+Every mapped finding now has source IDs. A reference identifies the technical basis for a project interpretation; it does not assert that the source contains the exact project wording or demonstrates a provider implementation. Pricing, commercial partnerships, proprietary scoring and non-public criteria remain outside scope. An equivalent internal ISMS is not a substitute for a source criterion that specifically requests ISO/IEC 27001 certification; check the actual certificate, scope, expiry and exclusions.
 
-- API object/action/tenant authorization and private provider administration;
-- tenant separation across compute, storage, Ethernet, InfiniBand/RDMA, DPU and OOB paths;
-- Kubernetes and Slurm controller, admission, scheduler, plugin and node controls;
-- host, runtime, driver, firmware and accelerator lifecycle;
-- data/model/artifact provenance, admission, revocation and deletion;
-- agent identity, tool mediation, approval, stop, trace and verifier controls;
-- vulnerability discovery, staged remediation and deployed-state verification;
-- protected telemetry, incident command, recovery, sanitization and independent testing.
+## 3. Three views, not three automatic passes
 
-These controls remain the stable normative core. The new profile does not add a second competing baseline.
+Use three distinct views: **tenant black-box**, **provider white-box**, and **independent failure/recovery**. The first checks the customer-visible path; the second inspects configuration, ownership and operating processes; the third challenges failure and restoration behavior. Do not mark an unavailable view PASS. Where a view is genuinely inapplicable, preserve a separate justified applicability decision and review; do not invent a successful test result.
 
-## 3. Material gaps that were made explicit
+Repository CSVs are blank templates. Their state is `PROPOSED`, applicability is `UNKNOWN`, and results are `NOT_TESTED`. Copy them into a private assessment system before collecting real evidence. The repository validator rejects passed or verified template rows; it is not a production conformance engine.
 
-| Gap before this update | Added treatment |
-|---|---|
-| InfiniBand control was centered on P_Key and did not explicitly enumerate management/service keys | Added M_Key, SM_Key, SA_Key, C_Key/CC_Key, VS_Key, SHARP AM_Key, service-key and per-job-key checks |
-| DPU coverage did not name BlueField RShim/tmfifo_net0 and privileged adapter paths | Added RShim/tmfifo_net0, DPU identity/firmware, SR-IOV VF, QP0, MAD and privileged-operation tests |
-| Shared Kubernetes and observability risks were implicit | Added vCluster/shared-control-plane, kubelet/node API, Prometheus/Grafana data-source, credential and tenant-isolation tests |
-| Patch management did not explicitly model vendor embargo and a dynamic minimum-safe version | Added prerelease advisory intake, exploitability-based minimum-safe version, canary, deployed-state verification, recall and rollback |
-| Customer-visible testing was not separated from provider and independent assurance | Added tenant black-box, provider white-box and independent failure/recovery result fields |
-| Vulnerability disclosure and future-criteria drift were not explicit enough | Added trusted reporting/remediation, periodic retest and source/criterion change tracking |
+## 4. Rules before any technical drill
 
-## 4. Important technical correction: “time-slicing” is not one mechanism
+Use written authorization, two synthetic tenants and non-sensitive canary data. Record exact service, environment, cluster, region, SKU, hardware, firmware, runtime, driver and policy versions. Establish an out-of-band recovery route and stop conditions before testing. Start with read-only inspection. Changes to a fabric, DPU or shared node require an approved maintenance window or isolated lab. Never submit exploit payloads, rotate live fabric keys, power-cycle production devices or probe a third-party tenant merely to complete this guide.
 
-The base catalog used the generic term **time-slicing** too broadly. The normative erratum now separates:
+Evidence must identify the assertion, test ID, collector, independent reviewer, timestamps, validity, deployment scope, integrity method, result and limitations. Keep real credentials and key values out of reports. A hash identifies bytes; it does not prove collector trust or test truth. Missing evidence is `NOT_TESTED` or `INCONCLUSIVE`, not success. An applicable failed T0 remains `NO_GO_NONCONFORMANT` regardless of risk acceptance.
 
-1. full-device dedication;
-2. hardware partitioning;
-3. hypervisor-mediated vGPU;
-4. scheduler-level bare-device-plugin time-slicing.
+## 5. Priority drills
 
-Kubernetes GPU Operator/device-plugin time-slicing does not itself provide memory or fault isolation between replicas. A mediated vGPU may have product-, GPU-, hypervisor-, manager/driver-, firmware-, topology- and configuration-specific isolation properties. No isolation claim may be inferred from the label “time-sliced”; it must be stated and tested for the deployed mechanism.
+### A. InfiniBand data and management paths — SA-NC-015..022
 
-See [`NCS-BASELINE-V1-ERRATA`](../../controls/neocloud-security-baseline.v1.errata.json).
+NVIDIA documents distinct management-key classes, including **C_Key, CC_Key, PM_Key and N2N_Key**; these must not be collapsed into aliases. It also documents that P_Key partition checks do not apply to SMP MADs and that M_Key lease/recovery behavior matters when the manager stops responding. See [NVIDIA's security guide](https://networking-docs.nvidia.com/nvidiainfinibandsecurityoverviewandguidelines/security-in-infiniband).
 
-## 5. Coverage model
+Inspect a redacted key-class inventory, manager privileges, protected configuration, membership types, topology and endpoint enforcement. In an authorized test fabric, test allowed traffic, prohibited tenant traffic, manager failover, stale assignments and controlled reallocation independently. Validate management-message restrictions separately from data-plane partitions; include SR-IOV VF and supported SHARP paths.
 
-Each atomic pattern is evaluated through three distinct views:
+**Pass:** all required prohibited paths are denied, intended traffic remains available, and policy is preserved or safely restricted during failover. **Stop:** unexpected shared-fabric instability or any non-test tenant impact. **Recovery:** restore approved manager state and keys through the established recovery route, quarantine uncertain assignments and independently retest before reopening. Do not treat a successful ping test as proof of RDMA or management isolation.
 
-| View | Question |
-|---|---|
-| **Tenant black-box** | Can a customer reproduce prohibited reachability, isolation, privilege, data, version or disclosure behavior using only supported interfaces? |
-| **Provider white-box** | Do architecture, configuration, key hierarchy, controller state, ownership, operational process and evidence support the claim? |
-| **Independent failure/recovery** | Does a qualified independent party reproduce the control under misconfiguration, stale state, revocation, failure, recovery and reassignment conditions? |
+### B. BlueField RShim and host trust — SA-NC-012..014
 
-The public customer-perspective CLI/audit path is useful but is only a subset of full assurance. Architecture/process review and controlled failure/recovery testing remain necessary for high-impact claims.
+[BlueField modes documentation](https://networking-docs.nvidia.com/bsp/480/modes-of-operation) distinguishes host-trusted and restricted operating boundaries. Record the actual product and mode instead of assuming that the presence of a DPU creates isolation.
 
-## 6. High-priority explicit checks
+Map host, ARM-side, RShim/tmfifo and OOB access, administration identities, firmware privileges and reassignment state. Use only provider-approved negative checks from the synthetic tenant's scope. Verify the documented transition and recovery requirements for the exact release before attempting a mode change; do not disable the sole management path.
 
-### InfiniBand/RDMA and fabric management
+**Pass:** tenant authority cannot administer the DPU or alter the protected fabric policy; legitimate recovery still works. **Stop:** management access becomes uncertain. **Recovery:** follow the approved vendor-specific recovery procedure, then verify identity, firmware, policy and reassignment cleanup. Lack of a safe recovery test is inconclusive, not proof of isolation.
 
-Verify, where applicable:
+### C. vCluster, kubelet and shared nodes — SA-NC-005..010
 
-- P_Key membership, type, default partition, endpoint enforcement and stale-state cleanup;
-- M_Key, SM_Key, SA_Key, C_Key/CC_Key and VS_Key ownership, uniqueness, rotation, revocation and audit;
-- SHARP AM_Key, service-key and per-job key separation;
-- Fabric Manager identity, least privilege, allowed GUID policy and protected administrative paths;
-- SAETM/MAD abuse controls, QP0 restrictions and SR-IOV VF limitations;
-- RoCE VLAN/VXLAN and storage-path tenant separation;
-- DPU/NIC assignment, firmware, certificates, controller state and reassignment cleanup.
+[Kubernetes multi-tenancy guidance](https://kubernetes.io/docs/concepts/security/multi-tenancy/) separates virtual control-plane isolation from data-plane isolation and requires a network plugin that actually enforces NetworkPolicy.
 
-### Kubernetes, shared nodes and observability
+Inspect host-cluster and syncer privileges, node API access, admission exemptions, service accounts, CNI/CSI behavior and volume/snapshot authorization. With two test tenants, verify namespace/API denial, direct supported network paths, storage access and privileged workload rejection separately. A customer-facing managed API may use a protected public edge; do not confuse that with permission to expose provider-only databases or node administration.
 
-Verify:
+**Pass:** every asserted boundary is demonstrated at its enforcement point. **Stop:** a test can reach a provider-only management capability or another tenant's volume. **Recovery:** revoke the test identities, quarantine affected allocations and review synchronization and admission state before retesting. A namespace, vCluster or Slurm label alone is not complete host/GPU/storage/fabric isolation.
 
-- provider-only API server, etcd, kubelet and node-management paths;
-- vCluster/shared-control-plane host-cluster and synchronization boundaries;
-- admission, RBAC, privileged workloads, hostPath, host network/PID/IPC and device-plugin/operator privileges;
-- CNI/CSI and storage/snapshot authorization;
-- Prometheus/Grafana tenant labels, data-source authorization, dashboard/query isolation, shared service credentials, alert routing, retention and support access.
+### D. Grafana and Prometheus backends — SA-NC-035
 
-### Vulnerability and patch intelligence
+[Grafana's data-source documentation](https://grafana.com/docs/grafana/latest/datasources/) describes default organization-wide query access and edition-specific data-source permissions. [Prometheus's security model](https://prometheus.io/docs/operating/security/) must be considered separately. Dashboard or folder access is not sufficient evidence of backend authorization.
 
-Maintain:
+Plant distinct synthetic metrics for tenants A and B. Test supported direct query, label/series and dashboard paths using each tenant's own identity. Inspect whether a trusted gateway enforces the tenant context and whether the backend is reachable around it. Test service credentials, alert routing, remote-read/write and support access where enabled. Record the actual Grafana edition and features; do not prescribe Enterprise-only permissions as though every edition has them.
 
-- exact deployed version inventory for container toolkit, runtime, kubelet, kernel, GPU driver, firmware, DPU, fabric manager and orchestrator;
-- a dynamic minimum-safe version based on the actual exploit path and deployed configuration—not a permanently hard-coded version;
-- trusted vendor embargo/prerelease advisory intake where contractually available;
-- canary/staged rollout, rollback, quarantine and post-deployment verification;
-- customer notification, vulnerability disclosure and remediation-retest paths.
+**Pass:** neither tenant can retrieve the other's canary data through any in-scope enabled path. **Stop:** real data becomes visible; retain minimal redacted evidence. **Recovery:** revoke the overbroad credential, restrict backend access, correct server-side authorization and retest every path, not just the dashboard.
 
-### Hostile artifacts and AI workloads
+### E. GPU sharing and telemetry attribution — NCS-CMP-02
 
-Treat images, renderers, models, checkpoints, prompts, RAG sources, memory, skills, plugins, responses and caches as untrusted inputs until admitted by policy. Test deserialization, executable formats, tenant cache/session isolation, model output handling, tool invocation and egress.
+[NVIDIA GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-sharing.html) states that its time-slicing replicas lack memory/fault isolation and notes a DCGM exporter attribution limitation with time-slicing. Do not infer per-container security coverage from node-level metrics. Hypervisor-mediated vGPU is a separate product-specific mechanism; see the [vGPU overview](https://docs.nvidia.com/ai-enterprise/release-8/latest/infra-software/vgpu/overview.html).
 
-## 7. ClusterMAX boundary
+Verify the sold SKU against actual allocation mode, device and software versions. Use authorized benign memory/fault/reset/reassignment procedures on a representative lab device; record unavailable tests explicitly. Preserve per-allocation identity even where telemetry attribution is limited.
 
-ClusterMAX is broader than cybersecurity. Its public framework includes dimensions such as lifecycle, orchestration, storage, networking, reliability, monitoring, pricing, partnerships and availability in addition to security. This project maps:
+**Pass:** every advertised isolation and cleanup property is supported by the exact mechanism and test evidence. **Stop:** a reset could affect an unapproved workload. **Recovery:** quarantine uncertain devices or allocations and use supported known-good provisioning. Load the normative erratum before interpreting the raw catalog requirement.
 
-- the Security dimension directly;
-- security-relevant portions of lifecycle, orchestration, storage, networking, reliability, monitoring and availability;
-- no price, commercial-partnership, proprietary weighting or overall rating logic.
+### F. Agent scope, model output and revocation — SA-NC-031..034
 
-At the review cut-off, the canonical public Security page exposed **20 independently enumerable requirements**. An alternate ClusterMAX host reported **21 Security criteria**, but the additional item could not be independently enumerated. The repository therefore claims **20/20 mapping of the canonical public page**, not 21/21, exact criteria parity, a rating or certification.
+This is a project-designed test, not a claim of an external certification requirement. Treat the goal, tenant, tool, data, egress and cost limits as a versioned authorization envelope. An agent cannot expand that envelope; an independently authorized delegator can approve a new one, with fresh scope and an audit trail.
 
-## 8. Artifacts
+Use benign injected instructions and canary data to test that external content cannot change tool grants, approval authority or completion evidence. Test credential revocation, budget exhaustion, repeated failure and verifier unavailability. Test cache/session isolation separately from prompt filtering.
 
-- [Machine-readable public-findings profile](../../controls/semianalysis-public-findings-profile.v1.json)
-- [Profile JSON Schema](../../controls/semianalysis-public-findings-profile.v1.schema.json)
-- [Normative v1 errata](../../controls/neocloud-security-baseline.v1.errata.json)
-- [40-pattern assessment template](../../templates/semianalysis-public-findings-assessment.csv)
-- [20-item canonical public Security-page assessment](../../templates/clustermax-public-security-requirements-assessment.csv)
-- [Local profile validator](../../scripts/validate_semianalysis_profile.py)
+**Pass:** prohibited actions are blocked by enforcement outside the model, and high-impact completion requires independent evidence. **Stop:** an action would leave the test scope. **Recovery:** revoke grants, stop queued actions, restore approved state and independently verify. A model saying “done” is not completion evidence.
 
-## 9. Definition of coverage
+## 6. Local checks and effective catalog
 
-A row is **mapped** when a stable NeoCloud control, minimum evidence and test path exist. It is **verified** only when a scoped provider implementation produces current evidence and a qualified independent validator returns `PASS`.
+Install the explicitly declared validation dependencies once, then run locally:
 
-A failed, unknown, stale, `INCONCLUSIVE` or `NOT_TESTED` applicable T0 remains `NO_GO_NONCONFORMANT`.
+```bash
+python3 -m pip install -r requirements-validation.txt
+python3 scripts/check_local.py
+python3 scripts/compile_catalog.py > /tmp/neocloud-effective-catalog.json
+```
+
+The first two legacy checks remain standard-library scripts. Strict profile validation now uses jsonschema, actually evaluates all three document/schema pairs, checks date formats, rejects external schema references, verifies CSV mappings and requires unassessed templates. It fails when required files or dependencies are absent. It does not fetch websites or test cloud infrastructure.
+
+The compiler emits a bundle containing `catalog` and input/output digests. It applies the named CMP-02 correction to a copy without changing IDs or tiers. Unknown targets, duplicate/conflicting corrections and base-version mismatches fail instead of being ignored. Digests are provenance identifiers, not signatures or attestations.
+
+## 7. Related artifacts
+
+Use the [profile](../../controls/semianalysis-public-findings-profile.v1.json), [schema](../../controls/semianalysis-public-findings-profile.v1.schema.json), [errata](../../controls/neocloud-security-baseline.v1.errata.json), [40-pattern template](../../templates/semianalysis-public-findings-assessment.csv), [20-item template](../../templates/clustermax-public-security-requirements-assessment.csv), and [review record](../../reviews/2026-09-05-validation-audit.md). This guide adds priority procedures; it does not claim that all 40 mappings are implemented automation or that any provider passed.

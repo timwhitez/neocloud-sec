@@ -1,30 +1,30 @@
 # Implementation templates / 实施模板
 
-These templates turn the white paper and security profiles into an operating system for security work. Copy them into a controlled system of record or GRC platform; do not store live secrets or sensitive customer evidence in a public repository.
+Copy templates into a private system of record before collecting real assessments. Do not commit credentials, customer data or production evidence to this repository.
 
-这些模板用于把白皮书和安全画像转化为可运营工作。请复制到受控的 System of Record 或 GRC 平台中；不要在公开仓库保存真实 Secret、客户数据或敏感证据。
+请先将模板复制到私有台账，再收集真实评估。不要向本仓库提交凭据、客户数据或生产证据。
 
 | Template | Purpose |
 |---|---|
-| `baseline-assessment.csv` | Control-by-control implementation and verification tracker |
-| `semianalysis-public-findings-assessment.csv` | Service/region/SKU/version-scoped assessment of 40 project-authored atomic test patterns derived from five high-level public article patterns |
-| `clustermax-public-security-requirements-assessment.csv` | Assessment of the 20 currently enumerable requirements on the canonical public ClusterMAX Security page; not a score or exact-parity claim |
-| `risk-register.csv` | Cyber, AI, tenant, and infrastructure risk register |
-| `exception-register.csv` | Time-bounded control exceptions and compensating controls |
-| `shared-responsibility-matrix.csv` | Provider/customer/shared ownership |
-| `evidence-register.csv` | Evidence provenance, freshness, integrity, and verifier status |
-| `security-service-catalog.csv` | Security capability owners, consumers, SLOs, and dependencies |
-| `threat-model.md` | Service threat-model and trust-boundary template |
-| `incident-severity-matrix.md` | NeoCloud-specific severity classification and response targets |
+| [Baseline assessment](baseline-assessment.csv) | Core control implementation tracker |
+| [Public-findings assessment](semianalysis-public-findings-assessment.csv) | 40 project-authored mappings, with three assurance views |
+| [Public Security-page assessment](clustermax-public-security-requirements-assessment.csv) | 20 dated public-page mappings, not a rating |
+| [Evidence register](evidence-register.csv) | Provenance, scope, validity and reviewer |
+| [Shared responsibility](shared-responsibility-matrix.csv) | Explicit provider/customer duties |
+| [Risk register](risk-register.csv) | Residual risks and owners |
+| [Exception register](exception-register.csv) | Time-bounded decisions, never a fabricated PASS |
+| [Service catalog](security-service-catalog.csv) | Capability owners and dependencies |
+| [Threat model](threat-model.md) | Trust boundaries and test scope |
+| [Incident severity](incident-severity-matrix.md) | Incident classification and response objectives |
 
-Recommended control states are `PROPOSED`, `READY`, `IMPLEMENTED`, `CANDIDATE_DONE`, and `VERIFIED`. Verification results are `PASS`, `FAIL`, `INCONCLUSIVE`, and `NOT_TESTED`. Only an independent validator returning `PASS` should assign `VERIFIED`.
+Control states: `PROPOSED`, `READY`, `IMPLEMENTED`, `CANDIDATE_DONE`, `VERIFIED`.
+Verification results: `PASS`, `FAIL`, `INCONCLUSIVE`, `NOT_TESTED`.
+`NOT_REVIEWED` is not a valid result. Only a qualified independent PASS can support VERIFIED. An applicable failed, stale or untested T0 remains `NO_GO_NONCONFORMANT`.
 
-For the 40 project-authored atomic patterns, fill all three result views independently:
+Provider-exclusive roots remain provider-owned: provider control planes, host/GPU reset, fabric management, BMC/OOB and provider signing/key roots. Customer configuration responsibilities do not transfer these responsibilities.
 
-- `tenant_blackbox_result`
-- `provider_whitebox_result`
-- `independent_failure_recovery_result`
+A mapped row is not proof of effectiveness. Preserve the three fields `tenant_blackbox_result`, `provider_whitebox_result`, and `independent_failure_recovery_result` independently. The live assessment system must track scope, applicability rationale, evidence validity, reviewer independence and failure handling; the repository linter does not implement that system.
 
-A mapped row is not proof of effectiveness. Scope every row to a concrete service, profile, region, cluster, SKU, hardware and deployed software/firmware/orchestrator version. A failed, unknown, stale, inconclusive or untested applicable T0 remains `NO_GO_NONCONFORMANT`.
+The two public-findings templates deliberately use `UNKNOWN / PROPOSED / NOT_TESTED` and contain no real verification evidence. The strict repository checker rejects changed mappings, altered severity/title, malformed CSV rows and fabricated template PASS states. Generate operational results only in your private copy.
 
-For the canonical public Security-page template, assess all 20 rows against the exact service and deployed environment. An alternate ClusterMAX host reported 21 Security criteria at the review cut-off; because its extra item could not be independently enumerated, do not present the template as 21/21 coverage or as a ClusterMAX rating.
+See the [English validation guide](../docs/en/SEMIANALYSIS_COVERAGE.md) / [中文验证指南](../docs/zh-CN/SEMIANALYSIS_COVERAGE.md).
