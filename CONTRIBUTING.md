@@ -54,19 +54,21 @@ Requirements must be testable. Avoid marketing language, absolute guarantees, un
 
 ## 5. Local validation / 本地校验
 
-Run the repository contract validator from the repository root:
+Run the complete local entry point from a full checkout with the declared dependencies installed:
 
 ```bash
-python3 scripts/validate_repository.py
+python3 scripts/check_local.py
 ```
 
-The validator checks required deliverables, JSON validity, the exact domain/control/tier contract, control IDs, bilingual baseline parity, evidence/verification/metric references, release-version consistency, and relative Markdown links.
+The runner executes the three repository validators and discovers unit tests. The core validator checks required deliverables, JSON validity, the exact domain/control/tier contract, control IDs, bilingual baseline parity, evidence/verification/metric references, release-version consistency, and relative Markdown links.
 
-校验器检查必需交付物、JSON、严格的安全域/控制/等级契约、Control ID、中英文基线一致性、证据/验证/指标引用、版本一致性和相对 Markdown 链接。
+本地入口运行三项仓库校验并发现单元测试；核心校验器检查必需交付物、JSON、严格的安全域/控制/等级契约、Control ID、中英文基线一致性、证据/验证/指标引用、版本一致性和相对 Markdown 链接。
 
-Include the exact output in the pull request template. The same command runs in GitHub Actions. Passing automation is necessary but not sufficient: reviewers must still check technical truth, source status, service applicability, bilingual meaning, and whether evidence can prove the deployed outcome.
+Include the exact tested head, commands, output and omissions in the PR. The workflow is manual-dispatch only while Actions quota is constrained: do not dispatch or rerun it. Keep `[skip ci]` in commit/merge messages. A partial checkout is not a full-suite pass. Passing automation is necessary but not sufficient: reviewers must still check technical truth, source status, service applicability, bilingual meaning, and whether evidence can prove the deployed outcome.
 
-PR 中应粘贴最终 Commit 的校验输出。GitHub Actions 会运行同一命令；自动校验通过只是必要条件，仍需人工复核技术事实、来源状态、服务适用性、中英文含义及证据能否证明真实部署结果。
+PR 应记录准确测试 Head、命令、输出及未执行项目。额度受限期间工作流仅手动触发，本轮不得调度或重跑；Commit/合并信息保留 `[skip ci]`。部分检出不等于全套测试通过；自动校验通过只是必要条件，仍需人工复核技术事实、来源状态、服务适用性、中英文含义及证据能否证明真实部署结果。
+
+For recurring research, use the [weekly process](docs/en/WEEKLY_SECURITY_REVIEW.md) / [每周研究流程](docs/zh-CN/WEEKLY_SECURITY_REVIEW.md).
 
 ## 6. Review and versioning / Review 与版本管理
 
