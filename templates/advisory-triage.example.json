@@ -1,0 +1,25 @@
+{
+  "format_version": "1",
+  "reviewed_on": "2026-09-08",
+  "records": [
+    {
+      "id": "EXAMPLE-GCP-2026-060-TOOLKIT",
+      "product": "Google Cluster Toolkit / Slurm",
+      "source_url": "https://docs.cloud.google.com/cluster-toolkit/docs/security-bulletins",
+      "source_published_on": "2026-09-07",
+      "source_accessed_on": "2026-09-08",
+      "scope": "SYNTHETIC EXAMPLE; no provider, cluster or tenant assessed",
+      "version_and_configuration": "UNKNOWN; inventory exact image, running Slurm build, node creation time and supported backport",
+      "applicability": "UNKNOWN",
+      "disposition": "OPEN",
+      "owner": "UNASSIGNED",
+      "rationale": "Public patched images do not establish that any running node has been replaced or verified. Assign a real owner privately before operational use.",
+      "next_review_on": "2026-09-15",
+      "evidence_ids": [],
+      "verification_result": "NOT_TESTED",
+      "reviewer": "",
+      "verified_on": null,
+      "valid_until": null
+    }
+  ]
+}

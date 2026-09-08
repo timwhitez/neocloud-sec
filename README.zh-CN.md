@@ -6,7 +6,7 @@
 
 **基础版本：** `1.0.0-draft.1`  
 **公开问题画像：** `1.0.1`  
-**最近范围内复核：** 2026-09-05
+**最近范围内复核：** 2026-09-08
 
 这是文档与校验工具项目，不是可部署的安全控制平面、认证体系，也不能证明某服务商已经安全。“NeoCloud”是行业工作术语，应明确真实服务和信任边界，不能根据名称推断安全属性。
 
@@ -21,7 +21,15 @@
 | 分阶段交付 | [路线图](docs/zh-CN/ROADMAP.md) | [Roadmap](docs/en/ROADMAP.md) |
 | 定义证据、度量与验证 | [度量与持续证明](docs/zh-CN/METRICS_AND_ASSURANCE.md) | [Assurance](docs/en/METRICS_AND_ASSURANCE.md) |
 | 核对公开问题与执行授权验证 | [覆盖审计与验证指南](docs/zh-CN/SEMIANALYSIS_COVERAGE.md) | [SemiAnalysis coverage](docs/en/SEMIANALYSIS_COVERAGE.md) |
+| 执行十类运营验证 | [验证手册](docs/zh-CN/VALIDATION_RUNBOOKS.md) | [Validation runbooks](docs/en/VALIDATION_RUNBOOKS.md) |
+| 校验证据记录与到期 | [证据记录校验](docs/EVIDENCE_VALIDATION.md) | [Evidence validator](docs/EVIDENCE_VALIDATION.md) |
 | 明确局限 | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) | [Scope](docs/en/SCOPE_AND_LIMITATIONS.md) |
+
+## 每周安全研究
+
+[本轮调研](reviews/2026-09-08-weekly-security-review.md) · [每周研究流程](docs/zh-CN/WEEKLY_SECURITY_REVIEW.md) · [Weekly process](docs/en/WEEKLY_SECURITY_REVIEW.md)
+
+周审流程区分来源发布、可用补丁与实际部署证据。可选离线公告校验器只检查元数据，不调度后台任务、不探测基础设施，也不证明修复。
 
 ## 项目包含什么
 

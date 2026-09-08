@@ -2,6 +2,15 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — 2026-09-08 weekly security review
+
+- Add a dated primary-source ledger and cross-domain gap review, distinguishing this calendar week, rolling lookback, carryovers, conflicting source dates and future deadlines.
+- Add equivalent English/Chinese weekly operations guidance for runtime patch evidence, backend credential revocation, storage-controller ownership, resource-side agent permissions and scoped network/incident changes.
+- Add an optional standard-library advisory metadata checker, a synthetic UNKNOWN/OPEN/NOT_TESTED example and 47 local positive/negative tests. Metadata consistency is not verified remediation or control conformance.
+- Correct contribution guidance to the existing full local runner and manual-only Actions policy; add bilingual navigation.
+- Preserve all 90 controls, tiers, core/overlay versions, existing schemas, validators and workflows. No production probes, remote Actions or automatic weekly scheduling.
+- Test and access limitations are recorded in [the weekly review](reviews/2026-09-08-weekly-security-review.md).
+
 ## Unreleased — 2026-09-05 validation and source correction
 
 - Fix a reproduced count contradiction: the 40 stored prior classifications are 21 explicit / 12 partial / 7 gaps, not 17/17/6. Derive summary counts instead of forcing rows to match a headline.
