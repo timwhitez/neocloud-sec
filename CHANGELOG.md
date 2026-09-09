@@ -2,6 +2,13 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — evidence timestamp validation and review gate
+
+- Validate evidence timestamps against an explicit, exactly representable RFC 3339 subset before datetime parsing. Reject invalid numeric offset components and unsupported precision instead of silently normalizing or truncating them; report UTC conversion overflow as a validation error rather than an uncaught exception.
+- Document the bilingual input contract and compatibility impact inside the existing evidence document. Fractions finer than microseconds are unsupported by this checker, not invalid under RFC 3339; preserve originals and do not truncate evidence merely to obtain PASS. Preserve `-00:00` UTC-instant compatibility.
+- Add 19 focused regression tests under the existing local discovery, without new dependencies, network access, duplicate validation entry points, control/schema changes or live infrastructure probes.
+- Align the ordinary PR verification checkbox with the existing full `check_local.py` gate, and require exact tested commit, commands, environment and omissions. Preserve the already merged recurring-research integration; no weekly guides or reports are recreated.
+
 ## Unreleased — recurring-research integration
 
 - Research delivery model: recurring security research lands as in-place corrections and extensions to the contribution guide, runbooks, practice guide, reference architecture and governance rules. No standalone weekly-review documents or dated research reports are maintained; provenance stays in PR/issue history, references and Git.

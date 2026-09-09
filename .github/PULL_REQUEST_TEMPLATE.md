@@ -25,7 +25,7 @@ List primary or authoritative sources, deployed-path evidence, known limitations
 
 ## Verification
 
-- [ ] I ran `python3 scripts/validate_repository.py` on the final commit.
+- [ ] I ran `python3 scripts/check_local.py` from a full checkout on the exact final commit.
 - [ ] English and Chinese normative meaning remain aligned.
 - [ ] Machine-readable catalog, baseline tables, templates, metrics, references, version metadata, and changelog were updated where affected.
 - [ ] New or changed relative Markdown links resolve.
@@ -33,7 +33,7 @@ List primary or authoritative sources, deployed-path evidence, known limitations
 - [ ] T0 failures cannot be hidden by exceptions or aggregate scores.
 - [ ] High-impact automation cannot approve or verify itself.
 
-Validation output:
+Exact tested commit, commands, output, environment and omitted checks (a partial checkout or unit-only pass is not a full-runner pass):
 
 ```text
 paste output here

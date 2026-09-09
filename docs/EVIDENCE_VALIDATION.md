@@ -27,13 +27,23 @@ PASS additionally requires `control_id`, `service`, `service_profile`, `environm
 
 PASS 还要求上述范围、断言、测试、采集与验证身份、独立性依据、证据位置、摘要和失效触发条件。控制 ID 按当前 18 域、每域 5 项的稳定 ID 格式校验；工具不检查服务真实总体是否完整。
 
-Dates must be timezone-aware RFC3339 and satisfy:
+Evidence timestamps use an explicit, exactly representable subset of [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339.html): ASCII `YYYY-MM-DDTHH:MM:SS[.ffffff]` with uppercase `T`, uppercase `Z` or numeric `±HH:MM`; optional fractions have one to six digits. Offset hours are 00–23 and minutes 00–59. Calendar values and the converted UTC instant must fit years 0001–9999. Leap seconds, lowercase separators, offset seconds and finer-than-microsecond fractions are **unsupported**, not silently normalized or truncated. `Z`, `+00:00` and `-00:00` can identify the same UTC instant; this check does not establish the source's local timezone ([RFC 9557 §2.2](https://www.rfc-editor.org/rfc/rfc9557.html#section-2.2)).
+
+证据时间明确采用可精确表示的 RFC 3339 子集：ASCII 日期与大写 `T`，大写 `Z` 或 `±HH:MM` 偏移，可选 1–6 位小数秒。偏移小时 00–23、分钟 00–59，日历及 UTC 转换结果均须落在 0001–9999 年。闰秒、小写分隔符、带秒偏移和超过微秒精度的输入不受支持，不能静默归一化或截断；`-00:00` 不表示 UTC 时刻未知，也不证明来源本地时区。
+
+Dates must satisfy:
 
 ```text
 observed_at <= verified_at <= current_time < valid_until
 ```
 
-过期、未来时间、倒置顺序和不含时区的日期均不能支持 PASS。`VERIFIED` 必须对应 `PASS`；`NOT_TESTED` 不能标记为已验证。非 PASS 记录可以保留未完成字段，不因此获得任何有效性声明。
+过期、未来时间、倒置顺序、非法偏移、不支持的精度和不含时区的日期均不能支持 PASS；UTC 转换溢出记录为普通校验错误，而不是异常崩溃。`VERIFIED` 必须对应 `PASS`；`NOT_TESTED` 不能标记为已验证。非 PASS 记录可以保留未完成字段，不因此获得任何有效性声明。
+
+#### Compatibility / 兼容性
+
+Malformed offsets and fractions beyond six digits that previously happened to parse are now rejected. Producers must emit the documented precision without hiding meaningful ordering; do not blindly truncate an existing high-precision evidence history. Keep the originals and explicitly migrate or retain an unverified result when their ordering cannot be preserved. This changes only the optional evidence input contract, not core control IDs, tiers, schemas or the advisory date-only format.
+
+旧工具可能接受的非法偏移及超过六位小数现明确拒绝。生产方须输出受支持精度，不能为通过校验而截断已有高精度证据、掩盖事件顺序；应保留原始数据，显式迁移，无法保持顺序时维持未验证状态。不改变核心控制 ID／等级／Schema，也不改变公告的纯日期格式。
 
 ### Limits / 局限
 
