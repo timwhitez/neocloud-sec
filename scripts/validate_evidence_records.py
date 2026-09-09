@@ -12,6 +12,13 @@ RESULTS = {"PASS", "FAIL", "INCONCLUSIVE", "NOT_TESTED"}
 STATES = {"PROPOSED", "READY", "IMPLEMENTED", "CANDIDATE_DONE", "VERIFIED"}
 DOMAINS = "GOV ASM IAM API NET CMP ORC DAT KMS SSC ENG VEM TEL AIR ABU IRR RES PHY".split()
 CONTROL = re.compile(r"NCS-(?:" + "|".join(DOMAINS) + r")-0[1-5]\Z")
+# Evidence timestamps use an explicit RFC 3339 subset representable without
+# precision loss by datetime: uppercase T/Z, seconds 00-59, 0-6 fractional digits.
+# Validate numeric offset components before fromisoformat can normalize them.
+EVIDENCE_TIMESTAMP = re.compile(
+    r"[0-9]{4}-[0-9]{2}-[0-9]{2}T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
+    r"(?:\.[0-9]{1,6})?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])\Z"
+)
 
 
 class EvidenceInputError(ValueError):
@@ -76,10 +83,10 @@ def evidence_record_errors(record: dict[str, str], now: datetime) -> list[str]:
     for key in ("observed_at", "verified_at", "valid_until"):
         try:
             value = record.get(key, "")
-            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})", value):
-                raise ValueError("expected RFC3339 timestamp")
+            if not EVIDENCE_TIMESTAMP.fullmatch(value):
+                raise ValueError("unsupported evidence timestamp format")
             times[key] = datetime.fromisoformat(value.replace("Z", "+00:00")).astimezone(timezone.utc)
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OverflowError):
             errors.append(f"{key}: invalid timezone-aware timestamp")
     if len(times) == 3 and not (times["observed_at"] <= times["verified_at"] <= now < times["valid_until"]):
         errors.append("PASS evidence is future-dated, reversed, or expired")

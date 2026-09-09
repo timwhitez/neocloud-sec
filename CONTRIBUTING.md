@@ -89,7 +89,11 @@ Prefer the smallest enforceable improvement: a corrected boundary, example, evid
 
 Reuse an existing Issue; create one only when distinct tracking is useful. Open a focused PR, review/test the final head and recheck base/head before merging. Do not merge when required validation fails or cannot be completed; explain the remaining gate without weakening it. Never force-push or bypass branch rules. Every run reports new practices, gaps, Issue/PR links, actual tests, merged content, unmerged reasons and next watch items. Keep real assets, credentials and evidence private. A documentation change is not infrastructure remediation, and these instructions install no scheduler or background job.
 
+Distinguish vendor capabilities, single vulnerability events, draft standards and final generally applicable requirements before promoting any of them into normative text; a new normative requirement follows section 2. Follow section 5 for local validation of every research-driven change.
+
 优先复用 Issue，确有独立跟踪价值才新建。通过聚焦 PR 变更，对最终 Head 审查测试，合并前复查 Base/Head；必需验证失败或无法完成时不合并，明确剩余门槛而非降低门槛。不强推、不绕过分支规则。每轮报告新增实践、缺口、Issue/PR、真实测试、已合并内容、未合并原因与后续关注点。真实资产、凭据和证据留在私有系统；文档变更不代表基础设施已修复，本流程不安装调度器或后台任务。
+
+把厂商能力、单个漏洞事件、标准草案与正式通用要求区分开，再决定是否写入规范文本；新增规范要求遵循第 2 节。每轮研究产生的改动均按第 5 节执行本地校验。
 
 ## 7. Review and versioning / Review 与版本管理
 

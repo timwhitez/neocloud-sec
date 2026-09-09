@@ -2,24 +2,30 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
-## Unreleased — integrate security maintenance into the project
+## Unreleased — consolidate security maintenance into canonical runbooks and tests
 
-- Move durable runtime-patch, backend-revocation, storage-controller, agent and network guidance into the existing bilingual validation runbooks; add dashboard-write and audit-coverage checks with primary references.
-- Make recurring research part of CONTRIBUTING and the normal PR template, with source chronology, cross-domain dispositions, canonical destinations, exact-head review and the complete local-test merge gate.
-- Consolidate the existing advisory JSON contract into EVIDENCE_VALIDATION and list both optional record examples in the template index. The checker remains offline and does not verify remediation.
-- Remove the standalone weekly guides and dated report after preserving their source decisions in REFERENCES, normal Git/PR history and the relevant runbooks. Do not introduce a replacement weekly series or new control catalog.
-- Add structural documentation regression tests for canonical navigation, runbook/source parity, control references and retired relative links; do not freeze whole paragraphs.
-- Preserve all 90 control IDs, tiers, versions, schemas, existing checker behavior and manual-only workflow. No live infrastructure assessment, remote Actions or scheduler is introduced.
-- Track acceptance and actual test/merge status in [Issue #10](https://github.com/timwhitez/neocloud-sec/issues/10); these release notes are not evidence that its merge gate has passed.
+- Move the durable runtime-patch, backend-revocation, storage-controller, agent and network-migration guidance into the existing bilingual validation runbooks (RB-01/02/04/06/07/08/10), each mapped to stable control IDs; add dashboard-write/rendering trust boundaries and per-source audit-coverage checks to RB-05, and hotpatch-reboot, image-family and rootless-state distinctions to RB-02, with dated primary references S9–S20.
+- Add stable `rb-01`–`rb-10` anchors and bilingual runbook/source parity; recurring research in CONTRIBUTING gains a stable `recurring-research` anchor and the README states that research improves the project in place.
+- Extend the ordinary PR template with the recurring-research record (base commit, chronology, per-domain disposition) and the complete local-test merge gate; list both optional record examples in the template index.
+- Add a scoped operational-source applicability section to REFERENCES (dated 2026-09-09, cut-off of the first 69 sources unchanged) and structural documentation regression tests for canonical navigation, retired links, bilingual runbook/source/control-reference parity and example discoverability.
+- Preserve the merged timestamp hardening, all 90 control IDs, tiers, versions, schemas, checker behavior and the manual-only workflow. No replacement weekly series, second control catalog, scheduler or live infrastructure assessment.
 
-## Unreleased — 2026-09-08 weekly security review
+## Unreleased — evidence timestamp validation and review gate
 
-- Add a dated primary-source ledger and cross-domain gap review, distinguishing this calendar week, rolling lookback, carryovers, conflicting source dates and future deadlines.
-- Add equivalent English/Chinese weekly operations guidance for runtime patch evidence, backend credential revocation, storage-controller ownership, resource-side agent permissions and scoped network/incident changes.
-- Add an optional standard-library advisory metadata checker, a synthetic UNKNOWN/OPEN/NOT_TESTED example and 47 local positive/negative tests. Metadata consistency is not verified remediation or control conformance.
-- Correct contribution guidance to the existing full local runner and manual-only Actions policy; add bilingual navigation.
-- Preserve all 90 controls, tiers, core/overlay versions, existing schemas, validators and workflows. No production probes, remote Actions or automatic weekly scheduling.
-- Test and access limitations are recorded in [the original PR #9](https://github.com/timwhitez/neocloud-sec/pull/9) and its preserved Git history; the standalone document was subsequently consolidated into the project.
+- Validate evidence timestamps against an explicit, exactly representable RFC 3339 subset before datetime parsing. Reject invalid numeric offset components and unsupported precision instead of silently normalizing or truncating them; report UTC conversion overflow as a validation error rather than an uncaught exception.
+- Document the bilingual input contract and compatibility impact inside the existing evidence document. Fractions finer than microseconds are unsupported by this checker, not invalid under RFC 3339; preserve originals and do not truncate evidence merely to obtain PASS. Preserve `-00:00` UTC-instant compatibility.
+- Add 19 focused regression tests under the existing local discovery, without new dependencies, network access, duplicate validation entry points, control/schema changes or live infrastructure probes.
+- Align the ordinary PR verification checkbox with the existing full `check_local.py` gate, and require exact tested commit, commands, environment and omissions. Preserve the already merged recurring-research integration; no weekly guides or reports are recreated.
+
+## Unreleased — recurring-research integration
+
+- Research delivery model: recurring security research lands as in-place corrections and extensions to the contribution guide, runbooks, practice guide, reference architecture and governance rules. No standalone weekly-review documents or dated research reports are maintained; provenance stays in PR/issue history, references and Git.
+- Contribution guide now defines recurring research: check existing coverage first, correct canonical text in place, no commit without substantive change, primary-source and evidence cut-off discipline, per-domain gap triage, bounded checks over new platforms, and research detail kept in the PR/issue record rather than standing files.
+- Runbooks RB-01/02/05/06/07/08 extended: revocation of operator-derived backend credentials beyond the Kubernetes API denial; patch evidence staged from upstream fix through distribution backport, provider image publication and actual node replacement; correlated policy/credential/operator/storage auditing with tenant-safe IDs and missing-audit-source alerting; storage-controller authority (PV creation, deletion options, CSI identity, ownership, cloud policy) reviewed with non-destructive checks; artifact digests bound to approved signer/builder, source and expected build inputs; agent read-only enforced at the database/resource identity rather than tool declarations.
+- Practice guide and reference architecture: network-policy/CNI migration treated as a scoped, compatibility-checked, reversible change with paired allow/deny tests and preserved recovery access; Kubernetes network policy does not replace fabric, DPU or storage isolation; credential revocation reaches controller/operator-derived credentials.
+- Governance: an obligation with a future applicability date is not yet effective and a draft is not a final standard; legal/compliance owners confirm product, supplier role, jurisdiction and contractual scope and maintain intake, evidence preservation, notification and recovery exercises for applicable obligations.
+- Added an optional offline advisory-triage metadata checker with a synthetic example and local positive/negative tests, documented alongside the evidence-record validators. Advisory disposition state stays distinct from control verification state; metadata consistency is not verified remediation or conformance.
+- Preserve all 90 controls, tiers, core/profile versions, schemas, validators and the manual-only workflow. No production probes, remote Actions dispatch or scheduled jobs.
 
 ## Unreleased — 2026-09-05 validation and source correction
 
@@ -106,7 +112,7 @@ All notable changes to NeoCloud Cyber Security are recorded here.
 
 - Domains: **18**.
 - Controls: **90**, exactly five per domain.
-- Tier distribution: **T0=32**, **T1=31**, **T2=19**, **T3=7**, **T4=1**.
+- Tier distribution: **T0=32, T1=31, T2=19, T3=7, T4=1**.
 - Languages: **English and Simplified Chinese**.
 - Every control includes a stable ID, tier, bilingual title and normative requirement, evidence profile, independent-verification profile and metric associations.
 

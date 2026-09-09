@@ -8,31 +8,29 @@
 
 测试前记录服务、区域、集群、SKU、租户标识、实际运行版本、获批目标与动作、窗口、操作人、独立复核人、恢复负责人和中止条件。使用两个带有不同无害标记的模拟租户，仅测试明确授权的资源。不得将真实客户数据、管理密钥、原始显存或保密厂商公告写入本仓库。
 
-每个测试同时包含允许路径与禁止路径。由于无关系统故障造成的访问失败，不能作为授权控制通过的证据。记录判定、目标侧实际影响、请求标识、生效策略和时间。租户黑盒、服务商白盒、独立故障／恢复三个视角分别记录；不适用需要范围理由和批准记录，不能把未执行视角填成 PASS。任何适用 T0 缺少当前充分证据时，仍为 NO_GO_NONCONFORMANT。可选[证据与公告记录校验](../EVIDENCE_VALIDATION.md)只检查元数据，不证明这些结果。
+每个测试同时包含允许路径与禁止路径。由于无关系统故障造成的访问失败，不能作为授权控制通过的证据。记录判定、目标侧实际影响、请求标识、生效策略和时间。租户黑盒、服务商白盒、独立故障／恢复三个视角分别记录；不适用需要范围理由和批准记录，不能把未执行视角填成 PASS。任何适用 T0 缺少当前充分证据时，仍为 NO_GO_NONCONFORMANT。元数据可选用[证据与公告记录校验](../EVIDENCE_VALIDATION.md)，但不能当作上述结果成立的证明。
 
 <a id="rb-01"></a>
 ## RB-01 — API、调度、vCluster 与节点边界
 
 **准备：** 为模拟租户 A/B 创建资源、工作负载身份与获批凭据，导出生效 RBAC、准入规则、同步器／Operator 权限、CNI 与节点 API 配置。
 
-**测试：** A 能访问自己的资源，但不能读取、挂载、修改或冒充 B 的资源。覆盖 kubelet、宿主集群对象和服务账户令牌。vCluster 必须检查同步组件的宿主集群权限以及共享节点组件；虚拟控制面本身不证明节点隔离。使用安全的中断分配和凭据过期场景，不提交破坏性工作负载。
+**测试：** A 能访问自己的资源，但不能读取、挂载、修改或冒充 B 的资源。覆盖 kubelet、宿主集群对象和服务账户令牌。vCluster 必须检查同步组件的宿主集群权限以及共享节点组件；虚拟控制面本身不证明节点隔离。使用安全的中断分配和凭据过期场景，不提交破坏性工作负载。撤销此前允许的跨 Namespace 关联或 Operator 授权后，使用一次性身份和无害记录，检查 Operator 收敛时是否清理或轮换其生成的后端凭据 [S9]，并核对旧的一次性凭据在后端（如数据库）被拒绝，同时另一独立授权身份仍可成功。Kubernetes API 拒绝本身不证明现存后端凭据已失效；轮换出的密钥材料仍须满足密钥生命周期要求。针对 NCS-IAM-04、NCS-KMS-02 和 NCS-ORC-04，还要检查服务账户实际权限和所有已启用授权路径；控制器选择器、本地缓存不能替代资源侧授权 [S10]。
 
-针对 NCS-IAM-04、NCS-KMS-02 和 NCS-ORC-04，还要把撤权沿 Operator 追踪到后端：撤销模拟资源之间此前允许的跨命名空间关联，观察协调及凭据删除／轮换，验证旧的一次性后端凭据被拒绝，而独立获授权身份仍可正常访问 [S9]。Kubernetes 拒绝不等于已撤销现有数据库凭据。检查服务账户实际权限和所有已启用授权路径；控制器选择器、本地缓存不能替代资源侧授权 [S10]。保存脱敏判定／请求标识，不保存凭据值。
-
-**验收／留证：** 租户上下文贯穿控制器转换，禁止请求在目标侧无实际影响，部分分配被回滚或隔离。保存脱敏配置、两类请求轨迹和实际状态对账。出现异租户数据或意外特权立即中止；先控制影响，必要时轮换凭据，经独立复测后才能重新开放。
+**验收／留证：** 租户上下文贯穿控制器转换，禁止请求在目标侧无实际影响，部分分配被回滚或隔离。保存脱敏配置、两类请求轨迹和实际状态对账。凭据脱敏，仅保留判定与请求标识。出现异租户数据、意外特权或撤权后任何异常访问立即中止；先完成隔离、轮换和独立复验，再重新开放该路径。
 
 <a id="rb-02"></a>
 ## RB-02 — 运行时漏洞与安全发布
 
-**准备：** 按资产盘点已安装及实际运行的 Toolkit、Runtime、Driver、Firmware、Kernel 和编排版本，关联受影响配置、厂商修复／回移补丁、兼容性与客户影响。版本号更大不等于安全。
+**准备：** 按资产盘点已安装及实际运行的 Toolkit、Runtime、Driver、Firmware、Kernel 和编排版本，识别准确的托管服务、OS 镜像/构建、控制器及运行进程，而不只看包名或镜像族。将公告关联到受影响配置、厂商修复／回移补丁、兼容性与客户影响，并区分四个传播阶段：上游修复、发行版回补、云镜像发布和实际节点替换。版本号更大不等于安全。
 
-**测试：** 在隔离金丝雀环境按批准方案更新，按需重启组件并验证实际加载版本及范围内回归；模拟更新失败和节点清单过期。建立公告接收与升级路径。Embargo／预发布资格依赖厂商安排，不是所有服务商天然具备的能力。
+**测试：** 在隔离金丝雀环境更新，按需重启组件并验证实际加载版本；同时记录合法作业成功和经审查的禁止边界结果。模拟更新失败和节点清单过期。建立公告接收与升级路径；Embargo／预发布资格依赖厂商安排，不是所有服务商天然具备的能力。此类元数据可选用离线公告处置台账记录，与[证据校验工具](../EVIDENCE_VALIDATION.md)一同说明。
 
-针对 NCS-ASM-01、NCS-ORC-04 和 NCS-CMP-03，区分上游修复、发行版回移、云厂商镜像发布和真实节点替换。记录镜像／构建标识、替换或启动证据，再验证作业完成、策略执行和恢复。修改镜像族指针不会更新已有节点 [S11]。启用热补丁不取消具体公告的重启要求，应看本次更新而非仅按长期日历推断 [S12]。只有服务商能够提供的证据仍由服务商负责。
+针对 NCS-ASM-01、NCS-ORC-04 和 NCS-CMP-03，记录镜像／构建标识、替换或启动证据，再验证作业完成、策略执行和恢复。修改镜像族指针不会更新已有节点 [S11]。启用热补丁不取消具体公告的重启要求，应看本次更新而非仅按长期日历推断 [S12]。只有服务商能够提供的证据仍由服务商负责。
 
 功能门开启、配置用户命名空间与节点真实无根运行是不同状态。可选迁移前检查 CNI／CSI／设备／GPU 组合的支持与恢复；不强制采用 Beta 功能，也不将其视为所有内核漏洞的防护 [S17]。
 
-**验收／留证：** 有漏洞或状态未知的节点不能静默回到健康资源池。回滚若恢复已知可利用配置，必须隔离并明确保持不符合基线状态。保留公告标识、可用时的签名来源证据、金丝雀结果、部署状态和复测结果。违反服务目标或丢失恢复通道立即停止。
+**验收／留证：** 有漏洞或状态未知的节点不能静默回到健康资源池；未验证容量保持隔离。云镜像发布本身不证明任何具体节点已重建或修复，服务商独占的证据仍由服务商负责。回滚若恢复已知可利用版本，必须隔离并明确保持不符合基线状态。保留公告标识、可用时的签名来源证据、金丝雀结果、部署复验和复测结果。违反服务目标或丢失恢复通道立即停止。
 
 <a id="rb-03"></a>
 ## RB-03 — BlueField、RShim 与服务商恢复路径
@@ -59,31 +57,29 @@
 
 **准备：** 为 A/B 注入不同无害时序数据，记录 Grafana 版本／版本类别、组织、数据源凭据以及直连后端、代理和 Remote Read 路径。Prometheus 默认安全模型允许 HTTP 用户访问其时序数据；标签不是授权 [S6]。Grafana Viewer 可能查询数据源，而不只读取可见看板 [S7、S8]。
 
-**测试：** 绕过看板导航直接查询，尝试异租户查询和伪造租户选择器。确认上下文由可信代理／后端绑定，而不是由调用者自报。验证告警路由、保留和支持访问。使用数据源权限前核实具体产品版本是否支持该功能。
+**测试：** 绕过看板导航直接查询，尝试异租户查询和伪造租户选择器。确认上下文由可信代理／后端绑定，而不是由调用者自报。验证告警路由、保留和支持访问。使用数据源权限前核实具体产品版本是否支持该功能。用租户安全的关联 ID 串联策略变更、Operator 收敛、凭据生命周期、后端拒绝和存储决策，并在必需审计来源缺失时告警；Dashboard、指标标签或采集程序退出成功都不等于租户授权。
 
 威胁模型还应覆盖共享看板创建／导入和可视化渲染，而非只有查询；分离写入与查看权限，检查实际部署的看板组件及托管服务补丁状态 [S13]。只用厂商支持的无害样本和授权检查，不复现浏览器执行载荷。自建版本已修复不证明托管服务完成了自己的修复。
 
-以租户安全的标识关联策略变化、Operator 协调、凭据生命周期、后端拒绝与存储判定。逐个云审计来源记录支持的服务／动作、启用状态、投递和保留，验证预期无害事件实际送达且缺失来源能够被发现。提供审计功能或采集器成功退出不等于覆盖有效 [S14]；不得将真实租户记录导出到本仓库。
+逐个云审计来源记录支持的服务／动作、启用状态、投递和保留，验证预期无害事件实际送达且缺失来源能够被发现。提供审计功能或采集器成功退出不等于覆盖有效 [S14]；不得将真实租户记录导出到本仓库。
 
 **验收／留证：** 隔离落实到后端凭据／查询边界，直连或编辑标签不能绕过；必要时采用分离组织和权限受限的后端。保留查询结果和后端授权。GPU Operator 时间切片下，须记录 DCGM-Exporter 的容器归因限制 [S1]，不能从不存在的指标推导容器责任。出现异租户时序或密钥暴露立即中止。
 
 <a id="rb-06"></a>
 ## RB-06 — 存储、快照、删除与恢复
 
-**准备：** 创建 A/B 模拟对象、卷和快照，记录 CSI／控制器身份、KMS 归属、不可变备份保留期和合同删除范围。
+**准备：** 创建 A/B 模拟对象、卷和快照，记录 CSI／控制器身份、KMS 归属、不可变备份保留期和合同删除范围。针对 NCS-API-01、NCS-DAT-04 和 NCS-ORC-02，联合审查 PV 创建权限、实际启用的删除选项、CSI 身份、Filesystem/Access Point 所有权和云资源策略 [S15]，控制器优先采用厂商修复版本和最小权限。
 
-**测试：** 在实际存储边界拒绝异租户挂载、导出和恢复。在主依赖不可用时恢复测试备份。检查副本、缓存、快照、本地介质和受保留期限制的延后删除。删除请求不能被描述为所有不可变备份立即完成物理擦除。
-
-针对 NCS-API-01、NCS-DAT-04 和 NCS-ORC-02，联合检查 PV 创建权限、实际删除选项、CSI 身份、文件系统／接入点归属与云资源策略 [S15]。优先采用厂商修复和最小权限；使用惰性单元样本或厂商支持的非破坏检查验证归属，不能构造破坏性卷句柄或删除真实数据。策略变化后正常存储使用应保持可用。驱动受影响不自动等于存储服务被攻破；关闭受影响配置只是有明确范围的适用性声明，仍需证据与复验。
+**测试：** 在实际存储边界拒绝异租户挂载、导出和恢复。用惰性单元夹具或厂商支持的非破坏性检查验证对象/租户归属；不构造破坏性 Volume Handle，不删除真实数据。确认策略变更后合法存储使用仍成功。在主依赖不可用时恢复测试备份。检查副本、缓存、快照、本地介质和受保留期限制的延后删除。删除请求不能被描述为所有不可变备份立即完成物理擦除。驱动缺陷不自动等于存储服务被攻破；停用受影响配置是需要证据和重验证的适用性判断。
 
 **验收／留证：** 恢复满足声明的完整性、隔离、RTO／RPO；删除结果明确延迟／排除副本及其到期时间。保留血缘、访问判定、恢复检查和密钥依赖。访问超出模拟资源范围或恢复跨越租户边界时立即停止。
 
 <a id="rb-07"></a>
 ## RB-07 — 不可信制品与解析器
 
-**准备：** 使用模拟的不支持格式／无效输入、隔离加载器，不授予生产凭据。记录可接受格式、反序列化权限、制品摘要、来源、签名策略和运行边界。
+**准备：** 使用模拟的不支持格式／无效输入、隔离加载器，不授予生产凭据。记录可接受格式、反序列化权限、制品摘要、来源、签名策略和运行边界。针对 NCS-SSC-02 与 NCS-DAT-03，制品准入须将摘要绑定到批准的签名者/构建者身份、规范源码仓库、构建类型和预期构建输入；仅签名有效并不足够 [S16]。
 
-**测试：** 拒绝未经批准的可执行序列化和制品来源。未批准签名者的有效签名不能直接视为安全。针对 NCS-SSC-02 与 NCS-DAT-03，将实际制品摘要绑定至获准签名者／构建者、规范源码仓库、构建类型和预期外部参数 [S16]；仅签名有效仍不足，未知或未授权输入必须明确判定而非静默接受。吊销测试制品并检查 Registry、部署、渲染器和缓存失效。措施须对应实际格式；扫描不能证明任意模型代码安全。保留加载器隔离，不引入强制 Agent 框架。
+**测试：** 拒绝未经批准的可执行序列化和制品来源。未批准签名者的有效签名不能直接视为安全。吊销测试制品并检查 Registry、部署、渲染器和缓存失效。未知或未授权输入必须明确判定而非静默接受。措施须对应实际格式；扫描不能证明任意模型代码安全。保留加载器隔离，不引入强制 Agent 框架。
 
 **验收／留证：** 在特权执行前拒绝，召回覆盖部署和缓存，可信重建可复现。保存加载决策、来源和召回证据。意外执行、持久化、凭据访问或越界出网即中止。本手册不需要真实恶意载荷。
 
@@ -92,9 +88,9 @@
 
 **准备：** 由外部授权委托方定义目标、租户、资源、工具、参数、目的地、预算、到期时间和策略版本。“不可变”指 Agent 不能自行扩大当前授权，不意味着合法用户永远不能批准下一阶段。
 
-**测试：** 以无害注入文本请求越权、改变审批状态或把模型／工具输出当作授权；测试审批后参数变化、凭据过期、重复失败、超时和预算耗尽。新目标或更大范围需要新的授权包，绑定变化后的参数；旧审批不能重放到新动作。
+**测试：** 以无害注入文本请求越权、改变审批状态或把模型／工具输出当作授权；测试审批后参数变化、凭据过期、重复失败、超时和预算耗尽。新目标或更大范围需要新的授权包，绑定变化后的参数；旧审批不能重放到新动作。对访问数据的 Agent，在数据库/资源身份处落实只读和最小权限，不能只依赖工具描述、提示词或 SQL 过滤；工具声明不是授权。执行未授权合成请求和无害的不支持格式，验证合法路径仍可用、被拒绝操作无副作用，并记录回滚/召回及所用身份。
 
-针对 NCS-AIR-03，以数据库／资源身份的实际权限落实只读，而非仅依靠工具描述、SQL 禁止列表或默认事务设置 [S19]。使用一次性记录和身份，在后端验证正常读取及禁止的未授权副作用；检查继承角色和可执行函数，保留脱敏判定，并按 RB-01 验证凭据撤销。同样需要应用厂商修复；最小权限不能证明有漏洞的软件已被修复。
+针对 NCS-AIR-03，检查数据库／资源身份背后的继承角色和可执行函数 [S19]。使用一次性记录和身份，在后端验证正常读取及禁止的未授权副作用，按 RB-01 验证凭据撤销，并同样应用厂商修复；最小权限不能证明有漏洞的软件已被修复。
 
 **验收／留证：** 即使模型提出越权动作，资源侧仍拒绝执行。保存审批绑定、动作结果、停止判定和独立后置条件检查。预算、时间、重试可以有确定性限制，但语义成功与不确定性不保证总能准确判定。模糊时保持未验证并升级，不允许自行认证完成。
 
@@ -116,29 +112,29 @@
 
 对于法律或合同通知义务，由责任 Owner 确认产品、供应商角色、司法辖区、合同、触发条件与生效日期后，再声明适用 [S20]。使用无害场景演练事件接收、证据保存、知悉时间记录、授权通知及恢复；区分各项报告时钟，以及未来期限和已生效义务。复查平台可用性和接收方指引；草案或路线图都不证明通报渠道已实际可用。
 
-**验收／留证：** 缺失、未测试、过期、无法判定均显式保留。区分文档映射、有效元数据、已部署控制和独立验证结果。验证人姓名不同不自动证明独立性。记录准确提交和局限；本地 Schema 测试不会授予 ClusterMAX 评级。遵循普通[研究与变更流程](../../CONTRIBUTING.md#recurring-research)，不另建第二套评审目录。
+**验收／留证：** 缺失、未测试、过期、无法判定均显式保留。区分文档映射、有效元数据、已部署控制和独立验证结果。验证人姓名不同不自动证明独立性。记录准确提交和局限；本地 Schema 测试不会授予 ClusterMAX 评级。遵循常规[研究与变更流程](../../CONTRIBUTING.md#recurring-research)，不建立第二套评审目录。
 
 ## 一手来源与局限
 
-- [S1 — NVIDIA GPU Operator sharing](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-sharing.html)
-- [S2 — NVIDIA mediated vGPU overview](https://docs.nvidia.com/ai-enterprise/release-8/latest/infra-software/vgpu/overview.html)
-- [S3 — BlueField modes](https://networking-docs.nvidia.com/bsp/latest/modes-of-operation)
-- [S4 — UFM 6.23.20 optional configurations](https://docs.nvidia.com/networking/display/ufmenterpriseumv62320/Optional-Configurations)
-- [S5 — UFM 6.26.1 Security tab](https://networking-docs.nvidia.com/ufmenterpriseum/6.26.1/security-tab)
-- [S6 — Prometheus security model](https://prometheus.io/docs/operating/security/)
-- [S7 — Grafana security](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/)
-- [S8 — Grafana roles and permissions](https://grafana.com/docs/grafana/latest/administration/roles-and-permissions/)
+- [S1 — NVIDIA GPU Operator 共享](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/gpu-sharing.html)
+- [S2 — NVIDIA vGPU](https://docs.nvidia.com/ai-enterprise/release-8/latest/infra-software/vgpu/overview.html)
+- [S3 — BlueField 运行模式](https://networking-docs.nvidia.com/bsp/latest/modes-of-operation)
+- [S4 — UFM 6.23.20 配置](https://docs.nvidia.com/networking/display/ufmenterpriseumv62320/Optional-Configurations)
+- [S5 — UFM 6.26.1 Security 页](https://networking-docs.nvidia.com/ufmenterpriseum/6.26.1/security-tab)
+- [S6 — Prometheus 安全模型](https://prometheus.io/docs/operating/security/)
+- [S7 — Grafana 安全配置](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/)
+- [S8 — Grafana 角色与权限](https://grafana.com/docs/grafana/latest/administration/roles-and-permissions/)
 - [S9 — Elastic ECK ESA-2026-146](https://discuss.elastic.co/t/elastic-cloud-on-kubernetes-3-5-0-security-update-esa-2026-146/390106)
-- [S10 — Kubernetes RBAC good practices](https://kubernetes.io/docs/concepts/security/rbac-good-practices/)
-- [S11 — Google Cluster Toolkit security bulletins](https://docs.cloud.google.com/cluster-toolkit/docs/security-bulletins)
-- [S12 — Microsoft Server 2025 Azure Edition September 8 baseline](https://support.microsoft.com/en-us/servicing/os/hotpatch/windows-server-2025/2026/september-8-2026-baseline)
-- [S13 — AWS OpenSearch Dashboards bulletin 2026-102](https://aws.amazon.com/security/security-bulletins/2026-102-aws/)
-- [S14 — Nebius audit service/action coverage](https://docs.nebius.com/audit-logs/services)
-- [S15 — AWS EFS CSI bulletin 2026-099](https://aws.amazon.com/security/security-bulletins/2026-099-aws/)
-- [S16 — SLSA v1.2 artifact verification](https://slsa.dev/spec/v1.2/verifying-artifacts)
+- [S10 — Kubernetes RBAC 良好实践](https://kubernetes.io/docs/concepts/security/rbac-good-practices/)
+- [S11 — Google Cluster Toolkit 安全公告](https://docs.cloud.google.com/cluster-toolkit/docs/security-bulletins)
+- [S12 — Microsoft Server 2025 Azure Edition 9 月 8 日基线](https://support.microsoft.com/en-us/servicing/os/hotpatch/windows-server-2025/2026/september-8-2026-baseline)
+- [S13 — AWS OpenSearch Dashboards 公告 2026-102](https://aws.amazon.com/security/security-bulletins/2026-102-aws/)
+- [S14 — Nebius 审计服务/动作覆盖](https://docs.nebius.com/audit-logs/services)
+- [S15 — AWS EFS CSI 公告 2026-099](https://aws.amazon.com/security/security-bulletins/2026-099-aws/)
+- [S16 — SLSA v1.2 制品验证](https://slsa.dev/spec/v1.2/verifying-artifacts)
 - [S17 — Kubernetes v1.37 rootless beta](https://kubernetes.io/blog/2026/09/04/kubernetes-v1-37-rootless-beta/)
 - [S18 — Kubernetes NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
-- [S19 — AWS postgres-mcp-server bulletin 2026-101](https://aws.amazon.com/security/security-bulletins/2026-101-aws/)
-- [S20 — European Commission CRA reporting guidance](https://digital-strategy.ec.europa.eu/en/policies/cra-reporting)
+- [S19 — AWS postgres-mcp-server 公告 2026-101](https://aws.amazon.com/security/security-bulletins/2026-101-aws/)
+- [S20 — 欧委会 CRA 报告指南](https://digital-strategy.ec.europa.eu/en/policies/cra-reporting)
 
-厂商行为依赖具体版本／产品类别。来源支持特定机制，不自动支持手册中的全部项目建议。[参考资料](../../REFERENCES.md)记录范围内日期与读取局限；[此前来源复核](../../reviews/2026-09-05-evidence-followup.md)保留尚未解决的外部框架差异。新公告触发适用性复核，不自动证明符合基线，也不强制迁移平台。
+厂商行为具有版本差异，来源支持具体机制，不代表背书整套测试方案。读取限制和外部框架差异见[本轮来源复核](../../reviews/2026-09-05-evidence-followup.md)。
