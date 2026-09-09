@@ -2,14 +2,15 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
-## Unreleased — 2026-09-08 weekly security review
+## Unreleased — recurring-research integration
 
-- Add a dated primary-source ledger and cross-domain gap review, distinguishing this calendar week, rolling lookback, carryovers, conflicting source dates and future deadlines.
-- Add equivalent English/Chinese weekly operations guidance for runtime patch evidence, backend credential revocation, storage-controller ownership, resource-side agent permissions and scoped network/incident changes.
-- Add an optional standard-library advisory metadata checker, a synthetic UNKNOWN/OPEN/NOT_TESTED example and 47 local positive/negative tests. Metadata consistency is not verified remediation or control conformance.
-- Correct contribution guidance to the existing full local runner and manual-only Actions policy; add bilingual navigation.
-- Preserve all 90 controls, tiers, core/overlay versions, existing schemas, validators and workflows. No production probes, remote Actions or automatic weekly scheduling.
-- Test and access limitations are recorded in [the weekly review](reviews/2026-09-08-weekly-security-review.md).
+- Research delivery model: recurring security research lands as in-place corrections and extensions to the contribution guide, runbooks, practice guide, reference architecture and governance rules. No standalone weekly-review documents or dated research reports are maintained; provenance stays in PR/issue history, references and Git.
+- Contribution guide now defines recurring research: check existing coverage first, correct canonical text in place, no commit without substantive change, primary-source and evidence cut-off discipline, per-domain gap triage, bounded checks over new platforms, and research detail kept in the PR/issue record rather than standing files.
+- Runbooks RB-01/02/05/06/07/08 extended: revocation of operator-derived backend credentials beyond the Kubernetes API denial; patch evidence staged from upstream fix through distribution backport, provider image publication and actual node replacement; correlated policy/credential/operator/storage auditing with tenant-safe IDs and missing-audit-source alerting; storage-controller authority (PV creation, deletion options, CSI identity, ownership, cloud policy) reviewed with non-destructive checks; artifact digests bound to approved signer/builder, source and expected build inputs; agent read-only enforced at the database/resource identity rather than tool declarations.
+- Practice guide and reference architecture: network-policy/CNI migration treated as a scoped, compatibility-checked, reversible change with paired allow/deny tests and preserved recovery access; Kubernetes network policy does not replace fabric, DPU or storage isolation; credential revocation reaches controller/operator-derived credentials.
+- Governance: an obligation with a future applicability date is not yet effective and a draft is not a final standard; legal/compliance owners confirm product, supplier role, jurisdiction and contractual scope and maintain intake, evidence preservation, notification and recovery exercises for applicable obligations.
+- Added an optional offline advisory-triage metadata checker with a synthetic example and local positive/negative tests, documented alongside the evidence-record validators. Advisory disposition state stays distinct from control verification state; metadata consistency is not verified remediation or conformance.
+- Preserve all 90 controls, tiers, core/profile versions, schemas, validators and the manual-only workflow. No production probes, remote Actions dispatch or scheduled jobs.
 
 ## Unreleased — 2026-09-05 validation and source correction
 

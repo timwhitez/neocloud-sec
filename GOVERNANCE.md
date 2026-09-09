@@ -14,7 +14,11 @@ This project is not a standards-development organization, certification scheme, 
 
 Applicable law, regulation, contract, privacy/safety obligations, and customer commitments determine external obligations. This baseline may be stricter than those obligations. Where an external obligation conflicts with this baseline, the organization must obtain qualified advice, document the conflict, and must not claim conformance to an unmet project requirement.
 
+An obligation with a future applicability date is not yet in effect, and a draft or public-review text is not a final standard. Before treating a dated external requirement as applicable, the responsible legal or compliance owner confirms the actual product, supplier role, jurisdiction and contractual scope, and maintains incident intake, evidence preservation, notification authority and recovery exercises for the obligations that do apply.
+
 适用法律法规、合同、隐私/安全义务和客户承诺决定外部责任。本基线可能比外部最低要求更严格。若二者冲突，组织必须获取合格专业意见、记录冲突，并且不能把未满足的本项目要求声明为符合。
+
+适用日期在未来的义务尚未生效，草案或公开评审文本也不是正式标准。把有日期的外部要求视为适用之前，应由法务/合规责任人确认真实产品、供应商角色、司法辖区和合同范围，并针对确实适用的义务维护事件收件、证据保全、通知授权和恢复演练。
 
 Within this project, use the following order when project materials conflict:
 

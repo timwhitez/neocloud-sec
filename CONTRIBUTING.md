@@ -68,9 +68,33 @@ Include the exact tested head, commands, output and omissions in the PR. The wor
 
 PR 应记录准确测试 Head、命令、输出及未执行项目。额度受限期间工作流仅手动触发，本轮不得调度或重跑；Commit/合并信息保留 `[skip ci]`。部分检出不等于全套测试通过；自动校验通过只是必要条件，仍需人工复核技术事实、来源状态、服务适用性、中英文含义及证据能否证明真实部署结果。
 
-For recurring research, use the [weekly process](docs/en/WEEKLY_SECURITY_REVIEW.md) / [每周研究流程](docs/zh-CN/WEEKLY_SECURITY_REVIEW.md).
+## 6. Recurring research / 持续研究
 
-## 6. Review and versioning / Review 与版本管理
+Security research is delivered as verified improvements to the existing documents, controls, tooling and tests — not as a parallel report series. When a research round lands:
+
+1. Check existing coverage first (catalog, errata, runbooks, guides, validators). If the canonical text can be corrected or extended in place, do that; open a focused issue or PR only for what remains.
+2. A round with no substantive change produces no commit. Do not manufacture content to maintain a cadence.
+3. Record the reviewed base commit and an evidence cut-off. For each load-bearing claim keep the primary URL, publication/revision date, access date, affected product/configuration and retrieval limitations. Keep conflicting timestamps as recorded rather than guessing one. Cross-check an advisory against the product release notes or changelog, or a second primary source; syndication is not independent confirmation.
+4. Compare findings against the catalog's domains and decide per area: actionable repository change, already covered, watch pending evidence, or out of scope. Absence of a newly confirmed event in a category is not evidence that no vulnerability exists.
+5. Prefer a missing example, evidence contract or bounded negative check over a new platform or framework. Prioritize exposed or actively exploited paths, tenant-boundary failures and root/control-plane risks using actual applicability, not CVSS alone.
+6. Keep research detail, dated event data and rejected alternatives in the PR/issue record. Do not add standing research files, weekly digests or update logs to the repository; provenance stays in Git history, [`REFERENCES.md`](REFERENCES.md) and the changelog.
+7. Report each round's sources, gaps, changes, tests, merges and open follow-ups to the maintainers; that operating report is not itself committed as repository documentation. A repository correction never means a customer environment was remediated.
+
+Distinguish vendor capabilities, single vulnerability events, draft standards and final generally applicable requirements before promoting any of them into normative text; a new normative requirement follows section 2. Follow section 5 for local validation of every research-driven change.
+
+安全研究的交付单位是经过验证的项目改进——修正现有文档、控制、工具和测试——不是一套平行的研究报告。每轮研究落地时：
+
+1. 先检查既有覆盖（目录、勘误、验证手册、指南、校验器）。能直接修正或扩展现有正文的，就直接改正文；只为剩余部分创建集中的 Issue 或 PR。
+2. 没有实质变化的一轮不产生提交，不得为了维持节奏制造内容。
+3. 记录被评审的基线 Commit 和资料截止时间。每条关键判断保留一手 URL、发布/修订日期、访问日期、受影响产品/配置和访问限制。日期冲突按原样保留，不猜测取舍。公告须用产品发布记录、变更日志或第二个一手来源交叉核验；转载不构成独立证据。
+4. 对照目录的安全域逐域比较，分别决定：可执行仓库改动、已覆盖、证据不足待跟踪或不适用。某类未确认新事件，不等于该类没有漏洞。
+5. 优先补充缺失示例、证据约定和有边界的负向检查，而不是新增平台或框架。结合真实适用性，优先处理已暴露或已被利用的路径、租户边界、信任根和控制面风险，不能仅按 CVSS 排序。
+6. 研究详情、有日期的事件数据和未采纳的替代方案保留在 PR/Issue 记录中。不得向仓库添加常设研究文件、周报摘要或更新日志；来源与历史通过 Git 历史、[`REFERENCES.md`](REFERENCES.md) 和变更记录追溯。
+7. 每轮完成后向维护者汇报来源、gap、修改、测试、合并和待跟踪事项；该运行汇报本身不作为仓库文档提交。修正仓库文档不表示任何客户环境已经修复。
+
+把厂商能力、单个漏洞事件、标准草案与正式通用要求区分开，再决定是否写入规范文本；新增规范要求遵循第 2 节。每轮研究产生的改动均按第 5 节执行本地校验。
+
+## 7. Review and versioning / Review 与版本管理
 
 - Review the exact head commit after all requested changes are resolved.
 - Normative changes require an independent reviewer or a clearly documented separate review pass.
@@ -81,7 +105,7 @@ For recurring research, use the [weekly process](docs/en/WEEKLY_SECURITY_REVIEW.
 
 所有整改完成后，应对准确的 Head Commit 重新 Review。破坏性 ID/Schema 变化使用 Major；向后兼容的规范控制或重大语义变化通常使用 Minor；编辑、事实、来源状态与非破坏性澄清可以使用 Patch，或先记录在 `Unreleased`。
 
-## 7. Repository and license status / 仓库与 License 状态
+## 8. Repository and license status / 仓库与 License 状态
 
 The repository currently grants no open-source license. Do not infer permission to reuse or redistribute content merely from repository access. Before public contribution or release, the owner should adopt an explicit license and contribution policy; options are documented in [`.github/REPOSITORY_SETTINGS.md`](.github/REPOSITORY_SETTINGS.md).
 

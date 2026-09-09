@@ -10,6 +10,7 @@ Copy templates into a private system of record before collecting real assessment
 | [Public-findings assessment](semianalysis-public-findings-assessment.csv) | 40 project-authored mappings, with three assurance views |
 | [Public Security-page assessment](clustermax-public-security-requirements-assessment.csv) | 20 dated public-page mappings, not a rating |
 | [Evidence register](evidence-register.csv) | Provenance, scope, validity and reviewer |
+| [Advisory triage example](advisory-triage.example.json) | Optional advisory-disposition metadata format; see the [validation guide](../docs/EVIDENCE_VALIDATION.md) |
 | [Shared responsibility](shared-responsibility-matrix.csv) | Explicit provider/customer duties |
 | [Risk register](risk-register.csv) | Residual risks and owners |
 | [Exception register](exception-register.csv) | Time-bounded decisions, never a fabricated PASS |

@@ -6,7 +6,7 @@ Vendor-neutral security baseline, reference architecture, roadmap and practice g
 
 **Base version:** `1.0.0-draft.1`  
 **Public-findings profile:** `1.0.1`  
-**Last scoped review:** 2026-09-08
+**Last scoped review:** 2026-09-09
 
 This is a documentation and validation project, not a deployable security control plane, certification or proof that a provider is secure. “NeoCloud” is a working industry term; define the actual service and trust boundaries rather than inferring them from a label.
 
@@ -22,14 +22,8 @@ This is a documentation and validation project, not a deployable security contro
 | Define evidence, metrics and verification | [Assurance](docs/en/METRICS_AND_ASSURANCE.md) | [度量与持续证明](docs/zh-CN/METRICS_AND_ASSURANCE.md) |
 | Review public findings and run authorized priority drills | [SemiAnalysis coverage](docs/en/SEMIANALYSIS_COVERAGE.md) | [覆盖审计与验证指南](docs/zh-CN/SEMIANALYSIS_COVERAGE.md) |
 | Execute ten operational validation plans | [Validation runbooks](docs/en/VALIDATION_RUNBOOKS.md) | [十类验证手册](docs/zh-CN/VALIDATION_RUNBOOKS.md) |
-| Check evidence-record consistency and expiry | [Evidence validator](docs/EVIDENCE_VALIDATION.md) | [证据记录校验](docs/EVIDENCE_VALIDATION.md) |
+| Check evidence records and advisory triage | [Evidence and advisory validation](docs/EVIDENCE_VALIDATION.md) | [证据与公告校验](docs/EVIDENCE_VALIDATION.md) |
 | Understand limits | [Scope](docs/en/SCOPE_AND_LIMITATIONS.md) | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) |
-
-## Weekly research
-
-[Latest dated review](reviews/2026-09-08-weekly-security-review.md) · [Weekly process](docs/en/WEEKLY_SECURITY_REVIEW.md) · [每周研究流程](docs/zh-CN/WEEKLY_SECURITY_REVIEW.md)
-
-The weekly process distinguishes source publication, available fixes and actual deployed evidence. Its optional offline advisory checker validates metadata only; it does not schedule jobs, probe infrastructure or attest remediation.
 
 ## What is included
 

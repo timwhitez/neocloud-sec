@@ -217,9 +217,13 @@ Obligation 可以要求 Dedicated Placement、Restricted Egress、Masking、Dual
 
 测试 P_Key Membership/Enforcement、RDMA Reachability、Fabric-manager Authority、DPU/NIC Assignment、Storage Access、Stale/Partial Controller State 与 Reallocation Cleanup。按 Provider Root 保护 Fabric/DPU Controller。VPC 或 Kubernetes NetworkPolicy 不能作为充分证据。
 
+### 将网络策略迁移作为范围化、可回退的变更
+
+厂商功能退役或被推荐的 CNI 变更，只是实际使用受影响组件的服务的迁移触发器，不是让所有云统一采用单一网络栈的理由。默认拒绝策略上线前，记录 OS/CNI 兼容性、DNS 与服务依赖，并执行配对的允许/拒绝测试；变更全程保留 OOB 与恢复通道，并保有经过测试的回滚路径。Kubernetes NetworkPolicy 不能替代 Fabric、DPU 或存储隔离边界。
+
 ### 消除静态 Workload Credential
 
-使用 Workload Identity、范围受限的 Short-lived Certificate/Token、Audience Restriction、Tenant/Resource Scope、Revocation，并在合理场景绑定 Attested State。Metadata 与默认 Service Identity 不得向 Tenant Workload 提供宽泛 Provider/Project Authority。
+使用 Workload Identity、范围受限的 Short-lived Certificate/Token、Audience Restriction、Tenant/Resource Scope、Revocation，并在合理场景绑定 Attested State。撤销必须触及 Controller/Operator 派生或生成的凭据，而不能只撤销编排层的授权。Metadata 与默认 Service Identity 不得向 Tenant Workload 提供宽泛 Provider/Project Authority。
 
 ### 将 Artifact Trust 变成 Admission Decision
 
