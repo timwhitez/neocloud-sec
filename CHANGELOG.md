@@ -2,6 +2,16 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — integrate security maintenance into the project
+
+- Move durable runtime-patch, backend-revocation, storage-controller, agent and network guidance into the existing bilingual validation runbooks; add dashboard-write and audit-coverage checks with primary references.
+- Make recurring research part of CONTRIBUTING and the normal PR template, with source chronology, cross-domain dispositions, canonical destinations, exact-head review and the complete local-test merge gate.
+- Consolidate the existing advisory JSON contract into EVIDENCE_VALIDATION and list both optional record examples in the template index. The checker remains offline and does not verify remediation.
+- Remove the standalone weekly guides and dated report after preserving their source decisions in REFERENCES, normal Git/PR history and the relevant runbooks. Do not introduce a replacement weekly series or new control catalog.
+- Add structural documentation regression tests for canonical navigation, runbook/source parity, control references and retired relative links; do not freeze whole paragraphs.
+- Preserve all 90 control IDs, tiers, versions, schemas, existing checker behavior and manual-only workflow. No live infrastructure assessment, remote Actions or scheduler is introduced.
+- Track acceptance and actual test/merge status in [Issue #10](https://github.com/timwhitez/neocloud-sec/issues/10); these release notes are not evidence that its merge gate has passed.
+
 ## Unreleased — 2026-09-08 weekly security review
 
 - Add a dated primary-source ledger and cross-domain gap review, distinguishing this calendar week, rolling lookback, carryovers, conflicting source dates and future deadlines.
@@ -9,7 +19,7 @@ All notable changes to NeoCloud Cyber Security are recorded here.
 - Add an optional standard-library advisory metadata checker, a synthetic UNKNOWN/OPEN/NOT_TESTED example and 47 local positive/negative tests. Metadata consistency is not verified remediation or control conformance.
 - Correct contribution guidance to the existing full local runner and manual-only Actions policy; add bilingual navigation.
 - Preserve all 90 controls, tiers, core/overlay versions, existing schemas, validators and workflows. No production probes, remote Actions or automatic weekly scheduling.
-- Test and access limitations are recorded in [the weekly review](reviews/2026-09-08-weekly-security-review.md).
+- Test and access limitations are recorded in [the original PR #9](https://github.com/timwhitez/neocloud-sec/pull/9) and its preserved Git history; the standalone document was subsequently consolidated into the project.
 
 ## Unreleased — 2026-09-05 validation and source correction
 
@@ -96,7 +106,7 @@ All notable changes to NeoCloud Cyber Security are recorded here.
 
 - Domains: **18**.
 - Controls: **90**, exactly five per domain.
-- Tier distribution: **T0=32, T1=31, T2=19, T3=7, T4=1**.
+- Tier distribution: **T0=32**, **T1=31**, **T2=19**, **T3=7**, **T4=1**.
 - Languages: **English and Simplified Chinese**.
 - Every control includes a stable ID, tier, bilingual title and normative requirement, evidence profile, independent-verification profile and metric associations.
 

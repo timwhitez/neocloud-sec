@@ -6,7 +6,7 @@ Vendor-neutral security baseline, reference architecture, roadmap and practice g
 
 **Base version:** `1.0.0-draft.1`  
 **Public-findings profile:** `1.0.1`  
-**Last scoped review:** 2026-09-08
+**Last scoped review:** 2026-09-09
 
 This is a documentation and validation project, not a deployable security control plane, certification or proof that a provider is secure. “NeoCloud” is a working industry term; define the actual service and trust boundaries rather than inferring them from a label.
 
@@ -20,24 +20,20 @@ This is a documentation and validation project, not a deployable security contro
 | Design identity, tenant and enforcement boundaries | [Architecture](docs/en/REFERENCE_ARCHITECTURE.md) | [参考架构](docs/zh-CN/REFERENCE_ARCHITECTURE.md) |
 | Plan phased delivery | [Roadmap](docs/en/ROADMAP.md) | [路线图](docs/zh-CN/ROADMAP.md) |
 | Define evidence, metrics and verification | [Assurance](docs/en/METRICS_AND_ASSURANCE.md) | [度量与持续证明](docs/zh-CN/METRICS_AND_ASSURANCE.md) |
-| Review public findings and run authorized priority drills | [SemiAnalysis coverage](docs/en/SEMIANALYSIS_COVERAGE.md) | [覆盖审计与验证指南](docs/zh-CN/SEMIANALYSIS_COVERAGE.md) |
-| Execute ten operational validation plans | [Validation runbooks](docs/en/VALIDATION_RUNBOOKS.md) | [十类验证手册](docs/zh-CN/VALIDATION_RUNBOOKS.md) |
-| Check evidence-record consistency and expiry | [Evidence validator](docs/EVIDENCE_VALIDATION.md) | [证据记录校验](docs/EVIDENCE_VALIDATION.md) |
+| Review public findings and authorized priority drills | [SemiAnalysis coverage](docs/en/SEMIANALYSIS_COVERAGE.md) | [覆盖审计与验证指南](docs/zh-CN/SEMIANALYSIS_COVERAGE.md) |
+| Validate runtime, revocation, storage and telemetry boundaries | [Validation runbooks](docs/en/VALIDATION_RUNBOOKS.md) | [验证手册](docs/zh-CN/VALIDATION_RUNBOOKS.md) |
+| Check evidence and advisory-record consistency | [Evidence validation](docs/EVIDENCE_VALIDATION.md) | [证据与公告记录校验](docs/EVIDENCE_VALIDATION.md) |
 | Understand limits | [Scope](docs/en/SCOPE_AND_LIMITATIONS.md) | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) |
 
-## Weekly research
-
-[Latest dated review](reviews/2026-09-08-weekly-security-review.md) · [Weekly process](docs/en/WEEKLY_SECURITY_REVIEW.md) · [每周研究流程](docs/zh-CN/WEEKLY_SECURITY_REVIEW.md)
-
-The weekly process distinguishes source publication, available fixes and actual deployed evidence. Its optional offline advisory checker validates metadata only; it does not schedule jobs, probe infrastructure or attest remediation.
+Research improves these documents and tools in place. The [contribution process](CONTRIBUTING.md#recurring-research) defines source review, gap assessment and PR-before-merge; [CHANGELOG.md](CHANGELOG.md) records normal project changes. Dated decisions and test evidence belong in the relevant PR/Issue, not a parallel weekly-document series. No background job or scheduler is installed.
 
 ## What is included
 
 The base catalog retains 90 stable control IDs: T0=32, T1=31, T2=19, T3=7, T4=1. Service profiles cover GPU IaaS, bare metal, managed Kubernetes, Slurm/HPC, model training, model serving, agents and sovereign/regulated deployments.
 
-The independent SemiAnalysis/ClusterMAX overlay contains **40 atomic project-authored mappings** and **20/20 mappings of a dated public Security-page snapshot**. Mapping is not implementation, test execution, certification, endorsement or exact proprietary-framework parity. Its earlier prior-coverage summary was wrong; the actual stored classification is **21 explicit / 12 partial / 7 gaps**, now checked against the records. See the [scoped review](reviews/2026-09-05-validation-audit.md) for evidence and limitations.
+The independent SemiAnalysis/ClusterMAX overlay contains **40 atomic project-authored mappings** and **20/20 mappings of a dated public Security-page snapshot**. Mapping is not implementation, test execution, certification, endorsement or exact proprietary-framework parity. Its stored prior-coverage classification is **21 explicit / 12 partial / 7 gaps**, not the earlier incorrect summary; see the [scoped audit](reviews/2026-09-05-validation-audit.md).
 
-Use [core controls](controls/neocloud-security-baseline.v1.json), [normative errata](controls/neocloud-security-baseline.v1.errata.json), the [public-findings profile](controls/semianalysis-public-findings-profile.v1.json) and [templates](templates/README.md) together. Do not import the raw core catalog while silently ignoring applicable errata.
+Use [core controls](controls/neocloud-security-baseline.v1.json), [normative errata](controls/neocloud-security-baseline.v1.errata.json), the [public-findings profile](controls/semianalysis-public-findings-profile.v1.json) and [templates](templates/README.md) together. Do not import the raw catalog while silently ignoring applicable errata.
 
 ## Operating rules
 
@@ -51,33 +47,25 @@ Provider-exclusive control planes, host/GPU reset, fabric managers, BMC/OOB and 
 
 ## Local verification — no Actions required
 
-Python 3.10+ is required for the strict checker. The first two legacy scripts use the standard library; strict schema validation explicitly requires the packages below. Dependency installation is a separate setup step, not hidden network activity inside validation.
+Use a full checkout and Python 3.10+. The first two legacy repository validators use the standard library; strict schema validation requires the declared packages. Installation is a separate setup step, not hidden network activity inside validation.
 
 ```bash
 python3 -m pip install -r requirements-validation.txt
 python3 scripts/check_local.py
 ```
 
-The runner executes all three repository validators and the unit/negative tests locally. Missing dependencies or files cause failure, not a skipped green result. No infrastructure is probed. For an offline machine, pre-stage the required packages through your approved package process.
+The runner executes all three repository validators and discovers the unit/negative tests. Missing dependencies or files cause failure, not a skipped green result. No infrastructure is probed. Offline environments should pre-stage packages through an approved process. While Actions quota is constrained, the workflow remains manual-dispatch only; do not dispatch or rerun it.
 
-While Actions quota is constrained, the workflow is manual-dispatch only; this follow-up does not dispatch it. The new record checker needs only the standard library:
-
-```bash
-python3 scripts/validate_evidence_records.py templates/evidence-record.example.csv
-```
-
-Its successful exit means consistent metadata, not verified evidence or a secure provider. See the [follow-up review](reviews/2026-09-05-evidence-followup.md) for the 18 newly executed tests and the distinction from previously recorded upstream results.
-
-Generate a derived, errata-applied catalog bundle without modifying source files:
+Generate an errata-applied catalog without modifying source files:
 
 ```bash
 python3 scripts/compile_catalog.py > /tmp/neocloud-effective-catalog.json
 ```
 
-The bundle includes `catalog` and SHA-256 provenance identifiers. It is not a deployment attestation. Repository CSVs deliberately remain `UNKNOWN / PROPOSED / NOT_TESTED`; collect real assessments in a separate private system.
+The bundle includes `catalog` and SHA-256 provenance identifiers; it is not a deployment attestation. Optional offline [evidence and advisory checkers](docs/EVIDENCE_VALIDATION.md) validate metadata, not actual remediation. Historical `--as-of` examples are replay fixtures, not current assessments. Repository examples remain unverified; collect real assets and evidence in a separate private system.
 
 ## Governance and sources
 
 [References](REFERENCES.md) · [Governance](GOVERNANCE.md) · [Contributing](CONTRIBUTING.md) · [Security reporting](SECURITY.md) · [Changelog](CHANGELOG.md) · [Repository settings guidance](.github/REPOSITORY_SETTINGS.md)
 
-The settings guide does not itself change GitHub About, topics, visibility or permissions. No open-source license is currently granted. This update does not change visibility, license, branch protections or third-party affiliation claims.
+The settings guide does not itself change GitHub About, topics, visibility or permissions. No open-source license is currently granted. This iteration changes no visibility, license, branch protection or third-party affiliation claim.
