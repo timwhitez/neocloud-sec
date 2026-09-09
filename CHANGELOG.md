@@ -2,6 +2,14 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — consolidate security maintenance into canonical runbooks and tests
+
+- Move the durable runtime-patch, backend-revocation, storage-controller, agent and network-migration guidance into the existing bilingual validation runbooks (RB-01/02/04/06/07/08/10), each mapped to stable control IDs; add dashboard-write/rendering trust boundaries and per-source audit-coverage checks to RB-05, and hotpatch-reboot, image-family and rootless-state distinctions to RB-02, with dated primary references S9–S20.
+- Add stable `rb-01`–`rb-10` anchors and bilingual runbook/source parity; recurring research in CONTRIBUTING gains a stable `recurring-research` anchor and the README states that research improves the project in place.
+- Extend the ordinary PR template with the recurring-research record (base commit, chronology, per-domain disposition) and the complete local-test merge gate; list both optional record examples in the template index.
+- Add a scoped operational-source applicability section to REFERENCES (dated 2026-09-09, cut-off of the first 69 sources unchanged) and structural documentation regression tests for canonical navigation, retired links, bilingual runbook/source/control-reference parity and example discoverability.
+- Preserve the merged timestamp hardening, all 90 control IDs, tiers, versions, schemas, checker behavior and the manual-only workflow. No replacement weekly series, second control catalog, scheduler or live infrastructure assessment.
+
 ## Unreleased — evidence timestamp validation and review gate
 
 - Validate evidence timestamps against an explicit, exactly representable RFC 3339 subset before datetime parsing. Reject invalid numeric offset components and unsupported precision instead of silently normalizing or truncating them; report UTC conversion overflow as a validation error rather than an uncaught exception.

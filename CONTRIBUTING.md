@@ -60,37 +60,38 @@ Run the complete local entry point from a full checkout with the declared depend
 python3 scripts/check_local.py
 ```
 
-The runner executes the three repository validators and discovers unit tests. The core validator checks required deliverables, JSON validity, the exact domain/control/tier contract, control IDs, bilingual baseline parity, evidence/verification/metric references, release-version consistency, and relative Markdown links.
+The runner executes the three repository validators and discovers unit tests, including advisory and documentation regressions. The core validator checks required deliverables, JSON validity, the exact domain/control/tier contract, control IDs, bilingual baseline parity, evidence/verification/metric references, release-version consistency, and relative Markdown links.
 
-本地入口运行三项仓库校验并发现单元测试；核心校验器检查必需交付物、JSON、严格的安全域/控制/等级契约、Control ID、中英文基线一致性、证据/验证/指标引用、版本一致性和相对 Markdown 链接。
+本地入口运行三项仓库校验并发现单元测试，包含公告与文档回归；核心校验器检查必需交付物、JSON、严格的安全域/控制/等级契约、Control ID、中英文基线一致性、证据/验证/指标引用、版本一致性和相对 Markdown 链接。
 
 Include the exact tested head, commands, output and omissions in the PR. The workflow is manual-dispatch only while Actions quota is constrained: do not dispatch or rerun it. Keep `[skip ci]` in commit/merge messages. A partial checkout is not a full-suite pass. Passing automation is necessary but not sufficient: reviewers must still check technical truth, source status, service applicability, bilingual meaning, and whether evidence can prove the deployed outcome.
 
 PR 应记录准确测试 Head、命令、输出及未执行项目。额度受限期间工作流仅手动触发，本轮不得调度或重跑；Commit/合并信息保留 `[skip ci]`。部分检出不等于全套测试通过；自动校验通过只是必要条件，仍需人工复核技术事实、来源状态、服务适用性、中英文含义及证据能否证明真实部署结果。
 
-## 6. Recurring research / 持续研究
+<a id="recurring-research"></a>
+## 6. Recurring research is project maintenance / 持续研究就是项目迭代
 
-Security research is delivered as verified improvements to the existing documents, controls, tooling and tests — not as a parallel report series. When a research round lands:
+Record the base commit, timezone, calendar-week start/end and evidence cutoff in the normal PR or Issue. Separate this week's publications, revisions, older lookback findings and future deadlines. For consequential claims, record the primary URL, publication/revision/access dates, product/version/configuration, source status and retrieval limitations. Cross-check with a product release, upstream advisory or another primary authority. Syndication is not independent corroboration; retain unresolved chronology or applicability instead of guessing.
 
-1. Check existing coverage first (catalog, errata, runbooks, guides, validators). If the canonical text can be corrected or extended in place, do that; open a focused issue or PR only for what remains.
-2. A round with no substantive change produces no commit. Do not manufacture content to maintain a cadence.
-3. Record the reviewed base commit and an evidence cut-off. For each load-bearing claim keep the primary URL, publication/revision date, access date, affected product/configuration and retrieval limitations. Keep conflicting timestamps as recorded rather than guessing one. Cross-check an advisory against the product release notes or changelog, or a second primary source; syndication is not independent confirmation.
-4. Compare findings against the catalog's domains and decide per area: actionable repository change, already covered, watch pending evidence, or out of scope. Absence of a newly confirmed event in a category is not evidence that no vulnerability exists.
-5. Prefer a missing example, evidence contract or bounded negative check over a new platform or framework. Prioritize exposed or actively exploited paths, tenant-boundary failures and root/control-plane risks using actual applicability, not CVSS alone.
-6. Keep research detail, dated event data and rejected alternatives in the PR/issue record. Do not add standing research files, weekly digests or update logs to the repository; provenance stays in Git history, [`REFERENCES.md`](REFERENCES.md) and the changelog.
-7. Report each round's sources, gaps, changes, tests, merges and open follow-ups to the maintainers; that operating report is not itself committed as repository documentation. A repository correction never means a customer environment was remediated.
+在普通 PR／Issue 中记录基准提交、时区、自然周起止与证据截止；区分本周发布、本周修订、历史回溯及未来期限。关键结论记录一手链接、发布／修订／访问日期、产品版本配置、来源状态和读取局限，使用产品发布、上游公告或另一一手权威交叉验证；转载不是独立证据，时间或适用性冲突应保留。
+
+Review supply chain, IAM/API, network/fabric, host/GPU/virtualization, containers/Kubernetes/Slurm, data/keys, telemetry/detection, governance/compliance, abuse and response/recovery. Compare each area with the actual catalog, errata and implementation before declaring a gap. Record one disposition per area: actionable change, already covered, watch pending evidence, or out of scope. No confirmed new event does not prove that no vulnerability exists.
+
+逐域检查供应链、IAM/API、网络/Fabric、Host/GPU/虚拟化、容器/Kubernetes/Slurm、数据/密钥、监控检测、治理合规、滥用与应急恢复。先对照真实目录、勘误和实现，再判定缺口；记录可执行改动、已有覆盖、待证据跟踪或不适用，不能把“未发现新公告”写成“没有漏洞”。
+
+Put durable guidance into the existing bilingual practice guide, architecture or [validation runbooks](docs/en/VALIDATION_RUNBOOKS.md); update affected controls, templates and tests only when needed. Keep references inline and in [REFERENCES.md](REFERENCES.md), and record user-facing changes in [CHANGELOG.md](CHANGELOG.md). Keep the optional advisory format in [evidence validation](docs/EVIDENCE_VALIDATION.md). The PR/Issue carries the dated research and decision trail; do not create a parallel weekly guide, addendum, report series or control catalog. Preserve useful sources and decisions before removing redundant material; use Git history and the original PR for historical provenance.
+
+持久建议直接进入已有中英文实践指南、架构或[验证手册](docs/zh-CN/VALIDATION_RUNBOOKS.md)，按需同步控制、模板和测试；来源保留在正文与 REFERENCES，用户可见变化记入普通 CHANGELOG，公告格式归入已有证据校验文档。日期化研究及决策过程留在 PR／Issue，不另建周更指南、补充文档、报告系列或平行控制目录。移除重复内容前保留有效来源与决策，历史追溯使用 Git 历史及原 PR。
+
+Prefer the smallest enforceable improvement: a corrected boundary, example, evidence contract or safe allow/deny test. Prioritize actual exposure, affected configuration, active exploitation when supported, tenant-boundary failures and privileged control planes rather than CVSS or novelty alone. Do not require a vendor, new platform, CNI, beta feature or agent framework merely because it is recent. A no-change result is valid when evidence supports it.
+
+优先补齐最小可执行改进：边界、示例、证据契约或安全的允许／拒绝测试。依据实际暴露、受影响配置、有证据的在野利用、租户边界及特权控制面排序，而非只看 CVSS 或热度；不能仅因新发布就要求引入厂商、平台、CNI、Beta 功能或 Agent 框架。有依据的“无需改动”也是有效结果。
+
+Reuse an existing Issue; create one only when distinct tracking is useful. Open a focused PR, review/test the final head and recheck base/head before merging. Do not merge when required validation fails or cannot be completed; explain the remaining gate without weakening it. Never force-push or bypass branch rules. Every run reports new practices, gaps, Issue/PR links, actual tests, merged content, unmerged reasons and next watch items. Keep real assets, credentials and evidence private. A documentation change is not infrastructure remediation, and these instructions install no scheduler or background job.
 
 Distinguish vendor capabilities, single vulnerability events, draft standards and final generally applicable requirements before promoting any of them into normative text; a new normative requirement follows section 2. Follow section 5 for local validation of every research-driven change.
 
-安全研究的交付单位是经过验证的项目改进——修正现有文档、控制、工具和测试——不是一套平行的研究报告。每轮研究落地时：
-
-1. 先检查既有覆盖（目录、勘误、验证手册、指南、校验器）。能直接修正或扩展现有正文的，就直接改正文；只为剩余部分创建集中的 Issue 或 PR。
-2. 没有实质变化的一轮不产生提交，不得为了维持节奏制造内容。
-3. 记录被评审的基线 Commit 和资料截止时间。每条关键判断保留一手 URL、发布/修订日期、访问日期、受影响产品/配置和访问限制。日期冲突按原样保留，不猜测取舍。公告须用产品发布记录、变更日志或第二个一手来源交叉核验；转载不构成独立证据。
-4. 对照目录的安全域逐域比较，分别决定：可执行仓库改动、已覆盖、证据不足待跟踪或不适用。某类未确认新事件，不等于该类没有漏洞。
-5. 优先补充缺失示例、证据约定和有边界的负向检查，而不是新增平台或框架。结合真实适用性，优先处理已暴露或已被利用的路径、租户边界、信任根和控制面风险，不能仅按 CVSS 排序。
-6. 研究详情、有日期的事件数据和未采纳的替代方案保留在 PR/Issue 记录中。不得向仓库添加常设研究文件、周报摘要或更新日志；来源与历史通过 Git 历史、[`REFERENCES.md`](REFERENCES.md) 和变更记录追溯。
-7. 每轮完成后向维护者汇报来源、gap、修改、测试、合并和待跟踪事项；该运行汇报本身不作为仓库文档提交。修正仓库文档不表示任何客户环境已经修复。
+优先复用 Issue，确有独立跟踪价值才新建。通过聚焦 PR 变更，对最终 Head 审查测试，合并前复查 Base/Head；必需验证失败或无法完成时不合并，明确剩余门槛而非降低门槛。不强推、不绕过分支规则。每轮报告新增实践、缺口、Issue/PR、真实测试、已合并内容、未合并原因与后续关注点。真实资产、凭据和证据留在私有系统；文档变更不代表基础设施已修复，本流程不安装调度器或后台任务。
 
 把厂商能力、单个漏洞事件、标准草案与正式通用要求区分开，再决定是否写入规范文本；新增规范要求遵循第 2 节。每轮研究产生的改动均按第 5 节执行本地校验。
 

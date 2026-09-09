@@ -21,15 +21,17 @@
 | 分阶段交付 | [路线图](docs/zh-CN/ROADMAP.md) | [Roadmap](docs/en/ROADMAP.md) |
 | 定义证据、度量与验证 | [度量与持续证明](docs/zh-CN/METRICS_AND_ASSURANCE.md) | [Assurance](docs/en/METRICS_AND_ASSURANCE.md) |
 | 核对公开问题与执行授权验证 | [覆盖审计与验证指南](docs/zh-CN/SEMIANALYSIS_COVERAGE.md) | [SemiAnalysis coverage](docs/en/SEMIANALYSIS_COVERAGE.md) |
-| 执行十类运营验证 | [验证手册](docs/zh-CN/VALIDATION_RUNBOOKS.md) | [Validation runbooks](docs/en/VALIDATION_RUNBOOKS.md) |
-| 校验证据记录与公告处置 | [证据与公告校验](docs/EVIDENCE_VALIDATION.md) | [Evidence and advisory validation](docs/EVIDENCE_VALIDATION.md) |
+| 验证运行态、撤权、存储与遥测边界 | [验证手册](docs/zh-CN/VALIDATION_RUNBOOKS.md) | [Validation runbooks](docs/en/VALIDATION_RUNBOOKS.md) |
+| 校验证据与公告记录一致性 | [证据与公告记录校验](docs/EVIDENCE_VALIDATION.md) | [Evidence validation](docs/EVIDENCE_VALIDATION.md) |
 | 明确局限 | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) | [Scope](docs/en/SCOPE_AND_LIMITATIONS.md) |
+
+研究成果直接迭代上述文档和工具。[贡献流程](CONTRIBUTING.md#recurring-research)定义来源复核、缺口判断及先 PR 后合并，[CHANGELOG.md](CHANGELOG.md)记录普通项目变更。日期化决策与测试证据留在对应 PR／Issue，不另建平行周更文档系列；本项目不安装后台任务或调度器。
 
 ## 项目包含什么
 
 基础目录保留 90 个稳定控制 ID：T0=32、T1=31、T2=19、T3=7、T4=1。服务画像覆盖 GPU IaaS、裸金属、托管 Kubernetes、Slurm/HPC、模型训练、模型服务、Agent 和主权/受监管部署。
 
-独立的 SemiAnalysis/ClusterMAX 覆盖层包含 **40 项本项目拆分的原子映射**，以及**有日期的公开 Security 页面快照的 20/20 项映射**。映射不等于实施、执行测试、认证、背书或完整复刻专有框架。旧历史覆盖摘要有误，逐项记录实际为 **21 项明确覆盖 / 12 项部分覆盖 / 7 项缺口**，现在由校验器自动核对。证据与局限见[本次范围内审计](reviews/2026-09-05-validation-audit.md)。
+独立的 SemiAnalysis/ClusterMAX 覆盖层包含 **40 项本项目拆分的原子映射**，以及**有日期的公开 Security 页面快照的 20/20 项映射**。映射不等于实施、执行测试、认证、背书或完整复刻专有框架。逐项历史覆盖分类为 **21 项明确覆盖 / 12 项部分覆盖 / 7 项缺口**，而非此前错误摘要；证据见[范围内审计](reviews/2026-09-05-validation-audit.md)。
 
 请结合[核心控制](controls/neocloud-security-baseline.v1.json)、[规范勘误](controls/neocloud-security-baseline.v1.errata.json)、[公开问题画像](controls/semianalysis-public-findings-profile.v1.json)及[模板](templates/README.md)使用，不能导入原始目录却静默忽略适用勘误。
 
@@ -45,22 +47,22 @@ PROPOSED → READY → IMPLEMENTED → CANDIDATE_DONE → VERIFIED
 
 ## 本地校验——不依赖 Actions
 
-严格校验需要 Python 3.10+。前两项旧脚本使用标准库；新增的严格 Schema 校验显式依赖以下包。安装是独立准备步骤，不会藏在校验程序中偷偷访问网络。
+使用完整检出及 Python 3.10+。前两项旧仓库校验器使用标准库；严格 Schema 校验依赖声明的包。安装是独立准备步骤，不会隐藏在校验程序的网络操作中。
 
 ```bash
 python3 -m pip install -r requirements-validation.txt
 python3 scripts/check_local.py
 ```
 
-本地入口依次运行三项仓库校验和单元/负向测试。缺依赖或缺文件会失败，不会跳过后显示绿色；也不会探测基础设施。离线机器应通过组织批准的方式提前准备依赖包。
+本地入口运行三项仓库校验并发现单元/负向测试。缺依赖或缺文件会失败，不会跳过后显示绿色；也不会探测基础设施。离线环境应通过组织批准的流程预置依赖。Actions 额度受限期间，工作流保持仅手动触发，不得调度或重跑。
 
-在不修改源文件的情况下生成应用勘误后的目录 Bundle：
+在不修改源文件的情况下生成应用勘误后的目录：
 
 ```bash
 python3 scripts/compile_catalog.py > /tmp/neocloud-effective-catalog.json
 ```
 
-输出含 `catalog` 和 SHA-256 来源标识，不是部署安全证明。仓库 CSV 始终保留 `UNKNOWN / PROPOSED / NOT_TESTED`，真实评估应在独立私有系统中完成。
+输出含 `catalog` 和 SHA-256 来源标识，不是部署安全证明。可选离线[证据与公告校验器](docs/EVIDENCE_VALIDATION.md)只验证元数据，不证明实际修复；历史 `--as-of` 示例仅作回放，不是当前评估。仓库示例保持未验证，真实资产和证据在独立私有系统中保存。
 
 ## 治理与来源
 

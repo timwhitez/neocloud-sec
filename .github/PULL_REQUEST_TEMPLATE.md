@@ -1,6 +1,6 @@
 ## Summary
 
-Describe the problem and the outcome of this change. Avoid describing activity alone.
+Describe the problem and outcome, not activity alone. Link the existing Issue; create a new Issue only when separate tracking is useful.
 
 ## Change type
 
@@ -14,41 +14,52 @@ Describe the problem and the outcome of this change. Avoid describing activity a
 ## Scope and impact
 
 - Affected control IDs/domains:
-- Affected service profiles:
-- Affected provider/customer/shared responsibilities:
+- Affected service profiles and provider/customer/shared responsibilities:
+- Canonical documents, implementation and tests changed:
 - Compatibility or migration impact:
-- Does this change a T0 production gate? If yes, explain the security consequence and versioning decision:
+- T0 gate, control-ID, tier, schema or version impact (state unchanged where applicable):
 
 ## Evidence and sources
 
-List primary or authoritative sources, deployed-path evidence, known limitations, and the date/version checked. Mark sources as final, draft, public review, superseded, or vendor-specific where applicable.
+List primary sources with publication/revision/access dates, exact product/version/configuration, status and retrieval limitations. Distinguish final, draft, public review, superseded and vendor-specific sources. Identify corroborating primary evidence and unresolved conflicts. Separate project-authored recommendations from source requirements and deployed evidence.
+
+For recurring research, follow [CONTRIBUTING](../CONTRIBUTING.md#recurring-research) and complete this section in the PR, not in a separate weekly report:
+
+- Base commit; timezone; calendar-week boundaries; evidence cutoff:
+- New publications/revisions versus older lookback findings and future deadlines:
+- Cross-domain dispositions: actionable change / already covered / watch / out of scope, with reasons:
+- Useful gap and smallest practical fix; unnecessary complexity deliberately avoided:
+- Sources/decisions preserved when removing redundant material:
+- Next watch items and revalidation triggers:
 
 ## Verification
 
-- [ ] I ran `python3 scripts/check_local.py` from a full checkout on the exact final commit.
+- [ ] I ran `python3 scripts/check_local.py` from a complete checkout of the final candidate.
+- [ ] Relevant additional checks passed; exact commands, input scope, output and omissions are recorded below.
 - [ ] English and Chinese normative meaning remain aligned.
-- [ ] Machine-readable catalog, baseline tables, templates, metrics, references, version metadata, and changelog were updated where affected.
-- [ ] New or changed relative Markdown links resolve.
-- [ ] Claims distinguish implementation from effectiveness and deployment from independent verification.
-- [ ] T0 failures cannot be hidden by exceptions or aggregate scores.
-- [ ] High-impact automation cannot approve or verify itself.
+- [ ] Catalog, baseline tables, templates, metrics, references, versions and changelog are consistent where affected.
+- [ ] Changed relative links resolve; retired documents have no active navigation links.
+- [ ] Claims distinguish documentation, valid metadata, implementation and independent verification.
+- [ ] T0 failures cannot be hidden by exceptions or aggregate scores; high-impact automation cannot approve or verify itself.
+- [ ] No Actions dispatch/rerun, force push or branch-rule bypass occurred; commit/merge messages retain `[skip ci]` while quota is constrained.
 
-Exact tested commit, commands, output, environment and omitted checks (a partial checkout or unit-only pass is not a full-runner pass):
+Exact tested head and environment:
 
 ```text
-paste output here
+paste commands, exit codes and outputs; identify unavailable or failed checks
 ```
 
-## Independent review
+A partial checkout, historical test result or metadata PASS is not a full-suite pass or infrastructure security assessment. Leave the PR unmerged when a required gate is unavailable or fails.
 
-- Reviewer or review method:
-- Exact commit reviewed:
-- Findings and resolutions:
-- Remaining uncertainty or residual risk:
+## Review and delivery
 
-A self-review is required but is not, by itself, independent verification.
+- Reviewer or separate review method (do not imply independent assurance from self-review):
+- Exact commit reviewed; findings and resolutions:
+- Remaining uncertainty/residual risk:
+- Issue/PR status; merged changes or unmerged reasons:
+- Base/head rechecked before merge; resulting main commit verified afterward:
 
 ## Security and disclosure
 
-- [ ] This PR contains no live credentials, customer data, private evidence, exploitable production detail, or uncoordinated third-party vulnerability.
-- [ ] Any sensitive issue was handled through `SECURITY.md` rather than a public issue or PR.
+- [ ] No live credentials, customer data, private evidence, exploitable production detail or uncoordinated third-party vulnerability is included.
+- [ ] Sensitive issues follow `SECURITY.md`, not a public Issue or PR.

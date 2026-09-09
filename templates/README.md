@@ -10,7 +10,8 @@ Copy templates into a private system of record before collecting real assessment
 | [Public-findings assessment](semianalysis-public-findings-assessment.csv) | 40 project-authored mappings, with three assurance views |
 | [Public Security-page assessment](clustermax-public-security-requirements-assessment.csv) | 20 dated public-page mappings, not a rating |
 | [Evidence register](evidence-register.csv) | Provenance, scope, validity and reviewer |
-| [Advisory triage example](advisory-triage.example.json) | Optional advisory-disposition metadata format; see the [validation guide](../docs/EVIDENCE_VALIDATION.md) |
+| [Evidence-record example](evidence-record.example.csv) | Optional offline evidence metadata validation / 证据元数据示例 |
+| [Advisory-record example](advisory-triage.example.json) | Optional offline advisory disposition metadata / 公告处置元数据示例 |
 | [Shared responsibility](shared-responsibility-matrix.csv) | Explicit provider/customer duties |
 | [Risk register](risk-register.csv) | Residual risks and owners |
 | [Exception register](exception-register.csv) | Time-bounded decisions, never a fabricated PASS |
@@ -29,3 +30,7 @@ A mapped row is not proof of effectiveness. Preserve the three fields `tenant_bl
 The two public-findings templates deliberately use `UNKNOWN / PROPOSED / NOT_TESTED` and contain no real verification evidence. The strict repository checker rejects changed mappings, altered severity/title, malformed CSV rows and fabricated template PASS states. Generate operational results only in your private copy.
 
 See the [English validation guide](../docs/en/SEMIANALYSIS_COVERAGE.md) / [中文验证指南](../docs/zh-CN/SEMIANALYSIS_COVERAGE.md).
+
+Use the [evidence/advisory format and CLI guide](../docs/EVIDENCE_VALIDATION.md) for both optional examples. They check metadata only, never cloud remediation. The dated JSON is a synthetic replay fixture, not a live assessment; use the documented historical `--as-of` date rather than treating it as current evidence.
+
+两类可选示例均在已有证据校验文档中说明，只检查元数据，不证明云环境修复；带日期的 JSON 是历史回放夹具而非当前评估，按文档的历史 `--as-of` 日期执行。
