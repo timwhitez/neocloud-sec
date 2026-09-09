@@ -1,6 +1,6 @@
 # NeoCloud validation runbooks
 
-**Review date:** 2026-09-05 · **Profile:** 1.0.1 · **Core catalog:** 1.0.0-draft.1
+**Review date:** 2026-09-09 · **Profile:** 1.0.1 · **Core catalog:** 1.0.0-draft.1
 
 These are project-authored test plans, not executed infrastructure tests, vendor certifications, or SemiAnalysis scoring criteria. These ten operational runbooks complement the [public-findings profile](../../controls/semianalysis-public-findings-profile.v1.json); they do not modify its schema or claim a machine-validated per-pattern join. Use the [effective-catalog compiler](../../scripts/compile_catalog.py), including version-bound errata.
 
@@ -14,17 +14,17 @@ Every runbook needs an allowed-path control and a prohibited-path check. A denia
 
 **Arrange:** Create tenant A/B test resources, unique workload identities and approved API credentials. Export effective RBAC, admission, syncer/operator permissions, CNI and node API configuration.
 
-**Exercise:** Show A can access its own resource but cannot read, attach, mutate or impersonate B's resource. Include kubelet, host-cluster objects and service-account tokens. For vCluster, examine the host-cluster permissions of syncers and shared-node components; a virtual control plane alone does not prove node isolation. Test an interrupted allocation and expired credentials without submitting destructive workloads.
+**Exercise:** Show A can access its own resource but cannot read, attach, mutate or impersonate B's resource. Include kubelet, host-cluster objects and service-account tokens. For vCluster, examine the host-cluster permissions of syncers and shared-node components; a virtual control plane alone does not prove node isolation. Test an interrupted allocation and expired credentials without submitting destructive workloads. After revoking a previously permitted cross-namespace association or operator-granted permission, use disposable identities and harmless records to check that the operator's reconciliation removes or rotates the backend credentials it generated, and that the old disposable credential is denied at the backend (for example the datastore) while an independently authorized identity still succeeds. A Kubernetes API denial alone does not establish revocation of an existing backend credential; key-lifecycle requirements still apply to the rotated material.
 
-**Accept/evidence:** Tenant context survives every controller transition; unauthorized requests have no target-side effect; partial allocation is rolled back or quarantined. Save redacted policy exports, both request traces and actual-state reconciliation. Abort on foreign data visibility or unexpected privilege. Contain the affected path before further testing.
+**Accept/evidence:** Tenant context survives every controller transition; unauthorized requests have no target-side effect; partial allocation is rolled back or quarantined. Save redacted policy exports, both request traces and actual-state reconciliation. Redact credentials and retain only decision and request identifiers. Abort on foreign data visibility, unexpected privilege or any unexpected post-revocation access; complete containment, rotation and an independent retest before reopening the path.
 
 ## RB-02 — Runtime vulnerabilities and safe rollout
 
-**Arrange:** Inventory installed AND running toolkit, runtime, driver, firmware, kernel and orchestrator versions by asset. Associate advisories with affected configuration, vendor-supported fix/backport, compatibility and customer impact. A numerically newer version alone is not a safe-version proof.
+**Arrange:** Inventory installed AND running toolkit, runtime, driver, firmware, kernel and orchestrator versions by asset. Identify the exact managed service, OS image/build, controller and running processes rather than only a package label or image family. Associate advisories with affected configuration, vendor-supported fix/backport, compatibility and customer impact, distinguishing four propagation stages: upstream fix, distribution backport, provider image publication and actual node replacement. A numerically newer version alone is not a safe-version proof.
 
-**Exercise:** In an isolated canary, apply the approved update, restart affected components where required, verify loaded versions and run the scoped regression. Simulate a failed update and stale node inventory. Establish advisory intake and escalation; prerelease/embargo access depends on vendor eligibility and is not universally available.
+**Exercise:** In an isolated canary, apply the approved update, restart affected components where required, verify loaded versions and run the scoped regression. Record both the permitted workload's success and the reviewed denied boundary. Simulate a failed update and stale node inventory. Establish advisory intake and escalation; prerelease/embargo access depends on vendor eligibility and is not universally available. An optional offline advisory-triage register for this metadata is documented with the [evidence checkers](../EVIDENCE_VALIDATION.md).
 
-**Accept/evidence:** Vulnerable or unverified nodes cannot silently return to the healthy pool. Rollback must not restore a known exploitable configuration without isolation and an explicit nonconformance decision. Keep advisory IDs, signed package provenance where available, canary results, deployed-state evidence and retest outcome. Stop on service SLO breach or loss of recovery access.
+**Accept/evidence:** Vulnerable or unverified nodes cannot silently return to the healthy pool. Quarantine unverified capacity; provider image publication alone is not proof that any specific node was recreated or patched, and provider-only evidence stays a provider responsibility. Rollback must not restore a known exploitable configuration without isolation and an explicit nonconformance decision. Keep advisory IDs, signed package provenance where available, canary results, deployed-state evidence and retest outcome. Stop on service SLO breach or loss of recovery access.
 
 ## RB-03 — BlueField, RShim and provider recovery
 
@@ -46,21 +46,21 @@ Every runbook needs an allowed-path control and a prohibited-path check. A denia
 
 **Arrange:** Seed distinct harmless time series for A/B. Identify Grafana edition, organizations, data-source credentials and every direct backend/proxy/remote-read route. Prometheus assumes HTTP users can access its time series; labels are not authorization [S6]. Grafana Viewer access can permit arbitrary data-source queries, not just the visible dashboards [S7, S8].
 
-**Exercise:** Query outside dashboard navigation; attempt a foreign-tenant query and a forged tenant selector through each supported path. Verify whether tenant context is bound by a trusted proxy or backend rather than supplied by the caller. Confirm alert routing, retention and support access. Check edition-specific data-source permission features before relying on them.
+**Exercise:** Query outside dashboard navigation; attempt a foreign-tenant query and a forged tenant selector through each supported path. Verify whether tenant context is bound by a trusted proxy or backend rather than supplied by the caller. Confirm alert routing, retention and support access. Check edition-specific data-source permission features before relying on them. Correlate policy changes, operator reconciliation, credential lifecycle, denied backend use and storage decisions through tenant-safe correlation identifiers, and alert when a required audit source is missing; a dashboard, a metric label or a successful collector exit is not evidence of tenant authorization.
 
 **Accept/evidence:** Isolation holds at the backend credential/query boundary and cannot be bypassed by direct access or editable labels. Use separate appropriately scoped organizations/backends where needed. Record query results and effective backend grants. For GPU Operator time-slicing, record NVIDIA's DCGM-Exporter container-attribution limitation [S1]; do not invent per-container accountability from unavailable metrics. Abort on a foreign series or secret disclosure.
 
 ## RB-06 — Storage, snapshots, deletion and restore
 
-**Arrange:** Create synthetic objects, volumes and snapshots for A/B. Record CSI/controller identities, KMS ownership, immutable backup retention and contractual deletion scope.
+**Arrange:** Create synthetic objects, volumes and snapshots for A/B. Record CSI/controller identities, KMS ownership, immutable backup retention and contractual deletion scope. Review PV-creation authority, the deletion options actually enabled, CSI identity, filesystem/access-point ownership and the cloud resource policy together, preferring patched vendor software and least privilege for the controller.
 
-**Exercise:** Reject foreign attach, export and restore requests at the actual storage boundary. Restore a test backup while a primary dependency is unavailable. Check replicas, caches, snapshots, local media and retention-delayed backup deletion. A deletion request must not be described as immediate physical erasure of every retained immutable backup.
+**Exercise:** Reject foreign attach, export and restore requests at the actual storage boundary. Validate object/tenant ownership with inert unit fixtures or vendor-supported non-destructive checks; never construct destructive volume handles or delete real data. Verify that authorized storage use still succeeds after a policy change. Restore a test backup while a primary dependency is unavailable. Check replicas, caches, snapshots, local media and retention-delayed backup deletion. A deletion request must not be described as immediate physical erasure of every retained immutable backup. A driver defect is not automatically a storage-service breach; disabling an affected configuration is an applicability claim that requires evidence and revalidation.
 
 **Accept/evidence:** Recovery meets the declared integrity/isolation/RTO/RPO objectives; deletion reports identify delayed or excluded copies and their expiry. Preserve object lineage, access decisions, restore checks and key dependencies. Abort on access outside the approved synthetic set or evidence that the restore crosses tenant boundaries.
 
 ## RB-07 — Hostile artifacts and parsers
 
-**Arrange:** Use synthetic unsupported or intentionally invalid input fixtures, an isolated loader and no production credentials. Record accepted formats, deserialization permissions, artifact digests, provenance, signature policy and runtime boundaries.
+**Arrange:** Use synthetic unsupported or intentionally invalid input fixtures, an isolated loader and no production credentials. Record accepted formats, deserialization permissions, artifact digests, provenance, signature policy and runtime boundaries. For artifact admission, bind the digest to the approved signer/builder identity, the source repository and the expected build inputs; a valid signature alone is insufficient [S9].
 
 **Exercise:** Reject unapproved executable serialization and unauthorized artifact sources. Verify that a valid signature from an unapproved signer is not treated as safety. Revoke a test artifact and verify registry, deployment, renderer and cache invalidation. Keep the controls applicable to the actual format: scanning is not proof that arbitrary model code is safe.
 
@@ -70,7 +70,7 @@ Every runbook needs an allowed-path control and a prohibited-path check. A denia
 
 **Arrange:** An external authorized delegator defines the goal, tenant, resources, tools, parameters, destinations, budget, expiry and policy version. “Immutable” means the agent cannot enlarge that authorization envelope, not that a legitimate human can never approve a new stage.
 
-**Exercise:** Use benign injection text to request broader access, change approval state or treat tool/model output as authorization. Test a changed tool argument after approval, credential expiry, repeated failure, timeout and budget exhaustion. A new goal or broader scope requires a newly approved envelope, bound to the changed parameters; old approvals cannot be replayed against new actions.
+**Exercise:** Use benign injection text to request broader access, change approval state or treat tool/model output as authorization. Test a changed tool argument after approval, credential expiry, repeated failure, timeout and budget exhaustion. A new goal or broader scope requires a newly approved envelope, bound to the changed parameters; old approvals cannot be replayed against new actions. For data-accessing agents, enforce read-only and least-privilege permissions at the database or resource identity, not only in tool descriptions, prompts or SQL filtering; a tool declaration is not authorization. Exercise an unauthorized synthetic request and a harmless unsupported format, verify the allowed path still functions and the denied side effects did not occur, and record rollback/recall and the identities used.
 
 **Accept/evidence:** The resource-side decision denies unauthorized action even if the model proposes it. Record approval binding, action/result traces, stop decisions and independent post-condition checks. Budget/time/retry rules can be deterministic; semantic success and uncertainty are not guaranteed to be perfectly decidable. On ambiguity, leave the result unverified and escalate instead of allowing self-certification.
 
@@ -100,5 +100,6 @@ Every runbook needs an allowed-path control and a prohibited-path check. A denia
 - [S6 — Prometheus security model](https://prometheus.io/docs/operating/security/)
 - [S7 — Grafana security](https://grafana.com/docs/grafana/latest/setup-grafana/configure-security/)
 - [S8 — Grafana roles and permissions](https://grafana.com/docs/grafana/latest/administration/roles-and-permissions/)
+- [S9 — SLSA v1.2 verifying artifacts](https://slsa.dev/spec/v1.2/verifying-artifacts)
 
 Vendor behavior is version/edition dependent. These sources support specific mechanisms, not all recommendations in a runbook. See the [source-review record](../../reviews/2026-09-05-evidence-followup.md) for retrieval limitations and unresolved external-framework differences.

@@ -151,7 +151,8 @@ Policy Decision 应包含 Reason、Decision ID、Version、Expiry/Staleness Rule
 - Tenant Namespace/Account/Partition/Queue、Quota、Priority 与 Reservation Boundary；
 - 带 Tenant Context 的 Topology-aware Host/GPU/Fabric/Storage Placement；
 - 适用时实施 Artifact/Attestation Admission；
-- Secret 与 Workload Credential JIT 交付并在结束时撤销；
+- Secret 与 Workload Credential JIT 交付并在结束时撤销，包括 Controller/Operator 派生的凭据；
+- Network Policy 与 CNI 变更是范围化、经过兼容性核对的迁移，配对执行允许/拒绝测试，保留恢复通道和回滚路径；Kubernetes 网络策略不能替代 Fabric、DPU 或存储隔离；
 - Runtime Detection、Node Quarantine 与 Known-good Rebuild；
 - Controller、Database 与 Accounting Backup/Restore，并测试 Tenant/Integrity。
 

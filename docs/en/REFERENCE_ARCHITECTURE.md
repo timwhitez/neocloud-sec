@@ -151,7 +151,8 @@ Required patterns:
 - tenant namespace/account/partition/queue, quota, priority and reservation boundaries;
 - topology-aware host/GPU/fabric/storage placement with tenant context;
 - artifact and attestation admission where required;
-- secrets and workload credentials delivered just in time and revoked on completion;
+- secrets and workload credentials delivered just in time and revoked on completion, including credentials derived by controllers and operators;
+- network-policy and CNI changes are scoped, compatibility-checked migrations with paired allow/deny tests, preserved recovery access and a rollback path; Kubernetes network policy does not replace fabric, DPU or storage isolation;
 - runtime detection, node quarantine and known-good rebuild;
 - controller, database and accounting backup/restore with tenant and integrity tests.
 
