@@ -132,7 +132,7 @@ For legal or contractual notification duties, have the responsible owner determi
 - [S14 — Nebius audit service/action coverage](https://docs.nebius.com/audit-logs/services)
 - [S15 — AWS EFS CSI bulletin 2026-099](https://aws.amazon.com/security/security-bulletins/2026-099-aws/)
 - [S16 — SLSA v1.2 artifact verification](https://slsa.dev/spec/v1.2/verifying-artifacts)
-- [S17 — Kubernetes v1.37 rootless beta](https://kubernetes.io/blog/2026/09/04/kubernetes-v1.37-rootless-beta/)
+- [S17 — Kubernetes v1.37 rootless beta](https://kubernetes.io/blog/2026/09/04/kubernetes-v1-37-rootless-beta/)
 - [S18 — Kubernetes NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
 - [S19 — AWS postgres-mcp-server bulletin 2026-101](https://aws.amazon.com/security/security-bulletins/2026-101-aws/)
 - [S20 — European Commission CRA reporting guidance](https://digital-strategy.ec.europa.eu/en/policies/cra-reporting)
