@@ -6,7 +6,7 @@
 
 **基础版本：** `1.0.0-draft.1`  
 **公开问题画像：** `1.0.1`  
-**最近范围内复核：** 2026-09-09
+**最近范围内复核：** 2026-09-29
 
 这是文档与校验工具项目，不是可部署的安全控制平面、认证体系，也不能证明某服务商已经安全。“NeoCloud”是行业工作术语，应明确真实服务和信任边界，不能根据名称推断安全属性。
 
@@ -26,6 +26,12 @@
 | 明确局限 | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) | [Scope](docs/en/SCOPE_AND_LIMITATIONS.md) |
 
 研究成果直接迭代上述文档和工具。[贡献流程](CONTRIBUTING.md#recurring-research)定义来源复核、缺口判断及先 PR 后合并，[CHANGELOG.md](CHANGELOG.md)记录普通项目变更。日期化决策与测试证据留在对应 PR／Issue，不另建平行周更文档系列；本项目不安装后台任务或调度器。
+
+## 推理与加速器工程深化
+
+现有验证手册具体展开五类边界：[CPU 请求预算与监听器覆盖](docs/zh-CN/VALIDATION_RUNBOOKS.md#inference-resource-budgets)、[分离式 KV 租约与复用](docs/zh-CN/VALIDATION_RUNBOOKS.md#disaggregated-kv-lifecycle)、[Prefix／媒体／Offload 缓存隔离](docs/zh-CN/VALIDATION_RUNBOOKS.md#layer-specific-cache-isolation)、[GPU 内存故障与恢复](docs/zh-CN/VALIDATION_RUNBOOKS.md#gpu-memory-disturbance)，以及 [CPU–GPU–Fabric 机密计算组合边界](docs/zh-CN/VALIDATION_RUNBOOKS.md#confidential-composition)。
+
+这些是对白皮书运营模型的有来源支撑的工程扩展，包含配对允许／拒绝测试、生命周期、失败行为与证据要求。2026-09-29 的复核仅覆盖这些机制，不表示所有早期资料重新审计或服务商部署已验证；准确版本与范围见[来源索引](REFERENCES.md#inference-accelerator-sources)。核心控制 ID、层级与符合性语义保持不变。
 
 ## 项目包含什么
 

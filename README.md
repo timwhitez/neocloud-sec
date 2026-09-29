@@ -6,7 +6,7 @@ Vendor-neutral security baseline, reference architecture, roadmap and practice g
 
 **Base version:** `1.0.0-draft.1`  
 **Public-findings profile:** `1.0.1`  
-**Last scoped review:** 2026-09-09
+**Last scoped review:** 2026-09-29
 
 This is a documentation and validation project, not a deployable security control plane, certification or proof that a provider is secure. “NeoCloud” is a working industry term; define the actual service and trust boundaries rather than inferring them from a label.
 
@@ -26,6 +26,12 @@ This is a documentation and validation project, not a deployable security contro
 | Understand limits | [Scope](docs/en/SCOPE_AND_LIMITATIONS.md) | [范围与局限](docs/zh-CN/SCOPE_AND_LIMITATIONS.md) |
 
 Research improves these documents and tools in place. The [contribution process](CONTRIBUTING.md#recurring-research) defines source review, gap assessment and PR-before-merge; [CHANGELOG.md](CHANGELOG.md) records normal project changes. Dated decisions and test evidence belong in the relevant PR/Issue, not a parallel weekly-document series. No background job or scheduler is installed.
+
+## Inference and accelerator engineering depth
+
+The existing validation runbooks now make five boundaries explicit: [CPU request budgets and listener coverage](docs/en/VALIDATION_RUNBOOKS.md#inference-resource-budgets), [disaggregated KV leases and reuse](docs/en/VALIDATION_RUNBOOKS.md#disaggregated-kv-lifecycle), [prefix/media/offload cache isolation](docs/en/VALIDATION_RUNBOOKS.md#layer-specific-cache-isolation), [GPU memory faults and recovery](docs/en/VALIDATION_RUNBOOKS.md#gpu-memory-disturbance), and [CPU–GPU–fabric confidential composition](docs/en/VALIDATION_RUNBOOKS.md#confidential-composition).
+
+These are source-backed extensions of the white paper's operating model, with paired allow/deny tests, lifecycle, failure behavior and evidence requirements. The 2026-09-29 review is limited to these mechanisms; it is not a complete re-audit of older sources or a deployed-provider assessment. See the [versioned source scope](REFERENCES.md#inference-accelerator-sources). Core control IDs, tiers and conformance semantics are unchanged.
 
 ## What is included
 

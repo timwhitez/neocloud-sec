@@ -2,6 +2,14 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — inference and accelerator security engineering depth
+
+- Extend canonical bilingual RB-02 with version-aware HTTP/gRPC/plugin listener coverage, CPU/media/request budgets, bounded negative fixtures and cancellation evidence; retain actual-build patch verification.
+- Extend RB-04 with prefill/decode KV authorization, peer/allocation-generation binding, heartbeat versus authorization, in-flight fencing, cancellation, cleanup and fallback/reuse tests.
+- Extend RB-09 with layered prefix/media/offload cache isolation, scoped GPUThor/ECC/DMA/fault-recovery guidance, and CPU–GPU–fabric attestation/key-release plus end-to-end security/performance acceptance.
+- Add matching README entry points and S21–S28 primary sources. REFERENCES records the scoped 2026-09-29 access, exact research/vendor status and conflicting publication metadata without advancing older cut-offs.
+- Preserve all existing runbooks, 90 control IDs, tiers, catalog/profile versions, validators and the manual-only workflow. No new control catalog, weekly report, live probe, exploit, provider assurance result or mandatory T3 migration. Documentation changes do not complete the deployment acceptance tracked in Issues #15–19.
+
 ## Unreleased — consolidate security maintenance into canonical runbooks and tests
 
 - Move the durable runtime-patch, backend-revocation, storage-controller, agent and network-migration guidance into the existing bilingual validation runbooks (RB-01/02/04/06/07/08/10), each mapped to stable control IDs; add dashboard-write/rendering trust boundaries and per-source audit-coverage checks to RB-05, and hotpatch-reboot, image-family and rootless-state distinctions to RB-02, with dated primary references S9–S20.
