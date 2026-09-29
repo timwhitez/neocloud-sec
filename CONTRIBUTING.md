@@ -64,9 +64,9 @@ The runner executes the three repository validators and discovers unit tests, in
 
 本地入口运行三项仓库校验并发现单元测试，包含公告与文档回归；核心校验器检查必需交付物、JSON、严格的安全域/控制/等级契约、Control ID、中英文基线一致性、证据/验证/指标引用、版本一致性和相对 Markdown 链接。
 
-Discovery is not execution. The gate fails when no test is discovered, when no required test body executed, or when a required test is skipped. A test or class marked `neocloud_optional = True` may skip; that skip is reported and is not execution. Unittest exit code 0 alone is not a pass. `NOT_TESTED` and `VERIFIED` keep their evidence meaning.
+Discovery is not execution. The gate fails when no test is discovered, when no required test body executed, or when a required test is skipped. A test or class marked `neocloud_optional = True` may skip; that skip is reported and is not execution. Leaf counts do not subtract fixture-holder or subtest events. A skipped required subtest fails the gate. Unittest exit code 0 alone is not a pass. `NOT_TESTED` and `VERIFIED` keep their evidence meaning.
 
-发现测试不等于执行。没有发现测试、没有必需测试主体执行，或必需测试被跳过时，门禁失败。测试或类标为 `neocloud_optional = True` 时可以跳过；该跳过会被报告，且不是执行。仅有 unittest 退出码 0 不是通过。`NOT_TESTED` 与 `VERIFIED` 仍只表示证据含义。
+发现测试不等于执行。没有发现测试、没有必需测试主体执行，或必需测试被跳过时，门禁失败。测试或类标为 `neocloud_optional = True` 时可以跳过；该跳过会被报告，且不是执行。叶子计数不从 fixture holder 或子测试事件相减。必需子测试被跳过时，门禁失败。仅有 unittest 退出码 0 不是通过。`NOT_TESTED` 与 `VERIFIED` 仍只表示证据含义。
 
 Include the exact tested head, commands, output and omissions in the PR. The workflow is manual-dispatch only while Actions quota is constrained: do not dispatch or rerun it. Keep `[skip ci]` in commit/merge messages. A partial checkout is not a full-suite pass. Passing automation is necessary but not sufficient: reviewers must still check technical truth, source status, service applicability, bilingual meaning, and whether evidence can prove the deployed outcome.
 
