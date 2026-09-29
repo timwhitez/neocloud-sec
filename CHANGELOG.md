@@ -2,6 +2,12 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — local gate execution accounting and topic-anchor binding
+
+- Count discovered, executed, skipped, failed and errored tests from unittest's structured result inside the existing `scripts/check_local.py` entry. Fail the gate when discovery is empty, when no required test body executed, or when a required test is skipped. Optional skips require `neocloud_optional = True`, are reported, and are not execution. Do not hardcode the suite size or accept exit code 0 by itself. Keep per-step subprocesses, the 120-second limit, and timeout, start and failure handling.
+- Require one explicit anchor for each inference topic and for the white-paper topic. Bind bilingual README, white paper and runbook links to the same-language path and fragment, including same-file runbook entries. Regression fixtures reject duplicate anchors, a right fragment on the wrong existing file, a missing fragment, a same-file dead fragment, a cross-language target, and a bare keyword with the link removed. Percent-encoded and relative forms still resolve; external historical URLs stay non-local.
+- Preserve 90 control IDs, tiers, catalog and profile versions, schemas, T0 semantics and the manual-only workflow. Unexecuted GPU, RDMA, serving-runtime, TEE and KMS checks remain `NOT_TESTED`. No control is marked `VERIFIED`.
+
 ## Unreleased — inference and accelerator security engineering depth
 
 - Extend canonical bilingual RB-02 with version-aware HTTP/gRPC/plugin listener coverage, CPU/media/request budgets, bounded negative fixtures and cancellation evidence; retain actual-build patch verification.

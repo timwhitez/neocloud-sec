@@ -15,6 +15,7 @@ RETIRED = {
     "reviews/2026-09-08-weekly-security-review.md",
 }
 LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)]+)\)")
+ANCHOR_TAG = re.compile(r'<a id="([^"]+)"></a>')
 SOURCE = re.compile(r"^- \[(S\d+)\s+[^\]]+\]\((https://[^)]+)\)$", re.M)
 EXTENSION_ANCHORS = (
     "inference-resource-budgets",
@@ -28,13 +29,26 @@ EXECUTION_CLAIM = re.compile(
 )
 
 
+def anchor_counts(text: str, anchors: tuple[str, ...]) -> dict[str, int]:
+    """Count explicit anchors before any section dict can overwrite a duplicate."""
+    counts = {anchor: 0 for anchor in anchors}
+    for anchor in ANCHOR_TAG.findall(text):
+        if anchor in counts:
+            counts[anchor] += 1
+    return counts
+
+
 def anchored_sections(text: str, anchors: tuple[str, ...]) -> dict[str, str]:
     """Return the text of each named anchor through the next anchor."""
-    markers = list(re.finditer(r'<a id="([^"]+)"></a>', text))
+    counts = anchor_counts(text, anchors)
+    bad = {anchor: count for anchor, count in counts.items() if count != 1}
+    if bad:
+        raise ValueError(f"expected exactly one explicit anchor, got {bad}")
+    markers = list(ANCHOR_TAG.finditer(text))
     sections: dict[str, str] = {}
     for index, match in enumerate(markers):
         anchor = match.group(1)
-        if anchor not in anchors:
+        if anchor not in counts:
             continue
         end = markers[index + 1].start() if index + 1 < len(markers) else len(text)
         sections[anchor] = text[match.end() : end]
@@ -44,6 +58,9 @@ def anchored_sections(text: str, anchors: tuple[str, ...]) -> dict[str, str]:
 def heading_section(text: str, anchor: str) -> str:
     """Return one anchored block through the next Markdown heading."""
     marker = f'<a id="{anchor}"></a>'
+    count = text.count(marker)
+    if count != 1:
+        raise ValueError(f"{anchor} occurs {count} times")
     start = text.index(marker)
     rest = text[start:]
     match = re.search(r"\n## ", rest)
@@ -81,6 +98,106 @@ def relative_targets(text: str, document: str) -> set[str]:
         path = unquote(parsed.path)
         targets.add(posixpath.normpath(posixpath.join(posixpath.dirname(document), path)))
     return targets
+
+
+def split_markdown_destination(raw: str) -> tuple[str, str] | None:
+    """Split an inline destination into a still-encoded path and fragment.
+
+    External and protocol-relative URLs are not local navigation. Path and
+    fragment are decoded separately after ``urlsplit``.
+    """
+    target = raw.strip()
+    if not target:
+        return None
+    if target.startswith("<") and ">" in target:
+        target = target[1 : target.index(">")]
+    else:
+        target = target.split(maxsplit=1)[0]
+    if target.startswith("//"):
+        return None
+    parsed = urlsplit(target)
+    if parsed.scheme or parsed.netloc:
+        return None
+    return unquote(parsed.path), unquote(parsed.fragment)
+
+
+def normalize_repo_path(document: str, path: str) -> str:
+    if path.startswith("/"):
+        relative = path.lstrip("/")
+    elif path:
+        relative = posixpath.join(posixpath.dirname(document), path)
+    else:
+        relative = document
+    return posixpath.normpath(relative)
+
+
+def local_link_targets(text: str, document: str) -> set[tuple[str, str]]:
+    """Return normalized ``(path, fragment)`` pairs for inline local links."""
+    found = set()
+    for raw in LINK.findall(text):
+        split = split_markdown_destination(raw)
+        if split is None:
+            continue
+        path, fragment = split
+        found.add((normalize_repo_path(document, path), fragment))
+    return found
+
+
+def expected_bindings(language: str) -> tuple[tuple[str, str, str], ...]:
+    """Promised README, white paper and runbook links for one language."""
+    if language == "en":
+        readme, whitepaper, runbook = (
+            "README.md",
+            "docs/en/WHITEPAPER.md",
+            "docs/en/VALIDATION_RUNBOOKS.md",
+        )
+    elif language == "zh-CN":
+        readme, whitepaper, runbook = (
+            "README.zh-CN.md",
+            "docs/zh-CN/WHITEPAPER.md",
+            "docs/zh-CN/VALIDATION_RUNBOOKS.md",
+        )
+    else:
+        raise ValueError(language)
+    bindings = []
+    for anchor in EXTENSION_ANCHORS:
+        bindings.append((readme, runbook, anchor))
+        bindings.append((whitepaper, runbook, anchor))
+        bindings.append((runbook, runbook, anchor))
+    bindings.append((readme, whitepaper, "inference-accelerator-boundaries"))
+    return tuple(bindings)
+
+
+def binding_problems(
+    documents: dict[str, str], bindings: tuple[tuple[str, str, str], ...]
+) -> list[str]:
+    """Report a missing link or an explicit anchor that is not unique."""
+    problems = []
+    for source, target, fragment in bindings:
+        source_text = documents.get(source)
+        if source_text is None:
+            problems.append(f"missing source {source}")
+            continue
+        if (target, fragment) not in local_link_targets(source_text, source):
+            problems.append(f"{source} has no link to {target}#{fragment}")
+            continue
+        target_text = documents.get(target)
+        if target_text is None:
+            problems.append(f"missing target {target}")
+            continue
+        count = anchor_counts(target_text, (fragment,))[fragment]
+        if count != 1:
+            problems.append(f"{target}#{fragment} explicit anchor count is {count}")
+    return problems
+
+
+def one_local_link(document: str, raw_target: str) -> tuple[str, str] | None:
+    found = local_link_targets(f"[label]({raw_target})", document)
+    if not found:
+        return None
+    if len(found) != 1:
+        raise AssertionError(found)
+    return next(iter(found))
 
 
 class DocumentationIntegrationTests(unittest.TestCase):
@@ -181,20 +298,37 @@ class DocumentationIntegrationTests(unittest.TestCase):
         self.assertEqual(tiers, {"T0": 32, "T1": 31, "T2": 19, "T3": 7, "T4": 1})
         self.assertEqual(catalog["version"], (ROOT / "VERSION").read_text(encoding="utf-8").strip())
 
+    def _language_documents(self, language: str) -> dict[str, str]:
+        paths = set()
+        for source, target, _fragment in expected_bindings(language):
+            paths.add(source)
+            paths.add(target)
+        return {path: self.text(path) for path in paths}
+
     def test_inference_extension_markers_are_bilingual(self):
         for language in ("en", "zh-CN"):
             text = self.text(f"docs/{language}/VALIDATION_RUNBOOKS.md")
+            with self.subTest(language=language, check="anchors"):
+                self.assertEqual(
+                    anchor_counts(text, EXTENSION_ANCHORS),
+                    {anchor: 1 for anchor in EXTENSION_ANCHORS},
+                )
             sections = anchored_sections(text, EXTENSION_ANCHORS)
             with self.subTest(language=language):
                 self.assertEqual(set(sections), set(EXTENSION_ANCHORS))
                 for anchor, section in sections.items():
                     self.assertTrue(section_delivery_ok(section), anchor)
-            whitepaper = self.text(f"docs/{language}/WHITEPAPER.md")
+            documents = self._language_documents(language)
+            with self.subTest(language=language, check="bindings"):
+                self.assertEqual(binding_problems(documents, expected_bindings(language)), [])
+            whitepaper = documents[f"docs/{language}/WHITEPAPER.md"]
             boundary = heading_section(whitepaper, "inference-accelerator-boundaries")
+            runbook = f"docs/{language}/VALIDATION_RUNBOOKS.md"
             with self.subTest(language=language, document="whitepaper"):
                 self.assertEqual(whitepaper.count('<a id="inference-accelerator-boundaries"></a>'), 1)
+                boundary_links = local_link_targets(boundary, f"docs/{language}/WHITEPAPER.md")
                 for anchor in EXTENSION_ANCHORS:
-                    self.assertIn(f"#{anchor}", boundary)
+                    self.assertIn((runbook, anchor), boundary_links)
                 self.assertTrue(boundary_statement_ok(boundary, ANTI_EXECUTION[language]))
                 self.assertIsNone(EXECUTION_CLAIM.search(boundary))
                 self.assertIn(ARCHITECTURE_NOT_TESTED[language], whitepaper)
@@ -261,6 +395,177 @@ class DocumentationIntegrationTests(unittest.TestCase):
         self.assertTrue(section_delivery_ok(runbook))
         self.assertFalse(section_delivery_ok(runbook + "\n已完成部署验证。\n"))
         self.assertIsNone(EXECUTION_CLAIM.search(phrase))
+
+    def test_duplicate_prepended_anchor_is_not_shadowed(self):
+        text = self.text("docs/en/VALIDATION_RUNBOOKS.md")
+        mutant = (
+            '<a id="inference-resource-budgets"></a>\n'
+            "### Misleading first target\n"
+            "deployment PASS\n" + text
+        )
+        self.assertEqual(anchor_counts(mutant, EXTENSION_ANCHORS)["inference-resource-budgets"], 2)
+        self.assertIsNotNone(EXECUTION_CLAIM.search(mutant))
+        with self.assertRaises(ValueError) as caught:
+            anchored_sections(mutant, EXTENSION_ANCHORS)
+        message = str(caught.exception)
+        self.assertIn("inference-resource-budgets", message)
+        self.assertIn("2", message)
+
+    def test_duplicate_appended_anchor_is_rejected(self):
+        text = self.text("docs/zh-CN/VALIDATION_RUNBOOKS.md")
+        mutant = text + (
+            '\n<a id="confidential-composition"></a>\n'
+            "### Later copy\n"
+            "Unexecuted checks remain `NOT_TESTED`.\n"
+        )
+        self.assertEqual(anchor_counts(mutant, ("confidential-composition",))["confidential-composition"], 2)
+        with self.assertRaises(ValueError):
+            anchored_sections(mutant, EXTENSION_ANCHORS)
+
+    def test_duplicate_whitepaper_anchor_before_or_after_is_rejected(self):
+        text = self.text("docs/en/WHITEPAPER.md")
+        marker = '<a id="inference-accelerator-boundaries"></a>'
+        mutants = (
+            marker + "\n## Fake\ndeployment PASS\n" + text,
+            text + "\n" + marker + "\n## Trailing\n",
+        )
+        for mutant in mutants:
+            with self.subTest(prepend=mutant.startswith(marker)):
+                with self.assertRaises(ValueError):
+                    heading_section(mutant, "inference-accelerator-boundaries")
+
+    def test_wrong_existing_file_is_not_a_topic_binding(self):
+        documents = self._language_documents("en")
+        old = "docs/en/VALIDATION_RUNBOOKS.md#inference-resource-budgets"
+        new = "docs/en/WHITEPAPER.md#inference-resource-budgets"
+        self.assertIn(old, documents["README.md"])
+        self.assertTrue((ROOT / "docs/en/WHITEPAPER.md").is_file())
+        documents["README.md"] = documents["README.md"].replace(old, new, 1)
+        documents["docs/en/WHITEPAPER.md"] += "\ninference-resource-budgets\n"
+        problems = binding_problems(documents, expected_bindings("en"))
+        self.assertTrue(any(old in item for item in problems))
+
+    def test_missing_fragment_on_the_correct_file_fails(self):
+        documents = self._language_documents("en")
+        runbook = "docs/en/VALIDATION_RUNBOOKS.md"
+        anchor = '<a id="gpu-memory-disturbance"></a>'
+        self.assertEqual(documents[runbook].count(anchor), 1)
+        documents[runbook] = documents[runbook].replace(anchor, "", 1)
+        problems = binding_problems(documents, expected_bindings("en"))
+        self.assertTrue(any("gpu-memory-disturbance" in item and "count is 0" in item for item in problems))
+
+    def test_same_file_missing_fragment_fails(self):
+        documents = self._language_documents("en")
+        runbook = "docs/en/VALIDATION_RUNBOOKS.md"
+        self.assertEqual(documents[runbook].count("](#gpu-memory-disturbance)"), 1)
+        documents[runbook] = documents[runbook].replace(
+            "](#gpu-memory-disturbance)",
+            "](#gpu-memory-disturbance-missing)",
+            1,
+        )
+        self.assertNotIn('<a id="gpu-memory-disturbance-missing"></a>', documents[runbook])
+        problems = binding_problems(documents, expected_bindings("en"))
+        self.assertTrue(any(f"{runbook}#gpu-memory-disturbance" in item for item in problems))
+
+    def test_cross_language_topic_link_fails(self):
+        cases = (
+            (
+                "zh-CN",
+                "README.zh-CN.md",
+                "docs/zh-CN/VALIDATION_RUNBOOKS.md#",
+                "docs/en/VALIDATION_RUNBOOKS.md#",
+                "docs/zh-CN/WHITEPAPER.md#inference-accelerator-boundaries",
+                "docs/en/WHITEPAPER.md#inference-accelerator-boundaries",
+            ),
+            (
+                "en",
+                "README.md",
+                "docs/en/VALIDATION_RUNBOOKS.md#",
+                "docs/zh-CN/VALIDATION_RUNBOOKS.md#",
+                "docs/en/WHITEPAPER.md#inference-accelerator-boundaries",
+                "docs/zh-CN/WHITEPAPER.md#inference-accelerator-boundaries",
+            ),
+        )
+        for language, readme, old_prefix, new_prefix, old_whitepaper, new_whitepaper in cases:
+            with self.subTest(language=language):
+                documents = self._language_documents(language)
+                documents[readme] = (
+                    documents[readme]
+                    .replace(old_prefix, new_prefix)
+                    .replace(old_whitepaper, new_whitepaper)
+                )
+                problems = binding_problems(documents, expected_bindings(language))
+                self.assertTrue(any(old_prefix + "inference-resource-budgets" in item for item in problems))
+        documents = self._language_documents("zh-CN")
+        documents["docs/zh-CN/WHITEPAPER.md"] = documents["docs/zh-CN/WHITEPAPER.md"].replace(
+            "VALIDATION_RUNBOOKS.md#",
+            "../en/VALIDATION_RUNBOOKS.md#",
+        )
+        problems = binding_problems(documents, expected_bindings("zh-CN"))
+        self.assertTrue(any("docs/zh-CN/VALIDATION_RUNBOOKS.md#layer-specific-cache-isolation" in item for item in problems))
+
+    def test_keyword_without_navigation_link_fails(self):
+        documents = self._language_documents("en")
+        pattern = re.compile(
+            r"\[[^\]]*\]\(docs/en/VALIDATION_RUNBOOKS.md#layer-specific-cache-isolation\)"
+        )
+        self.assertIsNotNone(pattern.search(documents["README.md"]))
+        documents["README.md"] = pattern.sub("#layer-specific-cache-isolation", documents["README.md"], count=1)
+        self.assertIn("#layer-specific-cache-isolation", documents["README.md"])
+        self.assertIsNone(pattern.search(documents["README.md"]))
+        problems = binding_problems(documents, expected_bindings("en"))
+        self.assertTrue(any("layer-specific-cache-isolation" in item for item in problems))
+
+    def test_percent_encoded_and_relative_links_match_contract(self):
+        encoded = "docs/%65n/%56ALIDATION_RUNBOOKS.md#inference%2Dresource-budgets"
+        self.assertEqual(
+            one_local_link("README.md", encoded),
+            ("docs/en/VALIDATION_RUNBOOKS.md", "inference-resource-budgets"),
+        )
+        self.assertEqual(
+            one_local_link("README.md", "docs%2Fen%2FVALIDATION_RUNBOOKS.md#inference-resource-budgets"),
+            ("docs/en/VALIDATION_RUNBOOKS.md", "inference-resource-budgets"),
+        )
+        self.assertEqual(
+            one_local_link("docs/en/WHITEPAPER.md", "./VALIDATION_RUNBOOKS.md#gpu-memory-disturbance"),
+            ("docs/en/VALIDATION_RUNBOOKS.md", "gpu-memory-disturbance"),
+        )
+        self.assertEqual(
+            one_local_link(
+                "docs/en/WHITEPAPER.md",
+                "<../en/VALIDATION_RUNBOOKS.md#layer-specific-cache-isolation>",
+            ),
+            ("docs/en/VALIDATION_RUNBOOKS.md", "layer-specific-cache-isolation"),
+        )
+        self.assertEqual(
+            one_local_link(
+                "docs/en/VALIDATION_RUNBOOKS.md",
+                '#inference%2Dresource-budgets "section"',
+            ),
+            ("docs/en/VALIDATION_RUNBOOKS.md", "inference-resource-budgets"),
+        )
+        documents = {
+            "README.md": f"[budgets]({encoded})\n",
+            "docs/en/VALIDATION_RUNBOOKS.md": '<a id="inference-resource-budgets"></a>\n',
+        }
+        self.assertEqual(
+            binding_problems(
+                documents,
+                (("README.md", "docs/en/VALIDATION_RUNBOOKS.md", "inference-resource-budgets"),),
+            ),
+            [],
+        )
+
+    def test_external_history_link_is_not_a_local_topic_target(self):
+        text = (
+            "[history](https://github.com/timwhitez/neocloud-sec/blob/a64938821f1a28d1f435de56332f19a12051aad0/"
+            "docs/en/VALIDATION_RUNBOOKS.md#inference-resource-budgets) "
+            "[protocol-relative](//example.com/docs/en/VALIDATION_RUNBOOKS.md#inference-resource-budgets)"
+        )
+        self.assertEqual(local_link_targets(text, "README.md"), set())
+        documents = self._language_documents("en")
+        documents["README.md"] += "\n" + text + "\n"
+        self.assertEqual(binding_problems(documents, expected_bindings("en")), [])
 
 
 if __name__ == "__main__":

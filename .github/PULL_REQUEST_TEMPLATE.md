@@ -49,7 +49,7 @@ Exact tested head and environment:
 paste commands, exit codes and outputs; identify unavailable or failed checks
 ```
 
-A partial checkout, historical test result or metadata PASS is not a full-suite pass or infrastructure security assessment. Leave the PR unmerged when a required gate is unavailable or fails.
+A partial checkout, an empty or fully skipped test discovery, a historical test result or metadata PASS is not a full-suite pass or infrastructure security assessment. Leave the PR unmerged when a required gate is unavailable or fails.
 
 ## Review and delivery
 
