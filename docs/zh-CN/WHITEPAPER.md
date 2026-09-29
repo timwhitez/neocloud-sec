@@ -92,6 +92,17 @@ Agent 可以读取数据、执行代码、调用基础设施或业务工具、�
 
 欺诈准入、Credential 转售、挖矿、禁止用途、Quota Bypass、Queue Manipulation、Capacity Hoarding、Model Extraction、Denial of Wallet、DDoS、依赖失效和破坏性自动化会同时影响安全、客户、商业和法律风险。因此，Tenant Trust、AUP、Quota/Rate/Cost/Concurrency、Egress、Capacity Engineering、公平执行、Incident Response 与 Appeal 都属于安全基线。
 
+<a id="inference-accelerator-boundaries"></a>
+### 2.8 推理缓存、请求成本、KV 复用与机密计算组合
+
+GPU Token 配额、Prefix Salt、ECC 计数或单份证明报告，都不能单独闭合共享模型服务的边界。以下陈述扩展上文的运营模型。成对测试和证据要求留在[验证手册](VALIDATION_RUNBOOKS.md#inference-resource-budgets)。本白皮书不记录部署结果。尚未在声明资产上执行的 GPU、RDMA、推理运行时和 TEE／KMS 检查保持 `NOT_TESTED`；仓库正文不是 PASS，也不是 `VERIFIED`。每个适用的 T0 控制仍须独立验证。T3 不是每项服务的强制等级。
+
+- **监听器与 CPU 成本。** 导出实际运行的 HTTP、gRPC、插件、健康检查、管理和内部路由。某一路径前缀上的 API Key 不保护其他入口。在昂贵的 Engine 工作之前限制字节数、Salt 长度、媒体解码、序列化、序列数量、上下文、并发、队列等待和重试，已认证调用者同样受限。使用小型边界夹具，不使用公告中的超大载荷。取消必须释放预留。某一公告的修复版本范围不是永久安全底线。见[推理资源预算](VALIDATION_RUNBOOKS.md#inference-resource-budgets)。
+- **逐层缓存。** 可信边界按授权共享域注入固定长度、不可预测的 Salt，拒绝调用者自带 Salt，并阻断直达 Worker。在已记录的 vLLM 行为中，调用者提供的多模态 UUID 可以选定 Processor、Encoder 和 Prefix Block 的缓存身份。Salt 隔离 Prefix 复用，本身不隔离 Processor 或 Encoder 缓存。内容哈希或可信对象映射解决 UUID 替换，不是所有时序侧信道的证明。Salt 轮换阻止旧命名空间复用，不擦除仍保留的副本。见[逐层缓存隔离](VALIDATION_RUNBOOKS.md#layer-specific-cache-isolation)。
+- **分离式 KV。** 请求授权、租约／元数据控制，以及 GPU、CPU、RDMA、TCP 或 Offload 上的大块传输是不同路径。Engine 标识、地址、rkey 或调用者传输参数不是授权。Heartbeat 可以表示存活，不延长授权；迟到的 Heartbeat 或完成通知不能复活终态分配。无法证明 Fencing 或清理时，隔离该分配，不复用旧地址。见[分离式 KV 生命周期](VALIDATION_RUNBOOKS.md#disaggregated-kv-lifecycle)。
+- **GPU 内存故障。** ECC 仍然有用，但不是充分边界。GPUThor §6 在四张 GDDR6 卡上的测量使用 ECC disabled；§7 只在本地 RTX A6000 上启用 ECC。这不是每张被点名显卡的 ECC-enabled 利用证明，也不是关于 H100、HBM3、Blackwell 或 GDDR7 的证据。计数器安静不证明没有静默损坏。检查点能够续跑不等于模型可信。合成告警演练只验证响应逻辑。见[GPU 内存扰动](VALIDATION_RUNBOOKS.md#gpu-memory-disturbance)。
+- **机密计算组合。** 当所选画像或合同要求证明时，把新鲜证据绑定到租户、工作负载、获批 GPU 集合与模式、制品策略、密钥用途和实际接收者。CPU 与 GPU 分别 PASS 并不形成该绑定，也不覆盖未被测量的宿主 Fabric Manager 或 NVSwitch 路由表。证据缺失、接收者错误或 Verifier 故障不得释放密钥，也不得回退到未受保护的 Worker。撤销未来释放并不擦除已经释放的密钥。在保持必需保护开启时测量端到端时延。GPU 本地矩阵结果不是服务性能。见[机密计算组合边界](VALIDATION_RUNBOOKS.md#confidential-composition)。
+
 ## 3. 资产、信任根与威胁主体
 
 完整清单应覆盖：
@@ -165,6 +176,8 @@ Agent 可以读取数据、执行代码、调用基础设施或业务工具、�
 7. **遥测、响应与恢复：** 必需 Log/Trace、Inventory/Reconciliation、Detection、Case、Protected Evidence、Revocation、Containment、Backup、Restore 与 Known-good Rebuild。
 
 Policy Enforcement 应靠近受保护资源；中央 Decision 或 Evidence Service 故障时不能形成静默 Fail-open。稳定 ID 应关联 Subject、Delegation、Tenant、Request、Policy Version、Desired/Actual State、Workload/Job、Host/GPU/Fabric/Storage Assignment、Data/Model Access、Result、Cleanup 与 Evidence。
+
+分离式推理把同一规则具体化。请求授权、KV 租约或元数据控制，以及跨越 GPU、CPU、RDMA、TCP 或 Offload 的大块传输是不同路径。API TLS 不保护它没有终结的路径。Heartbeat 或完成通知不证明在途访问已经停止，也不证明旧分配可以复用。服务声称机密执行时，必须把已测量的 CPU 状态、已测量的 GPU 状态、Fabric 控制组件和密钥接收者绑定在一起。证据之外的组件必须显式披露。[验证手册](VALIDATION_RUNBOOKS.md#disaggregated-kv-lifecycle)将未执行的检查保持为 `NOT_TESTED`。
 
 任何组件都不能只凭自己的 Dashboard 证明自己有效。关键证据应导出到普通源系统管理员无法静默修改的边界，同时实施 Tenant Partitioning、Minimization、Privacy、Retention、Legal Hold、Time Integrity 与 Access Audit。
 

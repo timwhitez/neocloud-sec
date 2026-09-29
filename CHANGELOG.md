@@ -2,6 +2,15 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — inference and accelerator security engineering depth
+
+- Extend canonical bilingual RB-02 with version-aware HTTP/gRPC/plugin listener coverage, CPU/media/request budgets, bounded negative fixtures and cancellation evidence; retain actual-build patch verification.
+- Extend RB-04 with prefill/decode KV authorization, peer/allocation-generation binding, heartbeat versus authorization, in-flight fencing, cancellation, cleanup and fallback/reuse tests.
+- Extend RB-09 with layered prefix/media/offload cache isolation, scoped GPUThor/ECC/DMA/fault-recovery guidance, and CPU–GPU–fabric attestation/key-release plus end-to-end security/performance acceptance.
+- State the same five boundaries in bilingual white-paper §2.8 and in the reference-architecture section, without copying the runbook procedures or adding controls.
+- Add README entry points and primary sources S21–S30. The 2026-09-29 register records stable vLLM UUID/salt behavior, the GPUThor §6.1/§7.1 ECC split and the §9 HBM3/e–GDDR7 visibility limit re-read from the author PDF, NVIDIA guide cover-versus-history dates, and the Serialized Bridge fabric-attestation limit. Older curation cut-offs are not advanced. NVIDIA notice 5873 revision history was not re-rendered after HTTP 403.
+- Add documentation regression tests for the new anchors, per-section `NOT_TESTED` markers, S21–S30 URL parity and negative fixtures for a missing marker or an execution claim. Preserve 90 control IDs, tiers, catalog/profile versions, validators and the manual-only workflow. No new control catalog, weekly report, live probe, exploit, provider assurance result or mandatory T3 migration. Unexecuted GPU, RDMA, serving-runtime and TEE/KMS checks remain `NOT_TESTED`.
+
 ## Unreleased — consolidate security maintenance into canonical runbooks and tests
 
 - Move the durable runtime-patch, backend-revocation, storage-controller, agent and network-migration guidance into the existing bilingual validation runbooks (RB-01/02/04/06/07/08/10), each mapped to stable control IDs; add dashboard-write/rendering trust boundaries and per-source audit-coverage checks to RB-05, and hotpatch-reboot, image-family and rootless-state distinctions to RB-02, with dated primary references S9–S20.

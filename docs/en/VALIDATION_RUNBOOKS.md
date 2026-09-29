@@ -4,6 +4,16 @@
 
 These are project-authored test plans, not executed infrastructure tests, vendor certifications, or SemiAnalysis scoring criteria. These ten operational runbooks complement the [public-findings profile](../../controls/semianalysis-public-findings-profile.v1.json); they do not modify its schema or claim a machine-validated per-pattern join. Use the [effective-catalog compiler](../../scripts/compile_catalog.py), including version-bound errata.
 
+**Technical-extension review:** 2026-09-29, limited to inference entry points, KV transport/cache lifecycle, GPU memory faults and confidential-computing composition below. Earlier source cut-offs remain unchanged. These are deeper applications of existing controls, not additional controls or executed security tests. Use the [scoped source register](../../REFERENCES.md#inference-accelerator-sources) for publication status and applicability.
+
+| Engineering question | Existing runbook section |
+|---|---|
+| Can an authenticated request exhaust CPU work before GPU token limits apply? | [Inference entry points and resource budgets](#inference-resource-budgets) |
+| Can a cancelled decode retain or regain access to reused KV memory? | [Disaggregated KV lifecycle](#disaggregated-kv-lifecycle) |
+| Does prefix isolation also cover media, encoder and offload caches? | [Layer-specific cache isolation](#layer-specific-cache-isolation) |
+| What remains unsafe when ECC is enabled or counters are quiet? | [Memory disturbance and recovery](#gpu-memory-disturbance) |
+| Which CPU, GPU and fabric state actually governs key release? | [Confidential composition](#confidential-composition) |
+
 ## Test authorization and evidence contract
 
 Before testing, record service, region, cluster, SKU, tenant IDs, exact running versions, approved targets/actions, test window, operator, independent reviewer, recovery owner and abort criteria. Use two synthetic tenants with distinct harmless markers. Test only explicitly authorized resources. Do not copy real tenant data, management keys, raw GPU memory or confidential vendor advisories into this repository.
@@ -32,6 +42,15 @@ Treat a rootless feature gate, a configured user namespace and an actually rootl
 
 **Accept/evidence:** Vulnerable or unverified nodes cannot silently return to the healthy pool. Quarantine unverified capacity; provider image publication alone is not proof that any specific node was recreated or patched, and provider-only evidence stays a provider responsibility. Rollback must not restore a known exploitable configuration without isolation and an explicit nonconformance decision. Keep advisory IDs, signed package provenance where available, canary results, deployed-state evidence and retest outcome. Stop on service SLO breach or loss of recovery access.
 
+<a id="inference-resource-budgets"></a>
+### Inference entry points and resource budgets
+
+**Scope:** NCS-API-01, NCS-API-02, NCS-API-03, NCS-API-05, NCS-ORC-03 and NCS-VEM-02. Apply to the actual serving release, listeners and enabled plugins. The upstream vLLM advisory [S22] illustrates CPU-side scheduler exhaustion; a GPU token quota is not a complete request-cost boundary. Its patch range is advisory-specific, not a permanent safe-version floor. HTTP API-key coverage does not establish protection of separately enabled gRPC, internal workers or plugin routes [S21].
+
+**Design:** Export the running listener/route inventory: address, port, protocol, path/method, plugin origin, authentication, authorization and resource cost. Cover management, health/metrics, model/adapter operations and internal endpoints as well as public inference. Default-deny at the trusted ingress and prevent worker bypass. Enforce an overall byte limit before parsing, then bounded fields, media decoding, serialization/hashing, sequence counts, context/output, concurrency, queue length/age and retries before expensive engine work. Inject a fixed-length secret cache salt at the authorized boundary rather than accepting an unbounded caller value. Authentication does not exempt a tenant from limits. Cancellation and timeout must release reservations; retries cannot multiply an exhausted budget.
+
+**Exercise/evidence:** Use small `limit-1`, `limit`, `limit+1` fixtures, not the advisory's large-request or concurrent exhaustion payloads. Pair an allowed request with wrong-identity/tenant and gateway-bypass checks for each enabled listener/route. Verify rejected work does not enter expensive engine processing, and cancellation returns CPU/GPU/queue reservations. Record actual build, effective limits, decision/engine traces, bounded resource use and the legitimate workload's p95/p99 time to first token (TTFT). Missing listener coverage remains unverified. Stop at the approved resource/SLO threshold; filtering supplements rather than replaces the vendor fix. Revalidate when routes, plugins, engines or gateways change. Unexecuted checks for this section remain `NOT_TESTED`.
+
 <a id="rb-03"></a>
 ## RB-03 — BlueField, RShim and provider recovery
 
@@ -51,6 +70,31 @@ Treat a rootless feature gate, a configured user namespace and an actually rootl
 For CNI or provider-network migrations, inventory OS/CNI compatibility, DNS, service and storage dependencies before default-deny rollout. Pair allowed workload traffic with denied cross-tenant paths and preserve independent OOB access. A provider retirement is a scoped migration trigger, not a reason to standardize every cloud on one CNI. Kubernetes NetworkPolicy does not replace fabric, DPU or storage isolation [S18]; keep RB-03, RB-06 and RB-09.
 
 **Accept/evidence:** No unauthorized management or cross-tenant traffic succeeds; authorized control traffic survives policy changes. Capture topology, redacted effective configuration, path results and rollback/recovery. Abort on fabric instability, unexpected reachability or loss of management quorum.
+
+<a id="disaggregated-kv-lifecycle"></a>
+### Disaggregated KV transport, leases and reuse
+
+**Scope:** NCS-NET-02, NCS-NET-03, NCS-DAT-02, NCS-DAT-04, NCS-CMP-02, NCS-ORC-03 and NCS-IAM-04. Separate request/routing authorization, KV metadata/notification/lease traffic, and bulk GPU/CPU/RDMA/TCP/offload transfer. Public API TLS and a service mesh do not prove protection of a direct-memory path. Inspect the actual backend and fallback; do not generalize one vLLM deployment's internal-network assumptions [S21] to every NIXL backend.
+
+**Design:** Bind the authorized sharing domain, request, model/adapter version, source/destination peer, allocation generation, buffer bounds, expiry and retention budget in trusted state. An engine ID, address, rkey or caller-provided transfer parameter is not business authorization. Use supported peer/network/backend enforcement, not an invented transport protocol. The upstream NIXL connector lease design [S23] uses heartbeats to keep prefill blocks alive for decode; liveness is not permission to extend authorization indefinitely. Backend behavior follows the pinned NIXL release [S30], not the development note alone.
+
+```text
+allocate/register → authorize → transfer/pin
+→ complete/cancel/expire → stop renewal → drain/fence in-flight access
+→ revoke/deregister or isolate → required cleanup → new-generation reuse
+```
+
+A timeout or completion notification alone does not establish that in-flight DMA has stopped. Terminal allocations cannot be resurrected by late heartbeats/completions. If supported fencing, revocation or cleanup cannot be established, quarantine the affected allocation/worker/device instead of reusing an address optimistically.
+
+| Authorized lab case | Required paired observation |
+|---|---|
+| Legitimate prefill/decode | Correct request/model data and bounded retention |
+| Wrong domain, peer or generation | Denial at metadata and actual bulk-access boundaries |
+| Decode crash, partition or long queue | Bounded retention; distinguish healthy queueing from loss of liveness |
+| Cancel/expiry followed by late heartbeat/completion | No restored authority or reuse of the old allocation |
+| Worker restart, address reuse or RDMA-to-TCP fallback | Recheck identity/generation and preserve the declared protection |
+
+**Evidence/abort:** Use harmless markers only. Correlate allocation/request lineage, actual backend, peer decisions, terminal events, drain/fencing, cleanup and reassignment; measure retained bytes, reclaim delay and normal-workload latency. Do not log real rkeys, KV contents, token IDs or salts. An unverified revocation is not PASS. Stop on cross-domain access or unstable fabric; contain before further tests. Use supported recovery and independent retesting. This runbook neither reports a NIXL vulnerability nor requires production RDMA exploitation. Unexecuted checks for this section remain `NOT_TESTED`.
 
 <a id="rb-05"></a>
 ## RB-05 — Prometheus, Grafana and telemetry
@@ -103,6 +147,46 @@ For NCS-AIR-03, review the inherited role memberships and executable functions b
 
 **Accept/evidence:** Claims are backed by vendor-supported behavior and deployed-path evidence. Quarantine when reset/cleanup is inconclusive; dedication to a new tenant does not itself erase old data. Record reset scope, fault domain, remaining shared resources and attribution limits. Stop immediately on a cross-tenant marker or hardware error.
 
+<a id="layer-specific-cache-isolation"></a>
+### Layer-specific cache isolation
+
+**Scope:** NCS-DAT-02, NCS-DAT-04, NCS-DAT-05, NCS-CMP-02, NCS-CMP-05, NCS-API-01 and NCS-TEL-01. In the stable vLLM security behavior checked on 2026-09-29 [S21], optional `cache_salt` is mixed into the first prefix-block hash. A caller-supplied multimodal UUID can select the processor cache, the encoder cache and prefix-block identity; salt does not by itself isolate the processor or encoder caches. The prefix-caching design [S29] describes that hash shape. Prefix salting alone is not proof of media-cache isolation.
+
+| Layer | Project implementation decision | Harmless negative test |
+|---|---|---|
+| Prefix KV | Trusted ingress injects a fixed-length unpredictable secret per authorized sharing domain; reject/override caller salt and block worker bypass | A's authorized repeat can reuse; B cannot select A's domain |
+| Media processor / encoder | Remove untrusted UUID overrides and use content hashing; where UUIDs are required, trusted mapping checks authorized object and content consistency | A/B submit the same UUID with different synthetic media; verify each layer independently |
+| CPU RAM / NVMe / remote offload | Bind namespace, object ACL, peer and allocation epoch; disable that layer or separate workers if it cannot be partitioned | Old-domain, wrong-epoch and restore/restart requests cannot recover another domain's cache |
+| Index / events / telemetry | Authenticate publishers/readers and minimize fields; labels do not authorize | Unauthorized readers cannot obtain cache objects, media, token IDs or secret salts |
+
+Public tenant IDs are not secret salts. An authorized sharing domain may be finer than a tenant; cross-user sharing within an organization requires a decision, not an assumption. Content hashing addresses UUID substitution, not every timing side channel. Salt rotation prevents reuse of an old namespace but does not erase old data. Apply RB-06 to replicas, snapshots and retained copies; enforce lifecycle on model/adapter changes, revocation, cancellation, crashes and tenant exit.
+
+**Evidence:** Use trusted hit/block-ownership observations alongside correct outputs; one TTFT sample cannot prove isolation. Pair privacy tests with hit rate, throughput and p50/p95/p99 TTFT under the declared sharing policy. Record cleanup, remaining copies/retention and the independent observer. Stop on a foreign marker, isolate the affected layer and independently retest. Do not represent separate salts as a whole-stack ACL or add a bespoke cache service just for this assurance exercise. Unexecuted checks for this section remain `NOT_TESTED`.
+
+<a id="gpu-memory-disturbance"></a>
+### GPU memory disturbance, ECC and trustworthy recovery
+
+**Scope:** NCS-CMP-01, NCS-CMP-02, NCS-CMP-03, NCS-CMP-05, NCS-ASM-01, NCS-VEM-03, NCS-TEL-01 and NCS-TEL-03. GPUThor [S24] and NVIDIA's updated guidance [S25] motivate defense in depth, not removal of ECC. The author PDF re-read on 2026-09-29 states that every §6 experiment on the RTX A4000, A4500, A5000 and A6000 used ECC disabled. §6.1 and §7.1 state that ECC is enabled only on the local RTX A6000 because the other three were cloud GPUs without permission to enable ECC. Do not rewrite that as an ECC-enabled exploit proof for all four cards. Neither extrapolate those results to H100/HBM3/Blackwell nor interpret no observed flips on another tested memory type as immunity. §9 states that HBM3/e and GDDR7 on-die ECC reduces error visibility, that those platforms were left to future work, and that reduced visibility is not immunity.
+
+**Design:** Inventory the exact GPU/DRAM, firmware/driver, host/hypervisor, current versus pending SYS-ECC mode, applicable on-die ECC, effective DMA/IOMMU boundary, sharing, fault and reset domains. A boot flag, default setting or IOMMU-group listing alone is not a complete deployed isolation proof. Preserve supported ECC and DMA isolation together with tenant placement and host controls; verify GPUDirect/P2P and confidential-mode compatibility rather than applying generic boot changes. Host DMA isolation does not prove GPU-local data integrity or NVLink isolation.
+
+**Exercise/evidence:** With synthetic telemetry, exercise corrected/uncorrectable-error, row-remap, reset and missing-source events through alerting, placement freeze, quarantine and approved reopening. Correlate supported read-only device state and permitted workload/recovery results in a maintenance lab. Synthetic events validate the response logic, not resistance to physical disturbance. Error spikes can reflect hardware faults; quiet counters do not rule out silent corruption. Do not add hammer kernels, privilege-escalation payloads or deliberate hardware-damage tests.
+
+**Recovery:** Stop new placement into an uncertain fault domain, preserve redacted evidence and use vendor-supported reset/rebuild/replacement. Quarantine models/checkpoints produced in the suspect interval until integrity and trusted recovery sources are evaluated; successful job resumption alone is insufficient. Independently revalidate identity, device state, DMA/tenant boundaries and data integrity before reopening. Hardware/DRAM changes, firmware/driver changes, sharing changes and unexpected resets invalidate affected evidence. Unexecuted checks for this section remain `NOT_TESTED`.
+
+<a id="confidential-composition"></a>
+### CPU–GPU–fabric confidential composition
+
+**Scope:** NCS-CMP-04, NCS-CMP-05, NCS-IAM-03 and NCS-KMS-04, for services whose selected profile or contract requires attested/confidential operation. This does not make T3 mandatory for every service or weaken any T0. NVIDIA's deployment and operations guides [S26, S27] are platform/version-specific. The preprint [S28] identifies an attestation-coverage limitation in its tested Fabric Manager/NVSwitch stack, not a universal vulnerability or proof that future stacks have the same boundary.
+
+**Design:** Declare CPU TEE/firmware, CVM, exact GPU set/partitions, VBIOS/driver, CC/PPCIe mode, interconnect topology, Fabric Manager location, verifier/reference-values version and customer key owner. Separate cryptographically measured/verified state from provider assertions, independent path tests and remaining trusted management components. CPU and GPU reports that separately pass do not automatically bind to the same workload, peer or key recipient. Reuse supported verifiers, KMS and policy systems rather than designing new attestation cryptography.
+
+The key-release policy must bind fresh authenticated evidence to the tenant/workload, approved GPU set and mode, artifact policy, intended key purpose and actual trusted recipient using the supported protocol. Document and test its challenge, recipient/channel binding, reference-value and revocation semantics; do not claim a binding that the deployment lacks. Missing GPUs, stale/replayed evidence, unknown/revoked reference values, wrong recipients, unapproved devtools/unprotected modes or verifier outage must not silently release keys or fall back to plaintext workers. Revoking future release does not erase previously released keys: contain, expire/rotate and clean up that material separately.
+
+**Exercise/evidence:** Pair a legitimate run with synthetic verifier fixtures for replay, wrong tenant/recipient, omitted GPU, mode downgrade and dependency loss. Fixtures only test policy logic; real CPU/GPU evidence and resource-side key-release/denial require a supported deployment and an independent observer. After reset, GPU replacement, topology/mode/driver/firmware or reference/policy changes, refresh the affected evidence and sessions. Disclose uncovered host Fabric Manager/NVSwitch routing assumptions instead of hiding them behind a GPU token.
+
+**Security/performance acceptance:** Keep required protection enabled while measuring the full prefill/decode, collective, CPU↔GPU copy, KV offload/restore and checkpoint path, including any remote transport under RB-04. Match hardware, model, precision, context, concurrency and topology; report throughput, p50/p95/p99 TTFT, time per output token and recovery cost. A GPU-local matrix benchmark does not establish end-to-end confidential-serving performance [S28]. No universal loss percentage or experimental tuning flag is prescribed. Record exact scope and redacted policy decisions, never customer secrets or raw tenant evidence in this repository; unavailable hardware/verification stays `NOT_TESTED` or `INCONCLUSIVE`. Unexecuted checks for this section remain `NOT_TESTED`.
+
 <a id="rb-10"></a>
 ## RB-10 — Independent assurance and source changes
 
@@ -136,5 +220,18 @@ For legal or contractual notification duties, have the responsible owner determi
 - [S18 — Kubernetes NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
 - [S19 — AWS postgres-mcp-server bulletin 2026-101](https://aws.amazon.com/security/security-bulletins/2026-101-aws/)
 - [S20 — European Commission CRA reporting guidance](https://digital-strategy.ec.europa.eu/en/policies/cra-reporting)
+
+- [S21 — vLLM security / 安全指南](https://docs.vllm.ai/en/stable/usage/security/)
+- [S22 — vLLM GHSA-wpww-v874-ph2p](https://github.com/vllm-project/vllm/security/advisories/GHSA-wpww-v874-ph2p)
+- [S23 — vLLM NIXL KV cache lease design](https://docs.vllm.ai/en/latest/design/nixl_kv_cache_lease/)
+- [S24 — GPUThor author paper / 作者论文](https://gururaj-s.github.io/assets/pdf/CCS26_GPUThor.pdf)
+- [S25 — NVIDIA Rowhammer notice 5873](https://nvidia.custhelp.com/app/answers/detail/a_id/5873)
+- [S26 — NVIDIA CC deployment guide](https://docs.nvidia.com/cc-deployment-guide-tdx-snp.pdf)
+- [S27 — NVIDIA Secure AI operations guide](https://docs.nvidia.com/nvidia-secure-ai-operations-guide.pdf)
+- [S28 — The Serialized Bridge, arXiv:2606.23969v2](https://arxiv.org/html/2606.23969v2)
+- [S29 — vLLM automatic prefix caching](https://docs.vllm.ai/en/stable/design/prefix_caching/)
+- [S30 — NIXL project](https://github.com/ai-dynamo/nixl)
+
+S21–S30 were accessed on 2026-09-29. The [scoped register](../../REFERENCES.md#inference-accelerator-sources) distinguishes living/development documentation, advisory dates, vendor-guide editions and research status. Earlier entries retain their original review scope.
 
 Vendor behavior is version/edition dependent. These sources support specific mechanisms, not all recommendations in a runbook. See the [source-review record](../../reviews/2026-09-05-evidence-followup.md) for retrieval limitations and unresolved external-framework differences.
