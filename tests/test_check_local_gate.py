@@ -721,6 +721,167 @@ class LocalGateTests(unittest.TestCase):
         self.assertNotIn("executed=-", combined)
         self.assertNotIn("PASS:", combined)
 
+    def test_leaf_skip_after_subtest_stays_one_skip(self):
+        source = PASSING_TEST + textwrap.dedent(
+            """\
+            class Optional(unittest.TestCase):
+                neocloud_optional = True
+                def test_partial(self):
+                    with self.subTest(n=0):
+                        self.assertTrue(True)
+                    self.skipTest("synthetic optional skip after subtest")
+            """
+        )
+        code, out, err = self.gate_on(source)
+        combined = out + err
+        self.assertEqual(code, 0, combined)
+        self.assertIn("discovered=2 executed=1 skipped=1", out)
+        self.assertIn("required_skipped=0 optional_skipped=1", out)
+        self.assertIn("required_executed=1", out)
+        self.assertIn("SKIP optional:", out)
+        self.assertIn("NOTE: optional tests were skipped; not all discovered tests executed.", out)
+        self.assertNotIn("unittest result is inconsistent", combined)
+        self.assertNotIn("executed=-", combined)
+
+        code, out, err = self.gate_on(PASSING_TEST + textwrap.dedent(
+            """\
+            class Needed(unittest.TestCase):
+                def test_partial(self):
+                    with self.subTest(n=0):
+                        self.assertTrue(True)
+                    self.skipTest("synthetic required skip after subtest")
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=2 executed=1 skipped=1", out)
+        self.assertIn("required_skipped=1", out)
+        self.assertIn("required test skipped", combined)
+        self.assertNotIn("unittest result is inconsistent", combined)
+        self.assertNotIn("PASS:", combined)
+
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                def test_partial(self):
+                    with self.subTest(n=0):
+                        self.fail("synthetic subtest failure")
+                    self.skipTest("synthetic skip after subtest failure")
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=1 executed=0 skipped=1", out)
+        self.assertIn("failures=1", out)
+        self.assertIn("unittest failures or errors", combined)
+        self.assertNotIn("unittest result is inconsistent", combined)
+        self.assertNotIn("PASS:", combined)
+
+    def test_setup_failure_stays_not_run_when_later_events_fire(self):
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                def setUp(self):
+                    def boom():
+                        raise RuntimeError("synthetic cleanup error")
+                    self.addCleanup(boom)
+                    raise RuntimeError("synthetic setup error")
+                def test_one(self):
+                    self.assertTrue(True)
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=1 executed=0 skipped=0", out)
+        self.assertIn("not_run=1", out)
+        self.assertIn("errors=2", out)
+        self.assertIn("required_executed=0", out)
+        self.assertIn("unittest failures or errors", combined)
+        self.assertNotIn("unittest result is inconsistent", combined)
+        self.assertNotIn("PASS:", combined)
+
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                def setUp(self):
+                    with self.subTest(n=0):
+                        self.assertTrue(True)
+                    raise RuntimeError("synthetic setup error")
+                def test_one(self):
+                    self.assertTrue(True)
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=1 executed=0 skipped=0", out)
+        self.assertIn("not_run=1", out)
+        self.assertIn("errors=1", out)
+        self.assertIn("required_executed=0", out)
+        self.assertNotIn("unittest result is inconsistent", combined)
+        self.assertNotIn("PASS:", combined)
+
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                def setUp(self):
+                    with self.subTest(n=0):
+                        self.fail("synthetic setup subtest failure")
+                def test_one(self):
+                    self.assertTrue(True)
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=1 executed=0 skipped=0", out)
+        self.assertIn("not_run=1", out)
+        self.assertIn("failures=1", out)
+        self.assertIn("required_executed=0", out)
+        self.assertIn("unittest failures or errors", combined)
+        self.assertNotIn("unittest result is inconsistent", combined)
+        self.assertNotIn("PASS:", combined)
+
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                def setUp(self):
+                    self.assertTrue(False)
+                def test_one(self):
+                    self.assertTrue(True)
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=1 executed=0 skipped=0", out)
+        self.assertIn("not_run=1", out)
+        self.assertIn("failures=1", out)
+        self.assertIn("required_executed=0", out)
+        self.assertNotIn("PASS:", combined)
+
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                def test_one(self):
+                    def boom():
+                        raise RuntimeError("synthetic cleanup error")
+                    self.addCleanup(boom)
+                    self.assertTrue(True)
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=1 executed=1 skipped=0", out)
+        self.assertIn("not_run=0", out)
+        self.assertIn("errors=1", out)
+        self.assertIn("required_executed=1", out)
+        self.assertIn("unittest failures or errors", combined)
+        self.assertNotIn("PASS:", combined)
+
     def gate_files(self, files: dict[str, str], codes: dict[str, int] | None = None):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

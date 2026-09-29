@@ -92,11 +92,15 @@ def _frame_names(err) -> set[str]:
 
 
 def _error_is_before_body(err) -> bool:
-    """True when setUp failed and the test method was not entered."""
+    """True when setUp failed and the test method was not entered.
+
+    A subtest failure inside setUp is caught before ``_callSetUp`` appears
+    on that traceback, so the ``setUp`` frame is the marker in that case.
+    """
     names = _frame_names(err)
     if "_callTestMethod" in names or "_callTearDown" in names or "_callCleanup" in names:
         return False
-    return "_callSetUp" in names
+    return "_callSetUp" in names or "setUp" in names
 
 
 class RecordingResult(unittest.TextTestResult):
@@ -143,7 +147,11 @@ class RecordingResult(unittest.TextTestResult):
 
     def addFailure(self, test, err):
         super().addFailure(test, err)
-        if _event_kind(test) == "leaf":
+        if _event_kind(test) != "leaf":
+            return
+        if _error_is_before_body(err):
+            self.leaf_pre_body_error.add(test.id())
+        else:
             self.leaf_failure.add(test.id())
 
     def addError(self, test, err):
@@ -168,8 +176,10 @@ class RecordingResult(unittest.TextTestResult):
             self.leaf_other_executed.add(test.id())
 
     def addSubTest(self, test, subtest, err):
-        super().addSubTest(test, subtest, err)
         parent = test.test_case.id() if _event_kind(test) == "subtest" else test.id()
+        if err is not None and _error_is_before_body(err):
+            self.leaf_pre_body_error.add(parent)
+        super().addSubTest(test, subtest, err)
         self.subtest_parents.add(parent)
 
 
@@ -388,7 +398,8 @@ def _account_leaves(leaves: list[dict], result: RecordingResult) -> dict:
         reason = result.leaf_skips.get(leaf_id)
         if reason is None:
             reason = fixture_skip.get(leaf_id)
-        if reason is not None and ran:
+        # A later subtest event must not drop the leaf skip or break the identity.
+        if reason is not None and leaf_id in result.leaf_success:
             inconsistent = True
             continue
         if reason is not None:
@@ -398,7 +409,8 @@ def _account_leaves(leaves: list[dict], result: RecordingResult) -> dict:
             else:
                 skipped_required.append(entry)
             continue
-        if leaf_id in result.leaf_pre_body_error and not ran:
+        # Cleanup or a subtest opened from setUp must not count as the test body.
+        if leaf_id in result.leaf_pre_body_error:
             not_run += 1
             continue
         if ran or (leaf_id in result.started and leaf_id not in result.leaf_pre_body_error):
