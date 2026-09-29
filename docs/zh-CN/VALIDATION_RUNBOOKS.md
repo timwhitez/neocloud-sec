@@ -49,7 +49,7 @@
 
 **设计：** 导出运行中的监听器／路由清单：地址、端口、协议、Path/Method、插件来源、认证、授权与资源成本。除公开推理外，覆盖管理、Health/Metrics、模型／Adapter 操作与内部入口。可信入口默认拒绝，并阻止绕过网关直达 Worker。解析前限制整体字节数；进入昂贵 Engine 工作前限制字段、媒体解码、序列化／哈希、序列数量、上下文／输出、并发、队列长度／等待时间与重试。由授权边界注入固定长度秘密 Cache Salt，不接受调用者无限长度值。已认证租户同样受限；取消和超时释放预留，重试不能放大已耗尽预算。
 
-**测试／证据：** 使用小型 `limit-1`、`limit`、`limit+1` 夹具，不发送公告中的超大请求或并发耗尽载荷。逐个已启用监听器／路由配对验证合法请求、错误身份／租户及网关绕过。确认拒绝发生在昂贵 Engine 处理之前，取消后 CPU／GPU／队列预留归还。记录实际构建、生效限额、判定／Engine 轨迹、受限资源消耗，以及正常业务的 p95/p99 首 Token 时延（TTFT）。遗漏的监听器保持未验证；达到获批资源／SLO 阈值即停止。入口过滤补充但不替代厂商修复；路由、插件、Engine 或网关变化后重新验证。
+**测试／证据：** 使用小型 `limit-1`、`limit`、`limit+1` 夹具，不发送公告中的超大请求或并发耗尽载荷。逐个已启用监听器／路由配对验证合法请求、错误身份／租户及网关绕过。确认拒绝发生在昂贵 Engine 处理之前，取消后 CPU／GPU／队列预留归还。记录实际构建、生效限额、判定／Engine 轨迹、受限资源消耗，以及正常业务的 p95/p99 首 Token 时延（TTFT）。遗漏的监听器保持未验证；达到获批资源／SLO 阈值即停止。入口过滤补充但不替代厂商修复；路由、插件、Engine 或网关变化后重新验证。本节未执行的检查保持 `NOT_TESTED`。
 
 <a id="rb-03"></a>
 ## RB-03 — BlueField、RShim 与服务商恢复路径
@@ -76,7 +76,7 @@
 
 **范围：** NCS-NET-02、NCS-NET-03、NCS-DAT-02、NCS-DAT-04、NCS-CMP-02、NCS-ORC-03 和 NCS-IAM-04。分别检查请求／路由授权、KV 元数据／通知／租约流量，以及 GPU／CPU／RDMA／TCP／Offload 大块数据传输。公开 API TLS 或 Service Mesh 不证明直通内存路径受到保护。检查实际 Backend 与 Fallback，不把某种 vLLM 部署的内部可信网络假设 [S21] 推广为所有 NIXL Backend 的属性。
 
-**设计：** 在可信状态中绑定授权共享域、请求、模型／Adapter 版本、来源／目的 Peer、分配 Generation、Buffer 边界、到期时间和保留预算。Engine ID、地址、rkey 或调用者自报的传输参数不是业务授权。复用受支持的 Peer／网络／Backend 执行机制，不另造传输协议。上游 NIXL Connector 租约设计 [S23] 通过 Heartbeat 为 Decode 保持 Prefill 数据块存活；存活不意味着可以无限续期授权。
+**设计：** 在可信状态中绑定授权共享域、请求、模型／Adapter 版本、来源／目的 Peer、分配 Generation、Buffer 边界、到期时间和保留预算。Engine ID、地址、rkey 或调用者自报的传输参数不是业务授权。复用受支持的 Peer／网络／Backend 执行机制，不另造传输协议。上游 NIXL Connector 租约设计 [S23] 通过 Heartbeat 为 Decode 保持 Prefill 数据块存活；存活不意味着可以无限续期授权。实际 Backend 行为以锁定的 NIXL 版本 [S30] 为准，不能只凭这份开发文档。
 
 ```text
 分配／注册 → 授权 → 传输／固定内存
@@ -94,7 +94,7 @@
 | 取消／到期后收到迟到 Heartbeat／Completion | 不恢复授权，不复用旧分配 |
 | Worker 重启、地址复用或 RDMA→TCP Fallback | 重新核查身份／Generation，不降低声明的保护 |
 
-**证据／中止：** 仅用无害标记。关联分配／请求血缘、实际 Backend、Peer 判定、终态事件、排空／Fencing、清理和重新分配，测量保留字节数、回收延迟与正常业务时延。日志不记录真实 rkey、KV 内容、Token ID 或 Salt。撤销未验证不能填 PASS；出现跨域访问或 Fabric 不稳定即停止并先隔离。按受支持流程恢复及独立复测。本节不宣称发现 NIXL 漏洞，也不要求在生产运行 RDMA 利用。
+**证据／中止：** 仅用无害标记。关联分配／请求血缘、实际 Backend、Peer 判定、终态事件、排空／Fencing、清理和重新分配，测量保留字节数、回收延迟与正常业务时延。日志不记录真实 rkey、KV 内容、Token ID 或 Salt。撤销未验证不能填 PASS；出现跨域访问或 Fabric 不稳定即停止并先隔离。按受支持流程恢复及独立复测。本节不宣称发现 NIXL 漏洞，也不要求在生产运行 RDMA 利用。本节未执行的检查保持 `NOT_TESTED`。
 
 <a id="rb-05"></a>
 ## RB-05 — Prometheus、Grafana 与遥测
@@ -150,7 +150,7 @@
 <a id="layer-specific-cache-isolation"></a>
 ### 逐层缓存隔离
 
-**范围：** NCS-DAT-02、NCS-DAT-04、NCS-DAT-05、NCS-CMP-02、NCS-CMP-05、NCS-API-01 和 NCS-TEL-01。vLLM 文档所述机制 [S21] 中，可选 `cache_salt` 分隔 Prefix Cache 复用，客户端多模态 UUID 则可能影响 Processor／Encoder 缓存；Prefix Salting 本身不证明媒体缓存隔离。
+**范围：** NCS-DAT-02、NCS-DAT-04、NCS-DAT-05、NCS-CMP-02、NCS-CMP-05、NCS-API-01 和 NCS-TEL-01。2026-09-29 核对的 vLLM stable 安全说明 [S21] 中，可选 `cache_salt` 混入首个 Prefix Block 的哈希。调用者提供的多模态 UUID 可以选定 Processor 缓存、Encoder 缓存和 Prefix Block 身份；Salt 本身不隔离 Processor 或 Encoder 缓存。Prefix Caching 设计说明 [S29] 描述该哈希结构。仅做 Prefix Salting 不证明媒体缓存隔离。
 
 | 层次 | 本项目的实施决策 | 无害负向测试 |
 |---|---|---|
@@ -161,18 +161,18 @@
 
 公开 Tenant ID 不是秘密 Salt。授权共享域可以细于租户；组织内用户间共享也要明确授权，不能默认成立。内容哈希解决 UUID 替换问题，不是所有时序侧信道的通用防护。Salt 轮换阻断旧 Namespace 复用，但不擦除旧数据；副本、快照和保留副本还须按 RB-06 处理。模型／Adapter 变更、撤权、取消、崩溃与租户退出均检查生命周期。
 
-**证据：** 正确输出之外还需可信 Cache Hit／Block 归属观察，单次 TTFT 不证明隔离。按声明共享策略配对测量隐私边界、Hit Rate、吞吐和 p50/p95/p99 TTFT。记录清理、残余副本／保留期限与独立观察者。出现异租户标记即停止、隔离相关层并独立复测。不能将不同 Salt 宣称为整栈 ACL，也不必为此次保证工作另造缓存服务。
+**证据：** 正确输出之外还需可信 Cache Hit／Block 归属观察，单次 TTFT 不证明隔离。按声明共享策略配对测量隐私边界、Hit Rate、吞吐和 p50/p95/p99 TTFT。记录清理、残余副本／保留期限与独立观察者。出现异租户标记即停止、隔离相关层并独立复测。不能将不同 Salt 宣称为整栈 ACL，也不必为此次保证工作另造缓存服务。本节未执行的检查保持 `NOT_TESTED`。
 
 <a id="gpu-memory-disturbance"></a>
 ### GPU 内存扰动、ECC 与可信恢复
 
-**范围：** NCS-CMP-01、NCS-CMP-02、NCS-CMP-03、NCS-CMP-05、NCS-ASM-01、NCS-VEM-03、NCS-TEL-01 和 NCS-TEL-03。GPUThor [S24] 与 NVIDIA 更新指南 [S25] 支持纵深防御，而不是关闭 ECC。论文四卡 GDDR6 位翻转实验使用 ECC-disabled；ECC-enabled 实验使用本地 RTX A6000。不能直接推广为 H100／HBM3／Blackwell 受影响，也不能把其他被测内存未观察到翻转写成免疫。
+**范围：** NCS-CMP-01、NCS-CMP-02、NCS-CMP-03、NCS-CMP-05、NCS-ASM-01、NCS-VEM-03、NCS-TEL-01 和 NCS-TEL-03。GPUThor [S24] 与 NVIDIA 更新指南 [S25] 支持纵深防御，而不是关闭 ECC。2026-09-29 重读作者 PDF：§6 在 RTX A4000、A4500、A5000 和 A6000 上的全部实验使用 ECC disabled。§6.1 与 §7.1 写明只在本地 RTX A6000 上启用 ECC，因为其余三张是云上 GPU，没有启用 ECC 的权限。不能把这一点改写成四张卡都完成了 ECC-enabled 利用验证。不能直接推广为 H100／HBM3／Blackwell 受影响，也不能把其他被测内存未观察到翻转写成免疫。§9 写明 HBM3/e 与 GDDR7 的片上 ECC 降低错误可见性，这些平台留待后续工作；可见性下降并不等于免疫。
 
 **设计：** 盘点准确 GPU／DRAM、固件／驱动、Host／Hypervisor、SYS-ECC 当前与待生效模式、适用 On-Die ECC、实际 DMA／IOMMU 边界以及共享、故障和复位域。Boot Flag、默认配置或 IOMMU Group 清单本身不是完整部署隔离证明。保留受支持的 ECC、DMA 隔离、租户放置与宿主控制，检查 GPUDirect／P2P 和机密模式兼容性，不直接套用通用启动参数。宿主 DMA 隔离不证明 GPU 内部数据完整性或 NVLink 隔离。
 
 **测试／证据：** 使用合成遥测演练 Corrected／Uncorrectable Error、Row Remap、Reset 和来源缺失，贯穿告警、停止放置、隔离与审批开放。在维护实验环境关联受支持的只读设备状态、正常作业及恢复结果。合成事件只验证响应逻辑，不证明抗物理扰动。异常计数可能来自硬件故障，没有计数异常也不能排除静默损坏；不新增 Hammer Kernel、提权载荷或主动损坏硬件的测试。
 
-**恢复：** 停止向不确定故障域放置新任务，保存脱敏证据，按厂商支持流程复位／重建／更换。异常窗口产生的模型／Checkpoint 在完整性与可信恢复来源评估前保持隔离；成功续跑不等于安全。独立核验身份、设备状态、DMA／租户边界和数据完整性后才能开放。硬件／DRAM、固件／驱动、共享方式变更或异常复位会使相关证据失效。
+**恢复：** 停止向不确定故障域放置新任务，保存脱敏证据，按厂商支持流程复位／重建／更换。异常窗口产生的模型／Checkpoint 在完整性与可信恢复来源评估前保持隔离；成功续跑不等于安全。独立核验身份、设备状态、DMA／租户边界和数据完整性后才能开放。硬件／DRAM、固件／驱动、共享方式变更或异常复位会使相关证据失效。本节未执行的检查保持 `NOT_TESTED`。
 
 <a id="confidential-composition"></a>
 ### CPU–GPU–Fabric 机密计算组合边界
@@ -185,7 +185,7 @@
 
 **测试／证据：** 配对合法运行与 Replay、错误租户／接收者、缺 GPU、模式降级、依赖丢失的合成 Verifier 夹具。夹具仅测试策略逻辑；真实 CPU／GPU 证据及资源侧密钥释放／拒绝须在受支持部署上由独立观察者核验。Reset、换卡、拓扑／模式／驱动／固件、参考值／策略变化后更新相关证据与会话。未覆盖的宿主 Fabric Manager／NVSwitch 路由信任假设必须披露，不能藏在 GPU Token 后面。
 
-**安全／性能验收：** 保持必需保护开启，测量完整 Prefill／Decode、Collective、CPU↔GPU 拷贝、KV Offload／Restore 和 Checkpoint 路径；远端传输按 RB-04 验证。比较须匹配硬件、模型、精度、上下文、并发与拓扑，报告吞吐、p50/p95/p99 TTFT、每输出 Token 时延和恢复开销。GPU 内部矩阵基准不证明端到端机密推理性能 [S28]；不规定通用损耗比例或实验调参开关。记录准确范围与脱敏策略判定，不在本仓库存客户密钥或租户原始证据；缺硬件／验证条件时保持 NOT_TESTED 或 INCONCLUSIVE。
+**安全／性能验收：** 保持必需保护开启，测量完整 Prefill／Decode、Collective、CPU↔GPU 拷贝、KV Offload／Restore 和 Checkpoint 路径；远端传输按 RB-04 验证。比较须匹配硬件、模型、精度、上下文、并发与拓扑，报告吞吐、p50/p95/p99 TTFT、每输出 Token 时延和恢复开销。GPU 内部矩阵基准不证明端到端机密推理性能 [S28]；不规定通用损耗比例或实验调参开关。记录准确范围与脱敏策略判定，不在本仓库存客户密钥或租户原始证据；缺硬件／验证条件时保持 `NOT_TESTED` 或 `INCONCLUSIVE`。本节未执行的检查保持 `NOT_TESTED`。
 
 <a id="rb-10"></a>
 ## RB-10 — 独立保证与来源变化
@@ -229,7 +229,9 @@
 - [S26 — NVIDIA CC deployment guide](https://docs.nvidia.com/cc-deployment-guide-tdx-snp.pdf)
 - [S27 — NVIDIA Secure AI operations guide](https://docs.nvidia.com/nvidia-secure-ai-operations-guide.pdf)
 - [S28 — The Serialized Bridge, arXiv:2606.23969v2](https://arxiv.org/html/2606.23969v2)
+- [S29 — vLLM automatic prefix caching](https://docs.vllm.ai/en/stable/design/prefix_caching/)
+- [S30 — NIXL project](https://github.com/ai-dynamo/nixl)
 
-S21–S28 于 2026-09-29 读取；[范围内来源索引](../../REFERENCES.md#inference-accelerator-sources)区分持续更新／开发文档、公告日期、厂商指南版本与研究状态。早期条目保持原有复核范围。
+S21–S30 于 2026-09-29 读取；[范围内来源索引](../../REFERENCES.md#inference-accelerator-sources)区分持续更新／开发文档、公告日期、厂商指南版本与研究状态。早期条目保持原有复核范围。
 
 厂商行为具有版本差异，来源支持具体机制，不代表背书整套测试方案。读取限制和外部框架差异见[本轮来源复核](../../reviews/2026-09-05-evidence-followup.md)。

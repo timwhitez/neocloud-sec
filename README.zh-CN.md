@@ -31,7 +31,7 @@
 
 现有验证手册具体展开五类边界：[CPU 请求预算与监听器覆盖](docs/zh-CN/VALIDATION_RUNBOOKS.md#inference-resource-budgets)、[分离式 KV 租约与复用](docs/zh-CN/VALIDATION_RUNBOOKS.md#disaggregated-kv-lifecycle)、[Prefix／媒体／Offload 缓存隔离](docs/zh-CN/VALIDATION_RUNBOOKS.md#layer-specific-cache-isolation)、[GPU 内存故障与恢复](docs/zh-CN/VALIDATION_RUNBOOKS.md#gpu-memory-disturbance)，以及 [CPU–GPU–Fabric 机密计算组合边界](docs/zh-CN/VALIDATION_RUNBOOKS.md#confidential-composition)。
 
-这些是对白皮书运营模型的有来源支撑的工程扩展，包含配对允许／拒绝测试、生命周期、失败行为与证据要求。2026-09-29 的复核仅覆盖这些机制，不表示所有早期资料重新审计或服务商部署已验证；准确版本与范围见[来源索引](REFERENCES.md#inference-accelerator-sources)。核心控制 ID、层级与符合性语义保持不变。
+白皮书在[推理缓存、请求成本、KV 复用与机密计算组合](docs/zh-CN/WHITEPAPER.md#inference-accelerator-boundaries)中陈述同一边界。这些是对运营模型的有来源支撑的工程扩展，包含配对允许／拒绝测试、生命周期、失败行为与证据要求。2026-09-29 的复核仅覆盖这些机制，不表示所有早期资料重新审计或服务商部署已验证；准确版本与范围见[来源索引](REFERENCES.md#inference-accelerator-sources)。核心控制 ID、层级与符合性语义保持不变。未执行的 GPU、RDMA、推理运行时和 TEE／KMS 检查保持 `NOT_TESTED`。
 
 ## 项目包含什么
 
