@@ -208,12 +208,38 @@ class LocalGateTests(unittest.TestCase):
         self.assertFalse(accepted)
         self.assertEqual(reason, "unittest result is incomplete")
 
+        accepted, reason = self.gate.assess(base_report(executed=-1))
+        self.assertFalse(accepted)
+        self.assertEqual(reason, "unittest result is incomplete")
+
+        accepted, reason = self.gate.assess(base_report(
+            discovered=2, executed=1, required_executed=1, not_run=1,
+        ))
+        self.assertFalse(accepted)
+        self.assertEqual(reason, "unittest did not start every discovered test")
+
+        accepted, reason = self.gate.assess(base_report(
+            subtests_skipped=1, subtests_optional_skipped=1,
+        ))
+        self.assertTrue(accepted)
+        self.assertIn("optional subtests skipped", reason)
+        self.assertNotIn("all tests executed", reason)
+        self.assertNotIn("all discovered tests executed", reason)
+
+        accepted, reason = self.gate.assess(base_report(
+            subtests_skipped=1, subtests_required_skipped=1,
+        ))
+        self.assertFalse(accepted)
+        self.assertEqual(reason, "required subtest skipped")
+
     def test_source_keeps_timeout_and_does_not_hardcode_suite_size(self):
         source = (ROOT / "scripts" / "check_local.py").read_text(encoding="utf-8")
         self.assertIn("STEP_TIMEOUT_SECONDS = 120", source)
         self.assertIn('OPTIONAL_ATTRIBUTE = "neocloud_optional"', source)
         self.assertNotIn("shell=True", source)
         self.assertNotIn("170", source)
+        self.assertNotIn("executed = started - skipped", source)
+        self.assertNotIn("max(0", source)
 
     def test_docs_state_skip_contract(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -227,6 +253,10 @@ class LocalGateTests(unittest.TestCase):
             self.assertIn("没有必需测试主体执行", text)
         self.assertIn("`NOT_TESTED`", readme)
         self.assertIn("`NOT_TESTED`", readme_zh)
+        self.assertIn("required subtest", readme)
+        self.assertIn("required subtest", contributing)
+        self.assertIn("必需子测试", readme_zh)
+        self.assertIn("必需子测试", contributing)
 
     def test_empty_directory_fails_and_cli_exit_is_version_specific(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -448,6 +478,258 @@ class LocalGateTests(unittest.TestCase):
         self.assertNotEqual(code, 0)
         self.assertIn("no required test body executed", out + err)
         self.assertNotIn("PASS:", out + err)
+
+    def test_optional_setup_class_skip_counts_each_leaf(self):
+        source = PASSING_TEST + textwrap.dedent(
+            """\
+            class Optional(unittest.TestCase):
+                neocloud_optional = True
+                @classmethod
+                def setUpClass(cls):
+                    raise unittest.SkipTest("synthetic optional fixture unavailable")
+                def test_one(self):
+                    pass
+                def test_two(self):
+                    pass
+            """
+        )
+        code, out, err = self.gate_on(source)
+        combined = out + err
+        self.assertEqual(code, 0, combined)
+        self.assertIn("discovered=3 executed=1 skipped=2", out)
+        self.assertIn("required_skipped=0 optional_skipped=2", out)
+        self.assertIn("required_executed=1", out)
+        self.assertIn("not_run=0", out)
+        self.assertIn("SKIP optional:", out)
+        self.assertIn("test_one", out)
+        self.assertIn("test_two", out)
+        self.assertIn("setUpClass:", out)
+        self.assertIn("NOTE: optional tests were skipped; not all discovered tests executed.", out)
+        self.assertNotIn("executed=-", combined)
+        self.assertNotIn("required test skipped", combined)
+        self.assertIn("PASS: local repository checks only; no live provider assessment performed.", out)
+
+    def test_optional_subtest_skips_are_disclosed_and_non_negative(self):
+        source = PASSING_TEST + textwrap.dedent(
+            """\
+            class Optional(unittest.TestCase):
+                neocloud_optional = True
+                def test_partial(self):
+                    for n in range(3):
+                        with self.subTest(n=n):
+                            self.skipTest("synthetic optional subtest unavailable")
+            """
+        )
+        code, out, err = self.gate_on(source)
+        combined = out + err
+        self.assertEqual(code, 0, combined)
+        self.assertIn("discovered=2 executed=2 skipped=0", out)
+        self.assertIn("required_skipped=0 optional_skipped=0", out)
+        self.assertIn("subtests_skipped=3", out)
+        self.assertIn("subtests_required_skipped=0", out)
+        self.assertIn("subtests_optional_skipped=3", out)
+        self.assertIn("required_executed=1", out)
+        self.assertIn("optional_executed=1", out)
+        self.assertIn("SKIP optional subtest:", out)
+        self.assertIn("NOTE: optional subtests were skipped; partial coverage is not full execution.", out)
+        self.assertNotIn("executed=-", combined)
+        self.assertNotIn("all tests executed", combined)
+        self.assertNotIn("required test skipped", combined)
+        self.assertNotIn("required subtest skipped", combined)
+
+    def test_required_setup_class_and_module_skips_still_fail(self):
+        source = PASSING_TEST + textwrap.dedent(
+            """\
+            class Needed(unittest.TestCase):
+                @classmethod
+                def setUpClass(cls):
+                    raise unittest.SkipTest("synthetic required fixture")
+                def test_one(self):
+                    pass
+                def test_two(self):
+                    pass
+            """
+        )
+        code, out, err = self.gate_on(source)
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=3 executed=1 skipped=2", out)
+        self.assertIn("required_skipped=2", out)
+        self.assertIn("required_executed=1", out)
+        self.assertIn("required test skipped", combined)
+        self.assertIn("SKIP required:", err)
+        self.assertIn("test_one", err)
+        self.assertIn("test_two", err)
+        self.assertNotIn("executed=-", combined)
+        self.assertNotIn("PASS:", combined)
+
+        code, out, err = self.gate_files({
+            "test_required.py": PASSING_TEST,
+            "test_blocked.py": textwrap.dedent(
+                """\
+                import unittest
+                def setUpModule():
+                    raise unittest.SkipTest("synthetic required module")
+                class Needed(unittest.TestCase):
+                    def test_one(self):
+                        pass
+                    def test_two(self):
+                        pass
+                """
+            ),
+        })
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=3 executed=1 skipped=2", out)
+        self.assertIn("required_skipped=2", out)
+        self.assertIn("setUpModule:", err)
+        self.assertIn("required test skipped", combined)
+        self.assertNotIn("executed=-", combined)
+        self.assertNotIn("PASS:", combined)
+
+    def test_optional_setup_module_skip_does_not_hide_a_required_pass(self):
+        code, out, err = self.gate_files({
+            "test_required.py": PASSING_TEST,
+            "test_optional_module.py": textwrap.dedent(
+                """\
+                import unittest
+                def setUpModule():
+                    raise unittest.SkipTest("synthetic optional module")
+                class Optional(unittest.TestCase):
+                    neocloud_optional = True
+                    def test_one(self):
+                        pass
+                    def test_two(self):
+                        pass
+                """
+            ),
+        })
+        combined = out + err
+        self.assertEqual(code, 0, combined)
+        self.assertIn("discovered=3 executed=1 skipped=2", out)
+        self.assertIn("required_skipped=0 optional_skipped=2", out)
+        self.assertIn("setUpModule:", out)
+        self.assertIn("NOTE: optional tests were skipped; not all discovered tests executed.", out)
+        self.assertNotIn("executed=-", combined)
+        self.assertNotIn("required test skipped", combined)
+
+    def test_required_subtest_skip_fails(self):
+        source = PASSING_TEST + textwrap.dedent(
+            """\
+            class Needed(unittest.TestCase):
+                def test_partial(self):
+                    for n in range(2):
+                        with self.subTest(n=n):
+                            self.skipTest("synthetic required subtest")
+            """
+        )
+        code, out, err = self.gate_on(source)
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=2 executed=2 skipped=0", out)
+        self.assertIn("subtests_required_skipped=2", out)
+        self.assertIn("subtests_optional_skipped=0", out)
+        self.assertIn("required_executed=2", out)
+        self.assertIn("required subtest skipped", combined)
+        self.assertIn("SKIP required subtest:", err)
+        self.assertNotIn("executed=-", combined)
+        self.assertNotIn("PASS:", combined)
+
+    def test_setup_errors_are_not_body_execution(self):
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                @classmethod
+                def setUpClass(cls):
+                    raise RuntimeError("synthetic class fixture error")
+                def test_one(self):
+                    pass
+                def test_two(self):
+                    pass
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=2 executed=0 skipped=0", out)
+        self.assertIn("not_run=2", out)
+        self.assertIn("errors=1", out)
+        self.assertIn("required_executed=0", out)
+        self.assertIn("unittest failures or errors", combined)
+        self.assertNotIn("unittest result is inconsistent", combined)
+        self.assertNotIn("PASS:", combined)
+
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                def setUp(self):
+                    raise RuntimeError("synthetic setup error")
+                def test_one(self):
+                    self.assertTrue(True)
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=1 executed=0 skipped=0", out)
+        self.assertIn("not_run=1", out)
+        self.assertIn("errors=1", out)
+        self.assertIn("required_executed=0", out)
+        self.assertIn("unittest failures or errors", combined)
+        self.assertNotIn("PASS:", combined)
+
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            def setUpModule():
+                raise RuntimeError("synthetic module error")
+            class Needed(unittest.TestCase):
+                def test_one(self):
+                    pass
+                def test_two(self):
+                    pass
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=2 executed=0 skipped=0", out)
+        self.assertIn("not_run=2", out)
+        self.assertIn("errors=1", out)
+        self.assertIn("required_executed=0", out)
+        self.assertIn("unittest failures or errors", combined)
+        self.assertNotIn("PASS:", combined)
+
+    def test_subtest_failures_count_as_one_leaf(self):
+        code, out, err = self.gate_on(textwrap.dedent(
+            """\
+            import unittest
+            class Needed(unittest.TestCase):
+                def test_partial(self):
+                    for n in range(3):
+                        with self.subTest(n=n):
+                            self.fail("synthetic subtest failure")
+            """
+        ))
+        combined = out + err
+        self.assertNotEqual(code, 0)
+        self.assertIn("discovered=1 executed=1 skipped=0", out)
+        self.assertIn("failures=3", out)
+        self.assertIn("required_executed=1", out)
+        self.assertIn("optional_executed=0", out)
+        self.assertIn("unittest failures or errors", combined)
+        self.assertNotIn("unittest result is inconsistent", combined)
+        self.assertNotIn("executed=-", combined)
+        self.assertNotIn("PASS:", combined)
+
+    def gate_files(self, files: dict[str, str], codes: dict[str, int] | None = None):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_validators(root, codes)
+            tests = root / "tests"
+            tests.mkdir()
+            for name, source in files.items():
+                (tests / name).write_text(textwrap.dedent(source), encoding="utf-8")
+            return self.capture(lambda: self.gate.run_gate(root))
 
 
 if __name__ == "__main__":

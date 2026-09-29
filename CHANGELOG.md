@@ -2,6 +2,11 @@
 
 All notable changes to NeoCloud Cyber Security are recorded here.
 
+## Unreleased — leaf, fixture, and subtest gate counts
+
+- Count discovered leaf tests instead of subtracting shared-fixture and subTest events from `testsRun`. Optional `setUpClass` / `setUpModule` skips stay optional and cover each affected test. Required fixture skips and required subtest skips still fail. Subtest failures remain failure events and do not each count as another test body. `setUp`, `setUpClass`, and `setUpModule` errors are not test-body execution. Counts stay non-negative without clamping.
+- Keep the empty-suite, all-required-skip, required-skip, error, timeout, and missing-report rejections. No control, tier, schema, T0, or deployment-verification change.
+
 ## Unreleased — local gate execution accounting and topic-anchor binding
 
 - Count discovered, executed, skipped, failed and errored tests from unittest's structured result inside the existing `scripts/check_local.py` entry. Fail the gate when discovery is empty, when no required test body executed, or when a required test is skipped. Optional skips require `neocloud_optional = True`, are reported, and are not execution. Do not hardcode the suite size or accept exit code 0 by itself. Keep per-step subprocesses, the 120-second limit, and timeout, start and failure handling.
